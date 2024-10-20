@@ -2,7 +2,8 @@ import { NextFunction, Response, Request } from "express";
 
 const getBasicAuthHeader = (req: Request, res: Response, next: NextFunction) => {
     if (!req.headers.authorization || req.headers.authorization.indexOf('Basic ') === -1) {
-        return res.status(401).json({ message: 'Missing Basic Authorization Header' });
+        res.status(401).json({ message: 'Missing Basic Authorization Header' });
+        return;
     }
 
     const base64Credentials = req.headers.authorization.split(' ')[1];

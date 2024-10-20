@@ -20,7 +20,8 @@ auth.post("/vendor-sign-up",validateBody([
     'address',
     'phoneNumber'
 ]),Auth.vendorSignUp);
-// auth.get("/login", getBasicAuthHeader, Auth.login);
+
+auth.get("/vendor-login", getBasicAuthHeader, Auth.vendorLogin);
 // auth.get("/google", Auth.oauthRedirect);
 // auth.get("/google/callback", Auth.oauthCallback);
 

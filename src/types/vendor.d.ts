@@ -10,6 +10,6 @@ export default interface IVendor {
     businessName: String,
     address?: String,
     phoneNumber: String,
-    // createdAt?: any,
-    // updatedAt?: any
+    createdAt?: Date,
+    updatedAt?: Date
 }

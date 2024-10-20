@@ -1,5 +1,4 @@
 import jsonwebtoken from 'jsonwebtoken';
-import { env } from '../config';
 
 export default class Token {
 
@@ -31,10 +30,10 @@ export default class Token {
         return result;
     }
 
-    public static createToken(data: any,type: string = "access") {
+    public static createToken(secretKey: string,data: any,type: string = "access") {
         return jsonwebtoken.sign(
             { data: data, type: type },
-            env("accessTokenSecret") as string,
+            secretKey,
             { expiresIn: "30d" }
         );
     }

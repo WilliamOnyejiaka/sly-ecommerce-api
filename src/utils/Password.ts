@@ -10,7 +10,7 @@ export default class Password {
     }
 
     static compare(password: string, hashedPassword: string, storedSalt: string) {
-        const derivedKey = crypto.pbkdf2Sync('passwords', storedSalt, 10000, 64, 'sha512');
+        const derivedKey = crypto.pbkdf2Sync(password, storedSalt, 10000, 64, 'sha512');
         return derivedKey.toString('hex') === hashedPassword;
     }
 }
