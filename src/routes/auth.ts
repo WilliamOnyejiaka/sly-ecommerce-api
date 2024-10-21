@@ -1,17 +1,11 @@
-import { Router, Request, Response  } from "express";
+import { Router, Request, Response } from "express";
 import { Auth } from "../controllers";
-import { getBasicAuthHeader,validateBody } from "../middlewares";
+import { getBasicAuthHeader, validateBody } from "../middlewares";
+import asyncHandler from "express-async-handler";
 
 const auth: Router = Router();
 
-function test(req: Request, res: Response){
-    res.status(400).json({
-        error: false,
-        message: "invalid email"
-    });
-}
-
-auth.post("/vendor-sign-up",validateBody([
+auth.post("/vendor-sign-up", validateBody([
     'firstName',
     'lastName',
     'password',
@@ -19,9 +13,11 @@ auth.post("/vendor-sign-up",validateBody([
     'businessName',
     'address',
     'phoneNumber'
-]),Auth.vendorSignUp);
+]), asyncHandler(Auth.vendorSignUp));
 
-auth.get("/vendor-login", getBasicAuthHeader, Auth.vendorLogin);
+auth.get("/vendor-login", getBasicAuthHeader, asyncHandler(Auth.vendorLogin));
+auth.get("/vendor-email-otp/:email", asyncHandler(Auth.vendorEmailOTP));
+auth.get("/confirm-vendor-email/:email/:otpCode",asyncHandler(Auth.vendorEmailVerification));
 // auth.get("/google", Auth.oauthRedirect);
 // auth.get("/google/callback", Auth.oauthCallback);
 

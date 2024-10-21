@@ -15,7 +15,7 @@ function createApp() {
     app.use(corsConfig);
     app.use(express.json());
     app.use(morgan("combined"));
-    app.use(redisClientMiddleware);
+    // app.use(redisClientMiddleware);
     // app.use(secureApi); TODO: uncomment this
     app.use("/api/v1/auth", auth);
 
@@ -28,7 +28,7 @@ function createApp() {
             name: "William",
             otpCode: 564909
         });
-        const result = await email.sendMail("Ecommerce Api","williamonyejiaka20=-021@gmfddfgdfaail.com","email verification",htmlContent);
+        const result = await email.sendEmail("Ecommerce Api","williamonyejiaka20=-021@gmfddfgdfaail.com","email verification",htmlContent);
         res.status(200).json({
             'error': false,
             'message': result

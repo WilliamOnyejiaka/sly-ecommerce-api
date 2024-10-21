@@ -21,7 +21,12 @@ export default class Email {
         });
     }
 
-    public async sendMail(from: string,to: string,subject: string,html: string){
+    public async getEmailTemplate(data: any,templatePath: string = path.join(__dirname, './../views', "email.ejs")){
+        const htmlContent = await ejs.renderFile(templatePath, data);
+        return htmlContent;
+    }
+
+    public async sendEmail(from: string,to: string,subject: string,html: string){
         
         const mailOptions = {
             from: from,

@@ -70,15 +70,15 @@ class Auth {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
-    public static async emailVerification(req: Request, res: Response) {
-        const email: string | null = req.params.email;
-        const emailExistsResult = await Vendor.emailExists(email);
-
-        if (emailExistsResult.json.error) {
-            res.status(emailExistsResult.statusCode).json(emailExistsResult.json);
-        }
+    public static async vendorEmailOTP(req: Request, res: Response) {
+        const serviceResult = await Authentication.vendorEmailOTP(req.params.email);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
+    public static async vendorEmailVerification(req: Request, res: Response) {
+        const serviceResult = await Authentication.vendorEmailVerification(req.params.email,req.params.otpCode);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
 
 }
 
