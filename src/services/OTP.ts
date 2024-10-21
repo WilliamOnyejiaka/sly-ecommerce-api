@@ -68,6 +68,6 @@ export default class OTP {
         const validOTPCode = cacheResult.otpCode === otpCode;
         const message = validOTPCode ? "Email has been verified successfully" : "Invalid otp";
         const statusCode = validOTPCode ? 200 : 401;
-        return Service.responseData(statusCode, validOTPCode,message);
+        return Service.responseData(statusCode, false,message);
     }
 }

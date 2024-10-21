@@ -77,13 +77,19 @@ class Authentication {
     public static async vendorEmailVerification(vendorEmail: string, otpCode: string) {
         const otp = new OTP(vendorEmail);
         const otpServiceResult = await otp.confirmOTP(otpCode);
+
         if (otpServiceResult.json.error) {
             return Service.responseData(
                 otpServiceResult.statusCode,
                 true,
                 otpServiceResult.json.message
             );
+        }
+        
+        const updated = await Vendor.updateVerifiedStatus(vendorEmail);
 
+        if(updated.error){
+            return Service.responseData(500,true,http("500")!);
         }
 
         return Service.responseData(

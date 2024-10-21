@@ -76,7 +76,7 @@ class Auth {
     }
 
     public static async vendorEmailVerification(req: Request, res: Response) {
-        const serviceResult = await Authentication.vendorEmailVerification(req.params.email,req.params.otpCode);
+        const serviceResult = await Authentication.vendorEmailVerification(req.params.email,req.params.otpCode);        
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

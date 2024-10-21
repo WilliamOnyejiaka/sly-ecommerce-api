@@ -55,4 +55,28 @@ export default class Vendor {
             };
         }
     }
+
+    static async updateVerifiedStatus(email: string){
+        try {
+            const vendor = await prisma.vendor.update({
+                where: {
+                    email: email,
+                },
+                data: {
+                    verified: true,
+                },
+            });
+            
+            return {
+                error: false,
+                updated: true
+            };
+        } catch (error) {
+            console.error("Failed to find vendor with business name: ", error);
+            return {
+                error: true,
+                updated: false
+            };
+        }
+    }
 }
