@@ -30,7 +30,7 @@ export default class Token {
         return result;
     }
 
-    public static createToken(secretKey: string,data: any,type: string = "access") {
+    public static createToken(secretKey: string,data: any,type: string = "access") {        
         return jsonwebtoken.sign(
             { data: data, type: type },
             secretKey,

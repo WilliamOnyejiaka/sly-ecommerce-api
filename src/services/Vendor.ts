@@ -1,11 +1,12 @@
+import mime from "mime";
 import Service from ".";
 import { http } from "../constants";
-import { Vendor as VendorRepo} from "../repos";
-
+import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
+import { convertImage } from "../utils";
 
 export default class Vendor {
 
-    public static async emailExists(email: string){
+    public static async emailExists(email: string) {
         const emailExists = await VendorRepo.getVendorWithEmail(email);
 
         if (emailExists.error) {
@@ -18,7 +19,7 @@ export default class Vendor {
         return Service.responseData(statusCode, error, error ? "Email already exists" : null);
     }
 
-    public static async getVendorWithEmail(email: string){
+    public static async getVendorWithEmail(email: string) {
         const repoResult = await VendorRepo.getVendorWithEmail(email);
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
@@ -29,19 +30,42 @@ export default class Vendor {
         const error: boolean = vendor ? false : true;
         const message = error ? http("404")! : "Vendor has been retrieve";
 
-        return Service.responseData(statusCode, error, message,vendor);
+        return Service.responseData(statusCode, error, message, vendor);
     }
 
-    public static async businessNameExists(businessName: string) {
-        const businessNameExists = await VendorRepo.getVendorWithBusinessName(businessName);
+    public static async addProfilePicture(image: Express.Multer.File, vendorId: number) {
+        const filePath = image.path;
+        const outputPath = `compressed/${image.filename}`;
+        const mimeType = mime.lookup(filePath);
+        const fileName = image.filename;
 
-        if (businessNameExists.error) {
-            return Service.responseData(500, true, http("500") as string);
+        const result = await convertImage(fileName, filePath, outputPath, mimeType);
+
+        if (result.error) {
+            console.error(result.message);
+            return Service.responseData(
+                500,
+                true,
+                http("500")!,
+            );
         }
 
-        const statusCode = businessNameExists.data ? 400 : 200;
-        const error: boolean = businessNameExists.data ? true : false;
+        const repoResult = await VendorProfilePicture.insert({
+            mimeType: mimeType,
+            picture: result.data,
+            vendorId: vendorId
+        });
 
-        return Service.responseData(statusCode, error, error ? "business already exists" : null);
+        return repoResult ?
+            Service.responseData(
+                201,
+                false,
+                "profile picture was created successfully"
+            ) :
+            Service.responseData(
+                500,
+                true,
+                http("500")!,
+            );
     }
 }

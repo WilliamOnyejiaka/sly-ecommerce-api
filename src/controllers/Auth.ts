@@ -6,7 +6,7 @@ import { IVendor } from "../types";
 class Auth {
 
     public static async vendorSignUp(req: Request, res: Response) {
-        const { firstName, lastName, email, password, businessName, address, phoneNumber } = req.body;
+        const { firstName, lastName, email, password, address, phoneNumber } = req.body;
         if (password.length < 5) {
             res.status(400).json({
                 error: true,
@@ -40,20 +40,11 @@ class Auth {
             return;
         }
 
-        const businessNameExistsResult = await Vendor.businessNameExists(businessName);
-
-        if (businessNameExistsResult.json.error) {
-            res.status(businessNameExistsResult.statusCode).json(businessNameExistsResult.json);
-            return;
-        }
-
         const vendorSignUpData: IVendor = {
             firstName: firstName,
             lastName: lastName,
             email: email,
             password: password,
-            businessName: businessName,
-            address: address,
             phoneNumber: phoneNumber
         };
 

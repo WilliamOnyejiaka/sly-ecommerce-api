@@ -4,7 +4,6 @@ import { Password } from "../utils";
 import { env } from "../config";
 import { IVendor } from "../types";
 import constants, { http } from "../constants";
-import { json } from "stream/consumers";
 
 class Authentication {
 
@@ -39,13 +38,12 @@ class Authentication {
         const vendor: IVendor = (repoResult.data as IVendor);
         if (vendor) {
             const hashedPassword = vendor.password
-            const validPassword = Password.compare(password, hashedPassword, Authentication.storedSalt);
-            console.log(validPassword, password, hashedPassword);
+            const validPassword = Password.compare(password, hashedPassword, Authentication.storedSalt);   
 
             if (validPassword) {
                 delete vendor.password;
                 return Service.responseData(200, false, "login successful", {
-                    token: Token.createToken(env('tokenSecret')!, vendor.data),
+                    token: Token.createToken(env('tokenSecret')!, vendor),
                     vendor: vendor
                 });
             }

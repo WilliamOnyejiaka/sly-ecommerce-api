@@ -7,8 +7,6 @@ export default interface IVendor {
     active?: boolean,
     isOauth?: boolean,
     oAuthDetails?: String,
-    businessName: String,
-    address?: String,
     phoneNumber: String,
     createdAt?: Date,
     updatedAt?: Date

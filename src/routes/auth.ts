@@ -10,8 +10,6 @@ auth.post("/vendor-sign-up", validateBody([
     'lastName',
     'password',
     'email',
-    'businessName',
-    'address',
     'phoneNumber'
 ]), asyncHandler(Auth.vendorSignUp));
 

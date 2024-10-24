@@ -5,23 +5,27 @@ import multer from "multer";
 const handleErrors = (err: any, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({
+            res.status(400).json({
                 error: true,
-                message: 'File exceeds the allowed limit'
+                message: 'File exceeds the allowed size limit'
             });
+            // return;
         }
         if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-            return res.status(400).json({
+            res.status(400).json({
                 error: true,
-                message: 'Unexpected field in the request'
+                // message: 'Unexpected field in the request',
+                message: "Required field not found in request"
             });
+            // return;
         }
     }
     if (err.message === 'LIMIT_INVALID_FILE_TYPE') {
-        return res.status(400).json({
+        res.status(400).json({
             error: true,
             message: 'invalid file type'
         });
+        // return;
     }
     next();
 }

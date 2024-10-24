@@ -18,11 +18,11 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallb
         return cb(new Error("LIMIT_INVALID_FILE_TYPE"));
     }
     return cb(null, true);
-}
+}   
 const uploads = multer({
     storage: storage,
     limits: {
-        fileSize: 4.5 * 1024 * 1024
+        fileSize: 3.0 * 1024 * 1024
     },
     fileFilter: fileFilter
 });
