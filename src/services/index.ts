@@ -4,6 +4,7 @@ import Vendor from "./Vendor";
 import Email from "./Email";
 import OTP from "./OTP";
 import Store from "./Store";
+import Admin from "./Admin";
 
 export default class Service {
 
@@ -23,4 +24,4 @@ export default class Service {
 
 
 
-export { Token, Authentication, Vendor, Email, OTP, Store };
+export { Token, Authentication, Vendor, Email, OTP, Store, Admin };

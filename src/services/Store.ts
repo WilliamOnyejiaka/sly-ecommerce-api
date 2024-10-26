@@ -1,18 +1,15 @@
 import mime from "mime";
 import Service from ".";
 import { http } from "../constants";
-import { convertImage } from "../utils";
+import { convertImage, processImage } from "../utils";
 import { Banner, StoreDetails, StoreLogo } from "./../repos";
+import { StoreDetailsDto } from "../types/dtos";
 
 export default class Store {
 
-    public static async createStore(name: string, address: string, vendorId: number) {
+    public static async createStore(storeDetailsDto: StoreDetailsDto) {
 
-        const repoResult = await StoreDetails.insert({
-            name: name,
-            address: address,
-            vendorId: vendorId
-        });
+        const repoResult = await StoreDetails.insert(storeDetailsDto);
 
         return repoResult ? Service.responseData(201, false, "Store was created successfully", repoResult) :
             Service.responseData(500, true, http("500")!);
@@ -49,26 +46,21 @@ export default class Store {
 
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
-        }
+        }        
 
-        const statusCode = repoResult.data ? 200 : 404;
+        const statusCode = repoResult.data  ? 200 : 404;
         const error: boolean = repoResult.data ? false : true;
 
         return Service.responseData(
             statusCode,
             error,
-            error ? "Store details was retrieved successfully" : "Store was not found",
+            error ? "Store was not found" : "Store details was retrieved successfully",
             repoResult.data
         );
     }
 
     public static async addStoreLogo(image: Express.Multer.File, storeId: number) {
-        const filePath = image.path;
-        const outputPath = `compressed/${image.filename}`;
-        const mimeType = mime.lookup(filePath);
-        const fileName = image.filename;
-
-        const result = await convertImage(fileName, filePath, outputPath, mimeType);
+        const result = await processImage(image);
 
         if (result.error) {
             console.error(result.message);
@@ -80,7 +72,7 @@ export default class Store {
         }
 
         const repoResult = await StoreLogo.insert({
-            mimeType: mimeType,
+            mimeType: mime.lookup(image.path),
             picture: result.data,
             storeId: storeId
         });
@@ -98,15 +90,6 @@ export default class Store {
             );
     }
 
-    private static async processImage(image: Express.Multer.File) {
-        const filePath = image.path;
-        const outputPath = `compressed/${image.filename}`;
-        const mimeType = mime.lookup(filePath);
-        const fileName = image.filename;
-
-        return await convertImage(fileName, filePath, outputPath, mimeType);
-    }
-
     public static async addBanners(banners: Express.Multer.File[], storeId: number) {
         let base64Banners: any = {
             firstBanner: null,
@@ -116,7 +99,7 @@ export default class Store {
         try {
             for (const banner of banners) {
                 let mimeType = mime.lookup(banner.path);
-                let base64Banner = await Store.processImage(banner);
+                let base64Banner = await processImage(banner);
                 if (base64Banner.error) {
                     return Service.responseData(
                         500,
@@ -124,13 +107,11 @@ export default class Store {
                         http("500")!
                     );
                 }
-
-                if (banner.fieldname === 'firstBanner' || banner.fieldname === 'secondBanner') {
-                    base64Banners[banner.fieldname] = {
-                        mimeType: mimeType,
-                        picture: base64Banner.data!
-                    };
-                }
+                base64Banners[banner.fieldname] = {
+                    mimeType: mimeType,
+                    picture: base64Banner.data!,
+                    storeId: storeId
+                };
             }
         } catch (error) {
             return Service.responseData(

@@ -2,14 +2,13 @@
 import { Response, Request, NextFunction } from "express";
 import multer from "multer";
 
-const handleErrors = (err: any, req: Request, res: Response, next: NextFunction) => {
+const handleMulterErrors = (err: any, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             res.status(400).json({
                 error: true,
                 message: 'File exceeds the allowed size limit'
             });
-            // return;
         }
         if (err.code === 'LIMIT_UNEXPECTED_FILE') {
             res.status(400).json({
@@ -23,11 +22,17 @@ const handleErrors = (err: any, req: Request, res: Response, next: NextFunction)
     if (err.message === 'LIMIT_INVALID_FILE_TYPE') {
         res.status(400).json({
             error: true,
-            message: 'invalid file type'
+            message: 'Invalid file type'
         });
-        // return;
+    }
+
+    if (err.message === 'INVALID_BANNER_FIELD_NAME') {
+        res.status(400).json({
+            error: true,
+            message: 'Invalid banner field name'
+        });
     }
     next();
 }
 
-export default handleErrors;
+export default handleMulterErrors;

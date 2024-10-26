@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { Token } from '../services';
+import { CustomError } from '../utils';
 
-const validateJWT = (tokenDetails: string[], neededData: string[] = ['data']) => (req: Request, res: Response, next: NextFunction) => {
+const validateJWT = (types: string[], tokenSecret: string, neededData: string[] = ['data']) => (req: Request, res: Response, next: NextFunction) => {
     if (!req.headers.authorization || req.headers.authorization.indexOf('Bearer ') === -1) {
-        res.status(401).json({ error: true,message: 'Missing Bearer Authorization Header' });
+        res.status(401).json({ error: true, message: 'Missing Bearer Authorization Header' });
         return;
     }
 
@@ -15,7 +16,7 @@ const validateJWT = (tokenDetails: string[], neededData: string[] = ['data']) =>
         });
         return;
     }
-    const tokenValidationResult: any = Token.validateToken(token, tokenDetails[0], tokenDetails[1]);
+    const tokenValidationResult: any = Token.validateToken(token, types, tokenSecret);
 
     if (tokenValidationResult.error === true) {
         if (tokenValidationResult.decodingError) {
@@ -34,8 +35,9 @@ const validateJWT = (tokenDetails: string[], neededData: string[] = ['data']) =>
             return;
         }
     }
-    
-    for (let item of neededData) {        
+
+
+    for (let item of neededData) {
         res.locals[item] = tokenValidationResult.decoded[item];
     }
     next();

@@ -64,10 +64,21 @@ export default class OTP {
         if(cacheResult.error){
             return Service.responseData(500, cacheResult.error, http("500")!);
         }
+        
+        if(!cacheResult.otpCode){
+            return Service.responseData(404, true, "OTP code was no found");
+        }
 
         const validOTPCode = cacheResult.otpCode === otpCode;
         const message = validOTPCode ? "Email has been verified successfully" : "Invalid otp";
         const statusCode = validOTPCode ? 200 : 401;
         return Service.responseData(statusCode, false,message);
+    }
+
+    public async deleteOTP(){
+        const deleted: boolean = await OTPCache.delete(this.email);
+        const message: string | null = deleted ? null : http("500")!;
+        const statusCode: number = deleted ? 500 : 200;
+        return Service.responseData(statusCode, !deleted    , message);
     }
 }

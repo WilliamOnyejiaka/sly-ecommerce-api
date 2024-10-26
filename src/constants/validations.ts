@@ -2,6 +2,7 @@
 export default function validations(key: string){
 
     return {
-        'phoneNumber': "invalid phone number format"
+        'phoneNumber': "Invalid phone number format",
+        '400Email': "Email already exists"
     }[key]
 }

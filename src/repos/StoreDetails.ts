@@ -1,10 +1,11 @@
 import prisma from ".";
+import { StoreDetailsDto } from "../types/dtos";
 
 export default class StoreDetails {
 
-    static async insert(storeData: any) {
+    static async insert(storeDetailsDto: StoreDetailsDto) {
         try {
-            const newStore = await prisma.storeDetails.create({ data: storeData});
+            const newStore = await prisma.storeDetails.create({ data: storeDetailsDto as any});
             return newStore;
         } catch (error) {
             console.error("Failed to create store: ", error);
@@ -41,7 +42,7 @@ export default class StoreDetails {
             });
             return {
                 error: false,
-                data: store
+                data: store as StoreDetailsDto
             };
         } catch (error) {
             console.error("Failed to find store with vendor id: ", error);
@@ -61,7 +62,7 @@ export default class StoreDetails {
             });
             return {
                 error: false,
-                data: store
+                data: store as StoreDetailsDto
             };
         } catch (error) {
             console.error("Failed to find store with id: ", error);

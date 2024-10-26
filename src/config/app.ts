@@ -1,15 +1,22 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { corsConfig, env } from ".";
-import { auth, vendor,store } from "./../routes";
+import { auth, vendor, store } from "./../routes";
 import { Email } from "../services";
 import path from "path";
 import ejs from "ejs";
-import { validateJWT, validateUser, handleErrors, secureApi, redisClientMiddleware } from "./../middlewares";
+import { validateJWT, validateUser, handleMulterErrors, secureApi, redisClientMiddleware } from "./../middlewares";
 import Redis from "ioredis";
+import asyncHandler from "express-async-handler";
+import { Admin } from "../controllers";
+import { VendorCache } from "../cache";
+import { Vendor as VendorRepo } from "../repos";
+
 
 function createApp() {
     const app: Application = express();
+    const vendorRepo: VendorRepo = new VendorRepo();
+    const vendorCache: VendorCache = new VendorCache();
 
     app.use(express.urlencoded({ extended: true }));
     app.use(corsConfig);
@@ -17,8 +24,15 @@ function createApp() {
     app.use(morgan("combined"));
     // app.use(secureApi); TODO: uncomment this
     app.use("/api/v1/auth", auth);
-    app.use("/api/v1/vendor", validateJWT(["access", env("tokenSecret")!]) ,vendor);
-    app.use("/api/v1/store", validateJWT(["access", env("tokenSecret")!]), store);
+    app.use(
+        "/api/v1/vendor",
+        validateJWT(["vendor"], env("tokenSecret")!),
+        validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
+        vendor
+    );
+    app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), store);
+    app.get("/api/v1/admin/default-admin", asyncHandler(Admin.defaultAdmin));
+    app.use("/api/v1/admin", validateJWT(["superAdmin"], env("tokenSecret")!), store);
 
 
     app.post("/test2", async (req: Request, res: Response) => {
@@ -60,8 +74,7 @@ function createApp() {
         }
     });
 
-    app.use(handleErrors);
-
+    app.use(handleMulterErrors);
     return app;
 }
 

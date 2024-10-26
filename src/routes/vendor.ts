@@ -6,11 +6,22 @@ import asyncHandler from "express-async-handler";
 const vendor: Router = Router();
 
 vendor.post(
-    "/add-profile-pic",
+    "/upload-profile-pic",
     uploads.single("image"),
     asyncHandler(Vendor.addProfilePicture)
 );
-// auth.get("/google", Auth.oauthRedirect);
-// auth.get("/google/callback", Auth.oauthCallback);
+
+vendor.patch(
+    "/update-first-name",
+    validateBody(['firstName']),
+    asyncHandler(Vendor.updateFirstName)
+);
+
+vendor.patch(
+    "/update-last-name",
+    validateBody(['lastName']),
+    asyncHandler(Vendor.updateLastName)
+);
+
 
 export default vendor;

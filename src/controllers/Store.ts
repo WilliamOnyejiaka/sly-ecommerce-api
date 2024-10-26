@@ -1,79 +1,64 @@
 import { Request, Response } from "express";
 import { Store as StoreService } from "../services";
 import { http } from "../constants";
+import { idValidator } from "../validators";
+import { StoreDetailsDto } from "../types/dtos";
 
 export default class Store {
 
     public static async createStore(req: Request, res: Response) {
-        const { name, address } = req.body;
-        const vendorId = Number(res.locals.data.id);
+        const storeDetailsDto: StoreDetailsDto = req.body;
+        storeDetailsDto.vendorId = Number(res.locals.data.id);
 
-        const storeExists = await StoreService.storeExists(vendorId);
-        if(storeExists.json.error){
+        const storeExists = await StoreService.storeExists(storeDetailsDto.vendorId);
+        if (storeExists.json.error) {
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
 
-        const nameExists = await StoreService.storeNameExists(name);
+        const nameExists = await StoreService.storeNameExists(storeDetailsDto.name);
         if (nameExists.json.error) {
             res.status(nameExists.statusCode).json(nameExists.json);
             return;
         }
-        const serviceResult = await StoreService.createStore(name, address, vendorId);
+        const serviceResult = await StoreService.createStore(storeDetailsDto);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
     public static async addStoreLogo(req: Request, res: Response) {
         const image = req.file!;
-        const storeId = Number(req.params.storeId);
+        const idResult = idValidator(req.params.storeId);
 
-        const storeExists = await StoreService.getStoreWithId(storeId);
+        if (idResult.error) {
+            res.status(400).json(idResult);
+            return;
+        }
+
+        const storeExists = await StoreService.getStoreWithId(idResult.id);
         if (storeExists.json.error) {
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
-
-        const serviceResult = await StoreService.addStoreLogo(image, storeId);
+        const serviceResult = await StoreService.addStoreLogo(image, idResult.id);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
-    public static async addBanners(req: Request, res: Response){
+    public static async addBanners(req: Request, res: Response) {
         const images = req.files!;
-        const storeId = Number(req.params.storeId);  
-        let foundBanners: boolean[] = []; 
+        const idResult = idValidator(req.params.storeId);
 
-        try{
-            for (const banner of images as Express.Multer.File[]){
-                if ([
-                    "firstBanner",
-                    "secondBanner"
-                ].includes(banner.fieldname)){
-                    foundBanners.push(true);
-                }
-            }
-
-            if(foundBanners.length < 1){
-                res.status(400).json({
-                    error: true,
-                    message: "All"
-                });
-                return;
-            }
-        }catch(error){
-            res.status(500).json({
-                error: true,
-                message: http("500")
-            });
+        if (idResult.error) {
+            res.status(400).json(idResult);
             return;
         }
 
-        const storeExists = await StoreService.getStoreWithId(storeId);
+        const storeExists = await StoreService.getStoreWithId(idResult.id);
         if (storeExists.json.error) {
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
 
-        const serviceResult = await StoreService.addBanners(images as Express.Multer.File[], storeId);
+        const serviceResult = await StoreService.addBanners(images as Express.Multer.File[], idResult.id);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 }

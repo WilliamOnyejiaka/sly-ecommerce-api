@@ -6,8 +6,10 @@ import { convertImage } from "../utils";
 
 export default class Vendor {
 
+    private static readonly repo: VendorRepo = new VendorRepo();;
+
     public static async emailExists(email: string) {
-        const emailExists = await VendorRepo.getVendorWithEmail(email);
+        const emailExists = await Vendor.repo.getVendorWithEmail(email);
 
         if (emailExists.error) {
             return Service.responseData(500, true, http("500") as string);
@@ -20,7 +22,7 @@ export default class Vendor {
     }
 
     public static async getVendorWithEmail(email: string) {
-        const repoResult = await VendorRepo.getVendorWithEmail(email);
+        const repoResult = await Vendor.repo.getVendorWithEmail(email);
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
         }
@@ -28,7 +30,7 @@ export default class Vendor {
         const vendor = repoResult.data;
         const statusCode = vendor ? 200 : 404;
         const error: boolean = vendor ? false : true;
-        const message = error ? http("404")! : "Vendor has been retrieve";
+        const message = error ? http("404")! : "Vendor has been retrieved";
 
         return Service.responseData(statusCode, error, message, vendor);
     }
@@ -67,5 +69,29 @@ export default class Vendor {
                 true,
                 http("500")!,
             );
+    }
+
+    public static async updateFirstName(id: number,firstName: string) {
+        const repoResult = await Vendor.repo.updateFirstName(id,firstName);
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.updated ? 200 : 500;
+        const message = !repoResult.updated ? http("500")! : "Vendor has been updated successfully";
+
+        return Service.responseData(statusCode, !repoResult.updated, message);
+    }
+
+    public static async updateLastName(id: number, lastName: string) {
+        const repoResult = await Vendor.repo.updateLastName(id, lastName);
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.updated ? 200 : 500;
+        const message = !repoResult.updated ? http("500")! : "Vendor has been updated successfully";
+
+        return Service.responseData(statusCode, !repoResult.updated, message);
     }
 }

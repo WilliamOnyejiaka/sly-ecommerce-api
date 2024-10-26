@@ -16,6 +16,9 @@ export default function env(key: string) {
         'frontendRedirect': process.env.FRONTEND_REDIRECT!,
         'storedSalt': process.env.STORED_SALT!,
         'smtpPassword': process.env.SMTP_PASSWORD!,
-        'apiKey': process.env.API_KEY!
+        'apiKey': process.env.API_KEY!,
+        'defaultAdminPassword': process.env.DEFAULT_ADMIN_PASSWORD!,
+        'defaultAdminEmail': process.env.DEFAULT_ADMIN_EMAIL!
+
     }[key];
 }
