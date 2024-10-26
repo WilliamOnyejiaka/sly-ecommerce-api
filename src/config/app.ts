@@ -27,7 +27,7 @@ function createApp() {
     app.use(
         "/api/v1/vendor",
         validateJWT(["vendor"], env("tokenSecret")!),
-        validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
+        // validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
         vendor
     );
     app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), store);
