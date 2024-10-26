@@ -30,7 +30,7 @@ model VendorProfilePicture {
   picture   String   @db.LongText
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  vendor    Vendor   @relation(fields: [vendorId], references: [id])
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   vendorId  Int      @unique
 }
 
