@@ -18,6 +18,9 @@ const validateJWT = (types: string[], tokenSecret: string, neededData: string[] 
     }
     const tokenValidationResult: any = Token.validateToken(token, types, tokenSecret);
 
+    console.log(tokenValidationResult);
+    
+
     if (tokenValidationResult.error === true) {
         if (tokenValidationResult.decodingError) {
             res.status(400).json({
