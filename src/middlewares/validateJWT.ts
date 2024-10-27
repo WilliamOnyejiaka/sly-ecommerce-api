@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { Token } from '../services';
-import { CustomError } from '../utils';
 
 const validateJWT = (types: string[], tokenSecret: string, neededData: string[] = ['data']) => (req: Request, res: Response, next: NextFunction) => {
     if (!req.headers.authorization || req.headers.authorization.indexOf('Bearer ') === -1) {
