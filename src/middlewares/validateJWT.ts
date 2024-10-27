@@ -17,7 +17,7 @@ const validateJWT = (types: string[], tokenSecret: string, neededData: string[] 
             error: true,
             message: "Token missing"
         });
-        return;
+        // return;
     }
     const tokenValidationResult: any = Token.validateToken(token, types, tokenSecret);
 
@@ -30,7 +30,7 @@ const validateJWT = (types: string[], tokenSecret: string, neededData: string[] 
                 error: true,
                 message: tokenValidationResult.decodingError,
             });
-            return;
+            // return;
         }
 
         if (tokenValidationResult.typeError) {
@@ -38,7 +38,7 @@ const validateJWT = (types: string[], tokenSecret: string, neededData: string[] 
                 error: true,
                 message: tokenValidationResult.typeError,
             });
-            return;
+            // return;
         }
     }
 
