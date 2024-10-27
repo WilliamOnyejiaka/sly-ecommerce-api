@@ -10,6 +10,7 @@ export default class OTP {
     private readonly email: string;
     private readonly templateData: any;
     private otpCode!: string;
+    private otpCache: OTPCache = new OTPCache();
 
     constructor(email: string, templateData: any=null){
         this.email = email;
@@ -23,7 +24,7 @@ export default class OTP {
     }
 
     private async storeOTP() {
-        return await OTPCache.set(this.email,this.otpCode);
+        return await this.otpCache.set(this.email,this.otpCode);
     }
 
     private async sendOTP() {
@@ -59,7 +60,7 @@ export default class OTP {
     }
 
     public async confirmOTP(otpCode: string) {
-        const cacheResult = await OTPCache.get(this.email);
+        const cacheResult = await this.otpCache.get(this.email);
         
         if(cacheResult.error){
             return Service.responseData(500, cacheResult.error, http("500")!);
@@ -76,7 +77,7 @@ export default class OTP {
     }
 
     public async deleteOTP(){
-        const deleted: boolean = await OTPCache.delete(this.email);
+        const deleted: boolean = await this.otpCache.delete(this.email);
         const message: string | null = deleted ? null : http("500")!;
         const statusCode: number = deleted ? 500 : 200;
         return Service.responseData(statusCode, !deleted    , message);

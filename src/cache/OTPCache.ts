@@ -1,14 +1,15 @@
 import constants from "../constants";
+import Cache from "../interfaces/Cache";
 import {redisClient} from "./../config";
 
-export default class OTPCache {
+export default class OTPCache implements Cache {
 
-    private static readonly preKey: string = "otp";
-    private static readonly expirationTime: number = 900;
+    private readonly preKey: string = "otp";
+    private readonly expirationTime: number = 900;
 
-    public static async set(email: string,otpCode: string){
+    public async set(email: string,otpCode: string){
         try{
-            const success = await redisClient.set(`${this.preKey}-${email}`,otpCode,'EX',OTPCache.expirationTime);
+            const success = await redisClient.set(`${this.preKey}-${email}`,otpCode,'EX',this.expirationTime);
             return success === "OK";
         }catch(error){
             console.error(`${constants("failedCache")}: ${error}`);
@@ -16,7 +17,7 @@ export default class OTPCache {
         }
     }
 
-    public static async get(email: string){
+    public async get(email: string){
         try{
             const otpCode = await redisClient.get(`${this.preKey}-${email}`);
             return {
@@ -32,7 +33,7 @@ export default class OTPCache {
         }
     }
 
-    public static async delete(email: string){
+    public async delete(email: string){
         try {
             const result = await redisClient.del(`${this.preKey}-${email}`);
             return result === 1 ? true : false;

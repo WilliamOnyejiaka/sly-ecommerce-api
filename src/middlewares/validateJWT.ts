@@ -15,10 +15,7 @@ const validateJWT = (types: string[], tokenSecret: string, neededData: string[] 
         });
         return;
     }
-    const tokenValidationResult: any = Token.validateToken(token, types, tokenSecret);
-
-    console.log(tokenValidationResult);
-    
+    const tokenValidationResult: any = Token.validateToken(token, types, tokenSecret);    
 
     if (tokenValidationResult.error === true) {
         if (tokenValidationResult.decodingError) {
