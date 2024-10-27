@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { Token } from '../services';
 
 const validateJWT = (types: string[], tokenSecret: string, neededData: string[] = ['data']) => (req: Request, res: Response, next: NextFunction) => {
+    console.log("Hello World");
+    
     if (!req.headers.authorization || req.headers.authorization.indexOf('Bearer ') === -1) {
         res.status(401).json({ error: true, message: 'Missing Bearer Authorization Header' });
         return;

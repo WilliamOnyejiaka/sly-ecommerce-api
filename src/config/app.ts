@@ -31,7 +31,7 @@ function createApp() {
         vendor
     );
     app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), store);
-    app.get("/api/v1/admin/default-admin", asyncHandler(Admin.defaultAdmin));
+    // app.get("/api/v1/admin/default-admin", asyncHandler(Admin.defaultAdmin));
     app.use("/api/v1/admin", validateJWT(["superAdmin"], env("tokenSecret")!), store);
 
 
