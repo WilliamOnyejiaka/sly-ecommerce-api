@@ -11,6 +11,8 @@ const validateJWT = (types: string[], tokenSecret: string, neededData: string[] 
 
     const token = req.headers.authorization.split(' ')[1];
     if (!token) {
+        console.log("token missing");
+        
         res.status(401).json({
             error: true,
             message: "Token missing"

@@ -24,12 +24,10 @@ function createApp() {
     app.use(morgan("combined"));
     // app.use(secureApi); TODO: uncomment this
     app.use("/api/v1/auth", auth);
-    app.use(
-        "/api/v1/vendor",
-        validateJWT(["vendor"], env("tokenSecret")!),
-        // validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
-        vendor
-    );
+    app.use("/api/v1/vendor", validateJWT(["vendor"], env("tokenSecret")!),vendor);
+    // app.use("/api/v1/vendor",validateJWT(["vendor"], env("tokenSecret")!),// validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
+    //     vendor
+    // );
     app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), store);
     // app.get("/api/v1/admin/default-admin", asyncHandler(Admin.defaultAdmin));
     app.use("/api/v1/admin", validateJWT(["superAdmin"], env("tokenSecret")!), store);
