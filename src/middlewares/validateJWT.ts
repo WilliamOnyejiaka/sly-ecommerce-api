@@ -6,10 +6,10 @@ const validateJWT = (types: string[], tokenSecret: string, neededData: string[] 
     
     if (!req.headers.authorization || req.headers.authorization.indexOf('Bearer ') === -1) {
         res.status(401).json({ error: true, message: 'Missing Bearer Authorization Header' });
-        return;
+        // return;
     }
 
-    const token = req.headers.authorization.split(' ')[1];
+    const token = req.headers.authorization!.split(' ')[1];
     if (!token) {
         console.log("token missing");
         
