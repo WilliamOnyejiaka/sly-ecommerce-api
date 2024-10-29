@@ -2,7 +2,7 @@ import prisma from ".";
 
 export default class VendorProfilePicture {
 
-    static async insert(pictureData: any) { // TODO: create a separate type for this
+    public async insert(pictureData: any) { // TODO: create a separate type for this
         try {
             const newVendorProfilePicture = await prisma.vendorProfilePicture.upsert({
                 where: { vendorId: pictureData.vendorId },
@@ -23,7 +23,7 @@ export default class VendorProfilePicture {
         }
     }
 
-    static async getProfilePicture(vendorId: number) {
+    public async getProfilePicture(vendorId: number) {
         try {
             const profilePicture = await prisma.vendorProfilePicture.findUnique({
                 where: {

@@ -8,7 +8,7 @@ const origins: string[] = [
 
 const corsConfig = cors({
     origin: origins,
-    credentials: true
+    // credentials: true
 });
 
 export default corsConfig;

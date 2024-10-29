@@ -7,6 +7,8 @@ import { StoreDetailsDto } from "../types/dtos";
 
 export default class Store {
 
+    private static readonly storeLogoRepo: StoreLogo = new StoreLogo();
+
     public static async createStore(storeDetailsDto: StoreDetailsDto) {
 
         const repoResult = await StoreDetails.insert(storeDetailsDto);
@@ -46,9 +48,9 @@ export default class Store {
 
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
-        }        
+        }
 
-        const statusCode = repoResult.data  ? 200 : 404;
+        const statusCode = repoResult.data ? 200 : 404;
         const error: boolean = repoResult.data ? false : true;
 
         return Service.responseData(
@@ -59,7 +61,7 @@ export default class Store {
         );
     }
 
-    public static async addStoreLogo(image: Express.Multer.File, storeId: number) {
+    public static async uploadStoreLogo(image: Express.Multer.File, storeId: number) {
         const result = await processImage(image);
 
         if (result.error) {
@@ -71,7 +73,7 @@ export default class Store {
             );
         }
 
-        const repoResult = await StoreLogo.insert({
+        const repoResult = await Store.storeLogoRepo.insert({
             mimeType: mime.lookup(image.path),
             picture: result.data,
             storeId: storeId
@@ -90,7 +92,7 @@ export default class Store {
             );
     }
 
-    public static async addBanners(banners: Express.Multer.File[], storeId: number) {
+    public static async uploadBanners(banners: Express.Multer.File[], storeId: number) {
         let base64Banners: any = {
             firstBanner: null,
             secondBanner: null
@@ -134,5 +136,28 @@ export default class Store {
                 true,
                 http("500")!,
             );
+    }
+
+    public static async getStoreLogo(storeId: any) {
+        const repoResult = await Store.storeLogoRepo.getStoreLogo(storeId);
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.data ? 200 : 404;
+        const error: boolean = repoResult.data ? false : true;
+
+        // if(repoResult.data){
+        //     const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
+
+        //     return Service.responseData(statusCode, error, null,{
+        //         imageBuffer: imageBuffer,
+        //         bufferLength: imageBuffer.length,
+        //         mimeType: (repoResult.data as any).mimeType
+        //     });
+        // }
+
+        return Service.responseData(statusCode, error, null, repoResult.data);
+
     }
 }

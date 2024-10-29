@@ -1,12 +1,13 @@
 import mime from "mime";
 import Service from ".";
-import { http } from "../constants";
+import constants, { http } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
 import { convertImage } from "../utils";
 
 export default class Vendor {
 
-    private static readonly repo: VendorRepo = new VendorRepo();;
+    private static readonly repo: VendorRepo = new VendorRepo();
+    private static readonly profilePicRepo = new VendorProfilePicture();
 
     public static async emailExists(email: string) {
         const emailExists = await Vendor.repo.getVendorWithEmail(email);
@@ -52,7 +53,7 @@ export default class Vendor {
             );
         }
 
-        const repoResult = await VendorProfilePicture.insert({
+        const repoResult = await Vendor.profilePicRepo.insert({
             mimeType: mimeType,
             picture: result.data,
             vendorId: vendorId
@@ -71,14 +72,14 @@ export default class Vendor {
             );
     }
 
-    public static async updateFirstName(id: number,firstName: string) {
-        const repoResult = await Vendor.repo.updateFirstName(id,firstName);
+    public static async updateFirstName(id: number, firstName: string) {
+        const repoResult = await Vendor.repo.updateFirstName(id, firstName);
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
         }
 
         const statusCode = repoResult.updated ? 200 : 500;
-        const message = !repoResult.updated ? http("500")! : "Vendor has been updated successfully";
+        const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
 
         return Service.responseData(statusCode, !repoResult.updated, message);
     }
@@ -90,8 +91,64 @@ export default class Vendor {
         }
 
         const statusCode = repoResult.updated ? 200 : 500;
-        const message = !repoResult.updated ? http("500")! : "Vendor has been updated successfully";
+        const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
 
         return Service.responseData(statusCode, !repoResult.updated, message);
+    }
+
+    public static async updateEmail(id: number, email: string) {
+        const emailExists = await Vendor.repo.getVendorWithEmail(email);
+        if (emailExists.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        if (emailExists.data) {
+            return Service.responseData(400, true, "Email already exists.");
+        }
+
+        const repoResult = await Vendor.repo.updateEmail(id, email);
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.updated ? 200 : 500;
+        const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
+
+        return Service.responseData(statusCode, !repoResult.updated, message);
+    }
+
+    public static async delete(id: number) {
+        const repoResult = await Vendor.repo.updateLastName(id, "lastName");
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.updated ? 200 : 500;
+        const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
+
+        return Service.responseData(statusCode, !repoResult.updated, message);
+    }
+
+    public static async getProfilePic(id: any) {
+        const repoResult = await Vendor.profilePicRepo.getProfilePicture(id);
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.data ? 200 : 404;
+        const error: boolean = repoResult.data ? false : true;
+
+        // if(repoResult.data){
+        //     const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
+
+        //     return Service.responseData(statusCode, error, null,{
+        //         imageBuffer: imageBuffer,
+        //         bufferLength: imageBuffer.length,
+        //         mimeType: (repoResult.data as any).mimeType
+        //     });
+        // }
+
+        return Service.responseData(statusCode, error, null,repoResult.data);
+
     }
 }

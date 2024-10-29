@@ -43,11 +43,11 @@ export default class Vendor implements Repository {
         }
     }
 
-    public async getUserWithEmail(email: string){
+    public async getUserWithEmail(email: string) {
         return await this.getVendorWithEmail(email);
     }
 
-    private async update(idOrEmail: number | string,data: UpdateData){
+    private async update(idOrEmail: number | string, data: UpdateData) {
         const where = typeof idOrEmail == "number" ? { id: idOrEmail } : { email: idOrEmail };
         try {
             const vendor = await prisma.vendor.update({
@@ -68,36 +68,39 @@ export default class Vendor implements Repository {
         }
     }
 
-    public async updateFirstName(id: number,firstName: string){
-        return await this.update(id,{firstName: firstName});
+    public async updateFirstName(id: number, firstName: string) {
+        return await this.update(id, { firstName: firstName });
     }
 
     public async updateLastName(id: number, lastName: string) {
         return await this.update(id, { lastName: lastName });
     }
 
+    public async updateEmail(id: number, email: string) {
+        return await this.update(id, { email: email, verified: false });
+    }
+
     public async updateVerifiedStatus(email: string) {
         return await this.update(email, { verified: true });
-        // try {
-        //     const vendor = await prisma.vendor.update({
-        //         where: {
-        //             email: email,
-        //         },
-        //         data: {
-        //             verified: true,
-        //         },
-        //     });
+    }
 
-        //     return {
-        //         error: false,
-        //         updated: true
-        //     };
-        // } catch (error) {
-        //     console.error("Failed to update vendor verified status: ", error);
-        //     return {
-        //         error: true,
-        //         updated: false
-        //     };
-        // }
+    public async delete(id: number){
+        try {
+            const vendor = await prisma.vendor.delete({
+                where: {
+                    id: id
+                }
+            });
+            return {
+                error: false,
+                updated: true
+            };
+        } catch (error) {
+            console.error("Failed to update vendor: ", error);
+            return {
+                error: true,
+                updated: false
+            };
+        }
     }
 }

@@ -11,7 +11,9 @@ export default async function convertImage(
         await sharp(filePath).toFile(outputPath);
 
         const fileData = fs.readFileSync(outputPath);
-        const base64Data = `data:${mimetype};base64,` + fileData.toString("base64");
+        // const base64Data = `data:${mimetype};base64,` + fileData.toString("base64");
+        const base64Data = fileData.toString("base64");
+
 
         if (fs.existsSync(filePath) && fs.existsSync(outputPath)) {
             fs.unlinkSync(outputPath);

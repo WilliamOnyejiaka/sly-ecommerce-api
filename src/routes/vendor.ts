@@ -23,5 +23,20 @@ vendor.patch(
     asyncHandler(Vendor.updateLastName)
 );
 
+vendor.patch(
+    "/update-email",
+    validateBody(['email']),
+    asyncHandler(Vendor.updateEmail)
+);
+
+vendor.get(
+    "/",
+    asyncHandler(Vendor.getVendor)
+);
+
+vendor.delete(
+    "/",
+    asyncHandler(Vendor.deleteVendor)
+);
 
 export default vendor;

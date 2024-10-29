@@ -2,7 +2,7 @@ import prisma from ".";
 
 export default class StoreLogo {
 
-    static async insert(pictureData: any) { // TODO: create a separate type for this
+    public async insert(pictureData: any) { // TODO: create a separate type for this
         try {
             const newStoreLogo = await prisma.storeLogo.upsert({
                 where: { storeId: pictureData.storeId},
@@ -23,7 +23,7 @@ export default class StoreLogo {
         }
     }
 
-    static async getStoreLogo(storeId: number) {
+    public async getStoreLogo(storeId: number) {
         try {
             const storeLogo = await prisma.storeLogo.findUnique({
                 where: {

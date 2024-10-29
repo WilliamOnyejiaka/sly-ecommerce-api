@@ -3,5 +3,6 @@ import randomInt from "./randomInt";
 import convertImage from "./convertImage";
 import processImage from "./processImage";
 import CustomError from "./CustomError";
+import baseUrl from "./baseUrl";
 
-export { Password, randomInt, convertImage, processImage, CustomError };
+export { Password, randomInt, convertImage, processImage, CustomError, baseUrl };

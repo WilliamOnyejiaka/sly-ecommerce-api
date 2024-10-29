@@ -50,39 +50,39 @@ export default class Admin {
         return Service.responseData(statusCode, error, error ? constants("400Email")! : null);
     }
 
-    public static async addProfilePicture(image: Express.Multer.File, vendorId: number) {
-        const filePath = image.path;
-        const outputPath = `compressed/${image.filename}`;
-        const mimeType = mime.lookup(filePath);
-        const fileName = image.filename;
+    // public static async addProfilePicture(image: Express.Multer.File, vendorId: number) {
+    //     const filePath = image.path;
+    //     const outputPath = `compressed/${image.filename}`;
+    //     const mimeType = mime.lookup(filePath);
+    //     const fileName = image.filename;
 
-        const result = await convertImage(fileName, filePath, outputPath, mimeType);
+    //     const result = await convertImage(fileName, filePath, outputPath, mimeType);
 
-        if (result.error) {
-            console.error(result.message);
-            return Service.responseData(
-                500,
-                true,
-                http("500")!,
-            );
-        }
+    //     if (result.error) {
+    //         console.error(result.message);
+    //         return Service.responseData(
+    //             500,
+    //             true,
+    //             http("500")!,
+    //         );
+    //     }
 
-        const repoResult = await VendorProfilePicture.insert({
-            mimeType: mimeType,
-            picture: result.data,
-            vendorId: vendorId
-        });
+    //     const repoResult = await VendorProfilePicture.insert({
+    //         mimeType: mimeType,
+    //         picture: result.data,
+    //         vendorId: vendorId
+    //     });
 
-        return repoResult ?
-            Service.responseData(
-                201,
-                false,
-                "profile picture was created successfully"
-            ) :
-            Service.responseData(
-                500,
-                true,
-                http("500")!,
-            );
-    }
+    //     return repoResult ?
+    //         Service.responseData(
+    //             201,
+    //             false,
+    //             "profile picture was created successfully"
+    //         ) :
+    //         Service.responseData(
+    //             500,
+    //             true,
+    //             http("500")!,
+    //         );
+    // }
 }

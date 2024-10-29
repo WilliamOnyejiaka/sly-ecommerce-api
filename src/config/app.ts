@@ -1,7 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { corsConfig, env } from ".";
-import { auth, vendor, store } from "./../routes";
+import { auth, vendor, store, image } from "./../routes";
 import { Email } from "../services";
 import path from "path";
 import ejs from "ejs";
@@ -11,6 +11,8 @@ import asyncHandler from "express-async-handler";
 import { Admin } from "../controllers";
 import { VendorCache } from "../cache";
 import { Vendor as VendorRepo } from "../repos";
+import cors from "cors";
+import { baseUrl } from "../utils";
 
 
 function createApp() {
@@ -19,9 +21,10 @@ function createApp() {
     const vendorCache: VendorCache = new VendorCache();
 
     app.use(express.urlencoded({ extended: true }));
-    app.use(corsConfig);
+    app.use(cors());
     app.use(express.json());
     app.use(morgan("combined"));
+    app.use("/api/v1/image", image);
     // app.use(secureApi); TODO: uncomment this
     app.use("/api/v1/auth", auth);
     app.use(
@@ -51,27 +54,11 @@ function createApp() {
         });
     });
 
-
-
     app.get("/test1", async (req: Request, res: Response) => {
-        const redisClient: Redis = res.locals.redisClient;
-        try {
-            await redisClient.set("user", JSON.stringify("hello World"));
-
-            const data = await redisClient.get("user");
-            console.log(data);
-
-            res.status(200).json({
-                'error': false,
-                'message': data
-            });
-        } catch (error) {
-            console.error(error);
-            res.status(200).json({
-                'error': false,
-                'message': "error"
-            });
-        }
+        const protocol = req.protocol; // 'http' or 'https'
+        const host = req.get("host");
+        const fullUrl = `${protocol}://${host}${req.originalUrl}`;
+        res.send(`Full URL: ${baseUrl(req)}`);
     });
 
     app.use(handleMulterErrors);

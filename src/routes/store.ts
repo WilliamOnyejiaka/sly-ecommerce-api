@@ -13,13 +13,13 @@ store.post("/create-store", validateBody([
 store.post(
     "/upload-logo/:storeId",
     uploads.single("logo"),
-    asyncHandler(Store.addStoreLogo)
+    asyncHandler(Store.uploadStoreLogo)
 );
 
 store.post(
     "/upload-banners/:storeId",
     bannerUploads.any(),
-    asyncHandler(Store.addBanners)
+    asyncHandler(Store.uploadBanners)
 );
 
 export default store;
