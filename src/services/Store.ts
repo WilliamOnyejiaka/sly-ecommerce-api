@@ -1,6 +1,6 @@
 import mime from "mime";
 import Service from ".";
-import { http } from "../constants";
+import { http, urls } from "../constants";
 import { convertImage, processImage } from "../utils";
 import { Banner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
@@ -61,7 +61,7 @@ export default class Store {
         );
     }
 
-    public static async uploadStoreLogo(image: Express.Multer.File, storeId: number) {
+    public static async uploadStoreLogo(image: Express.Multer.File, storeId: number, baseUrl: string) {
         const result = await processImage(image);
 
         if (result.error) {
@@ -79,11 +79,14 @@ export default class Store {
             storeId: storeId
         });
 
+        const imageUrl = baseUrl + urls("baseImageUrl")! + urls("storeLogo")!.split(":")[0] + storeId;
+
         return repoResult ?
             Service.responseData(
                 201,
                 false,
-                "store logo was created successfully"
+                "store logo was created successfully",
+                {imageUrl: imageUrl}
             ) :
             Service.responseData(
                 500,
@@ -92,7 +95,7 @@ export default class Store {
             );
     }
 
-    public static async uploadBanners(banners: Express.Multer.File[], storeId: number) {
+    public static async uploadBanners(banners: Express.Multer.File[], storeId: number, baseUrl: string) {
         let base64Banners: any = {
             firstBanner: null,
             secondBanner: null
@@ -125,11 +128,19 @@ export default class Store {
 
         const repoResult = await Banner.insertFirstStoreBanner(base64Banners.firstBanner);
         const repoResult1 = await Banner.insertSecondStoreBanner(base64Banners.secondBanner);
+        const firstStoreBannerUrl = baseUrl + urls("baseImageUrl")! + urls("firstBanner")!.split(":")[0] + storeId;
+        const secondStoreBannerUrl = baseUrl + urls("baseImageUrl")! + urls("secondBanner")!.split(":")[0] + storeId;
+
+
         return repoResult && repoResult1 ?
             Service.responseData(
                 201,
                 false,
-                "banners were created successfully"
+                "banners were created successfully",
+                {
+                    firstStoreBannerUrl: firstStoreBannerUrl,
+                    secondStoreBannerUrl: secondStoreBannerUrl
+                }
             ) :
             Service.responseData(
                 500,
@@ -147,17 +158,38 @@ export default class Store {
         const statusCode = repoResult.data ? 200 : 404;
         const error: boolean = repoResult.data ? false : true;
 
-        // if(repoResult.data){
-        //     const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
+        if(repoResult.data){
+            const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
 
-        //     return Service.responseData(statusCode, error, null,{
-        //         imageBuffer: imageBuffer,
-        //         bufferLength: imageBuffer.length,
-        //         mimeType: (repoResult.data as any).mimeType
-        //     });
-        // }
+            return Service.responseData(statusCode, error, null,{
+                imageBuffer: imageBuffer,
+                bufferLength: imageBuffer.length,
+                mimeType: (repoResult.data as any).mimeType
+            });
+        }
 
         return Service.responseData(statusCode, error, null, repoResult.data);
+    }
 
+    public static async getFirstStoreBanner(storeId: any) {
+        const repoResult = await Store.storeLogoRepo.getStoreLogo(storeId);
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.data ? 200 : 404;
+        const error: boolean = repoResult.data ? false : true;
+
+        if (repoResult.data) {
+            const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
+
+            return Service.responseData(statusCode, error, null, {
+                imageBuffer: imageBuffer,
+                bufferLength: imageBuffer.length,
+                mimeType: (repoResult.data as any).mimeType
+            });
+        }
+
+        return Service.responseData(statusCode, error, null, repoResult.data);
     }
 }

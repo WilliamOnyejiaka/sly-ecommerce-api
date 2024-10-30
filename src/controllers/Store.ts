@@ -4,6 +4,7 @@ import constants, { http } from "../constants";
 import { idValidator } from "../validators";
 import { StoreDetailsDto } from "../types/dtos";
 import * as fs from "fs";
+import { baseUrl } from "../utils";
 
 export default class Store {
 
@@ -48,8 +49,9 @@ export default class Store {
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
-        
-        const serviceResult = await StoreService.uploadStoreLogo(image, idResult.id);
+
+        const baseServerUrl = baseUrl(req);
+        const serviceResult = await StoreService.uploadStoreLogo(image, idResult.id,baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -70,7 +72,8 @@ export default class Store {
             return;
         }
 
-        const serviceResult = await StoreService.uploadBanners(images as Express.Multer.File[], idResult.id);
+        const baseServerUrl = baseUrl(req);
+        const serviceResult = await StoreService.uploadBanners(images as Express.Multer.File[], idResult.id, baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -88,12 +91,10 @@ export default class Store {
             return;
         }
 
-        const imgBuffer = Buffer.from(serviceResult.json.data.picture, 'base64');
-
         res.writeHead(serviceResult.statusCode, {
             'Content-Type': serviceResult.json.data.mimeType,
-            'Content-Length': imgBuffer.length
+            'Content-Length': serviceResult.json.data.bufferLength
         })
-            .end(imgBuffer);
+            .end(serviceResult.json.data.imageBuffer);
     }
 }

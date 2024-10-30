@@ -2,13 +2,15 @@ import { Request, Response } from "express";
 import { Vendor as VendorService } from "../services";
 import { idValidator } from "../validators";
 import constants, { http } from "../constants";
+import { baseUrl } from "../utils";
 
 export default class Vendor {
 
     public static async addProfilePicture(req: Request, res: Response) {
         const image = req.file!;
         const vendorId = Number(res.locals.data.id);
-        const serviceResult = await VendorService.addProfilePicture(image, vendorId);
+        const baseServerUrl = baseUrl(req);
+        const serviceResult = await VendorService.uploadProfilePicture(image, vendorId, baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -33,19 +35,11 @@ export default class Vendor {
         }
 
 
-        // res.writeHead(serviceResult.statusCode, {
-        //     'Content-Type': serviceResult.json.data.mimeType,
-        //     'Content-Length': serviceResult.json.data.length
-        // })
-        //     .end(serviceResult.json.data.imageBuffer);
-
-        const imgBuffer = Buffer.from(serviceResult.json.data.picture, 'base64');
-
         res.writeHead(serviceResult.statusCode, {
             'Content-Type': serviceResult.json.data.mimeType,
-            'Content-Length': imgBuffer.length
+            'Content-Length': serviceResult.json.data.bufferLength
         })
-            .end(imgBuffer);
+            .end(serviceResult.json.data.imageBuffer);
     }
 
     public static async updateFirstName(req: Request, res: Response) {

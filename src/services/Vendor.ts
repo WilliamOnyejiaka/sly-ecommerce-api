@@ -1,8 +1,9 @@
 import mime from "mime";
 import Service from ".";
-import constants, { http } from "../constants";
+import constants, { http, urls } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
 import { convertImage } from "../utils";
+import { Request } from "express";
 
 export default class Vendor {
 
@@ -36,7 +37,7 @@ export default class Vendor {
         return Service.responseData(statusCode, error, message, vendor);
     }
 
-    public static async addProfilePicture(image: Express.Multer.File, vendorId: number) {
+    public static async uploadProfilePicture(image: Express.Multer.File, vendorId: number, baseUrl: string) {
         const filePath = image.path;
         const outputPath = `compressed/${image.filename}`;
         const mimeType = mime.lookup(filePath);
@@ -59,11 +60,14 @@ export default class Vendor {
             vendorId: vendorId
         });
 
+        const imageUrl = baseUrl + urls("baseImageUrl")! + urls("vendorPic")!.split(":")[0] + vendorId;
+
         return repoResult ?
             Service.responseData(
                 201,
                 false,
-                "profile picture was created successfully"
+                "Profile picture was created successfully",
+                { imageUrl: imageUrl }
             ) :
             Service.responseData(
                 500,
@@ -138,17 +142,17 @@ export default class Vendor {
         const statusCode = repoResult.data ? 200 : 404;
         const error: boolean = repoResult.data ? false : true;
 
-        // if(repoResult.data){
-        //     const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
+        if(repoResult.data){
+            const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
 
-        //     return Service.responseData(statusCode, error, null,{
-        //         imageBuffer: imageBuffer,
-        //         bufferLength: imageBuffer.length,
-        //         mimeType: (repoResult.data as any).mimeType
-        //     });
-        // }
+            return Service.responseData(statusCode, error, null,{
+                imageBuffer: imageBuffer,
+                bufferLength: imageBuffer.length,
+                mimeType: (repoResult.data as any).mimeType
+            });
+        }
 
-        return Service.responseData(statusCode, error, null,repoResult.data);
+        return Service.responseData(statusCode, error, null, repoResult.data);
 
     }
 }

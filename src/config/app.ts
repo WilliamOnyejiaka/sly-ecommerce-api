@@ -13,6 +13,7 @@ import { VendorCache } from "../cache";
 import { Vendor as VendorRepo } from "../repos";
 import cors from "cors";
 import { baseUrl } from "../utils";
+import { urls } from "../constants";
 
 
 function createApp() {
@@ -24,7 +25,8 @@ function createApp() {
     app.use(cors());
     app.use(express.json());
     app.use(morgan("combined"));
-    app.use("/api/v1/image", image);
+    // app.use("/api/v1/image", image);
+    app.use(urls("baseImageUrl")!,image);
     // app.use(secureApi); TODO: uncomment this
     app.use("/api/v1/auth", auth);
     app.use(
@@ -55,10 +57,8 @@ function createApp() {
     });
 
     app.get("/test1", async (req: Request, res: Response) => {
-        const protocol = req.protocol; // 'http' or 'https'
-        const host = req.get("host");
-        const fullUrl = `${protocol}://${host}${req.originalUrl}`;
-        res.send(`Full URL: ${baseUrl(req)}`);
+        const image = "/vendor/profile-pic/:vendorId".split(":");
+        res.json(image);
     });
 
     app.use(handleMulterErrors);

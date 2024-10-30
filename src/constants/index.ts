@@ -1,6 +1,7 @@
 import validations from "./validations";
 import http from "./http";
 import authorizationTypes from "./authorizationTypes";
+import urls from "./urls";
 
 export default function constants(key: string) {
 
@@ -14,4 +15,4 @@ export default function constants(key: string) {
     }[key];
 }
 
-export { validations, http, authorizationTypes };
+export { validations, http, authorizationTypes, urls };
