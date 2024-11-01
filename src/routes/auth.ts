@@ -13,7 +13,7 @@ auth.post("/vendor-sign-up", validateBody([
     'phoneNumber'
 ]), asyncHandler(Auth.vendorSignUp));
 
-auth.get("/vendor-login", getBasicAuthHeader, asyncHandler(Auth.vendorLogin));
+auth.post("/vendor-login",validateBody(['email','password']), asyncHandler(Auth.vendorLogin));
 auth.get("/vendor-email-otp/:email", asyncHandler(Auth.vendorEmailOTP));
 auth.get("/confirm-vendor-email/:email/:otpCode",asyncHandler(Auth.vendorEmailVerification));
 // auth.get("/google", Auth.oauthRedirect);

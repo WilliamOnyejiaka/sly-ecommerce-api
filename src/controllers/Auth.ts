@@ -44,9 +44,10 @@ class Auth {
     }
 
     public static async vendorLogin(req: Request, res: Response) {
+        const { email, password }= req.body;
         const serviceResult = await Authentication.vendorLogin(
-            res.locals.email as string,
-            res.locals.password as string
+            email as string,
+            password as string
         );
 
         res.status(serviceResult.statusCode).json(serviceResult.json);
@@ -58,7 +59,7 @@ class Auth {
     }
 
     public static async vendorEmailVerification(req: Request, res: Response) {
-        const serviceResult = await Authentication.vendorEmailVerification(req.params.email,req.params.otpCode);        
+        const serviceResult = await Authentication.vendorEmailVerification(req.params.email, req.params.otpCode);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

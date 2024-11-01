@@ -25,7 +25,6 @@ function createApp() {
     app.use(cors());
     app.use(express.json());
     app.use(morgan("combined"));
-    // app.use("/api/v1/image", image);
     app.use(urls("baseImageUrl")!,image);
     // app.use(secureApi); TODO: uncomment this
     app.use("/api/v1/auth", auth);
