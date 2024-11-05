@@ -100,6 +100,7 @@ model Admin {
   email          String                @unique @db.VarChar(50)
   phoneNumber    String?
   role           AdminRole             @default(MANAGER)
+  createdBy      String
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
   profilePicture AdminProfilePicture[]

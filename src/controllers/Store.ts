@@ -8,6 +8,30 @@ import { baseUrl } from "../utils";
 
 export default class Store {
 
+    public static async createAll(req: Request, res: Response) {
+        const storeDetailsDto: StoreDetailsDto = req.body;
+        storeDetailsDto.vendorId = Number(res.locals.data.id);
+        const images = req.files!;
+
+        const storeExists = await StoreService.storeExists(storeDetailsDto.vendorId);
+        if (storeExists.json.error) {
+            Store.deleteImages(images as Express.Multer.File[]);
+            res.status(storeExists.statusCode).json(storeExists.json);
+            return;
+        }
+
+        const nameExists = await StoreService.storeNameExists(storeDetailsDto.name);
+        if (nameExists.json.error) {
+            Store.deleteImages(images as Express.Multer.File[]);
+            res.status(nameExists.statusCode).json(nameExists.json);
+            return;
+        }
+
+        const baseServerUrl = baseUrl(req);
+        const serviceResult = await StoreService.createStoreAll(storeDetailsDto, images as Express.Multer.File[],baseServerUrl);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
     public static async createStore(req: Request, res: Response) {
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
@@ -51,7 +75,7 @@ export default class Store {
         }
 
         const baseServerUrl = baseUrl(req);
-        const serviceResult = await StoreService.uploadStoreLogo(image, idResult.id,baseServerUrl);
+        const serviceResult = await StoreService.uploadStoreLogo(image, idResult.id, baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -85,6 +109,48 @@ export default class Store {
             return;
         }
         const serviceResult = await StoreService.getStoreLogo(idResult.id);
+
+        if (serviceResult.json.error) {
+            res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
+            return;
+        }
+
+        res.writeHead(serviceResult.statusCode, {
+            'Content-Type': serviceResult.json.data.mimeType,
+            'Content-Length': serviceResult.json.data.bufferLength
+        })
+            .end(serviceResult.json.data.imageBuffer);
+    }
+
+    public static async getFirstStoreBanner(req: Request, res: Response) {
+        const idResult = idValidator(req.params.storeId);
+
+        if (idResult.error) {
+            res.status(400).send("Id must be an integer");
+            return;
+        }
+        const serviceResult = await StoreService.getFirstStoreBanner(idResult.id);
+
+        if (serviceResult.json.error) {
+            res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
+            return;
+        }
+
+        res.writeHead(serviceResult.statusCode, {
+            'Content-Type': serviceResult.json.data.mimeType,
+            'Content-Length': serviceResult.json.data.bufferLength
+        })
+            .end(serviceResult.json.data.imageBuffer);
+    }
+
+    public static async getSecondStoreBanner(req: Request, res: Response) {
+        const idResult = idValidator(req.params.storeId);
+
+        if (idResult.error) {
+            res.status(400).send("Id must be an integer");
+            return;
+        }
+        const serviceResult = await StoreService.getSecondStoreBanner(idResult.id);
 
         if (serviceResult.json.error) {
             res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));

@@ -5,6 +5,7 @@ import { Request, Express } from "express";
 
 const allowedMimeTypes: string[] = ['image/jpeg', 'image/jpg', 'image/png'];
 const bannerFields: string[] = ['firstBanner', 'secondBanner'];
+const storeImagesFields: string[] = ['firstBanner', 'secondBanner', 'storeLogo','name','address'];
 const fileSize: number = 3.0 * 1024 * 1024;
 
 const storage = multer.diskStorage({
@@ -49,6 +50,25 @@ export const bannerUploads = multer({
     },
     fileFilter: bannerFilter
 });
+
+const storeImagesFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+        return cb(new Error("LIMIT_INVALID_FILE_TYPE"));
+    }
+    if (!storeImagesFields.includes(file.fieldname)) {
+        return cb(new Error("INVALID_BANNER_FIELD_NAME"));
+    }
+    return cb(null, true);
+}
+
+export const storeImagesUploads = multer({
+    storage: storage,
+    limits: {
+        fileSize: fileSize
+    },
+    fileFilter: storeImagesFilter
+});
+
 
 
 export default uploads;

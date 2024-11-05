@@ -7,5 +7,8 @@ const image = Router();
 
 image.get(urls("vendorPic")!, asyncHandler(Vendor.getProfilePicture));
 image.get(urls("storeLogo")!, asyncHandler(Store.getStoreLogo));
+image.get(urls("firstBanner")!, asyncHandler(Store.getFirstStoreBanner));
+image.get(urls("secondBanner")!, asyncHandler(Store.getSecondStoreBanner));
+
 
 export default image;

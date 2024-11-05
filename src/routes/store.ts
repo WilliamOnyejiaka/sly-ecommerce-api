@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { Store } from "../controllers";
 import { bannerUploads, uploads, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
+import { storeImagesUploads } from "../middlewares/multer";
 
 const store: Router = Router();
 
@@ -9,6 +10,11 @@ store.post("/create-store", validateBody([
     'name',
     'address',
 ]), asyncHandler(Store.createStore));
+
+store.post("/create-vendor-store",
+    storeImagesUploads.any(),
+    asyncHandler(Store.createAll)
+);
 
 store.post(
     "/upload-logo/:storeId",

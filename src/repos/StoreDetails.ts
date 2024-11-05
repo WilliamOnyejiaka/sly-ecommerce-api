@@ -1,11 +1,42 @@
+import { create } from "domain";
 import prisma from ".";
+import { PictureData } from "../interfaces/PictureData";
 import { StoreDetailsDto } from "../types/dtos";
 
 export default class StoreDetails {
 
     static async insert(storeDetailsDto: StoreDetailsDto) {
         try {
-            const newStore = await prisma.storeDetails.create({ data: storeDetailsDto as any});
+            const newStore = await prisma.storeDetails.create({ data: storeDetailsDto as any });
+            return newStore;
+        } catch (error) {
+            console.error("Failed to create store: ", error);
+            return {};
+        }
+    }
+
+    static async insertWithRelations(
+        storeDetailsDto: StoreDetailsDto,
+        storeLogo: PictureData,
+        firstStoreBanner: PictureData,
+        secondStoreBanner: PictureData
+    ) {
+        try {
+            const newStore = await prisma.storeDetails.create({
+                data: {
+                    ...storeDetailsDto as any,
+                    storeLogo: {
+                        create: storeLogo
+                    },
+                    firstStoreBanner: {
+                        create: firstStoreBanner
+                    },
+                    secondStoreBanner: {
+                        create: secondStoreBanner
+                    }
+                }
+            });
+
             return newStore;
         } catch (error) {
             console.error("Failed to create store: ", error);

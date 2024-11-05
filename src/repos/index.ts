@@ -5,8 +5,9 @@ import StoreDetails from "./StoreDetails";
 import StoreLogo from "./StoreLogo";
 import Banner from "./Banner";
 import Admin from "./Admin";
+import AdminProfilePicture from "./AdminProfilePicture";
 
 const prisma: PrismaClient = new PrismaClient();
 
 export default prisma;
-export { Vendor, VendorProfilePicture, StoreDetails, StoreLogo, Banner, Admin };
+export { Vendor, VendorProfilePicture, StoreDetails, StoreLogo, Banner, Admin, AdminProfilePicture };

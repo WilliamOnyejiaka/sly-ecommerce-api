@@ -44,7 +44,7 @@ export default class Banner {
         }
     }
 
-    static async getFirstStoreBanner(storeId: number) {
+    public async getFirstStoreBanner(storeId: number) {
         try {
             const banner = await prisma.firstStoreBanner.findUnique({
                 where: {
@@ -64,7 +64,7 @@ export default class Banner {
         }
     }
 
-    static async getSecondStoreBanner(storeId: number) {
+    public async getSecondStoreBanner(storeId: number) {
         try {
             const banner = await prisma.secondStoreBanner.findUnique({
                 where: {

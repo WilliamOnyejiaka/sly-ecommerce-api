@@ -1,11 +1,13 @@
 import mime from "mime";
 import Service from ".";
 import constants, { http } from "../constants";
-import { Admin as AdminRepo, Vendor as VendorRepo, VendorProfilePicture } from "../repos";
-import { convertImage, Password } from "../utils";
+import { Admin as AdminRepo, Vendor as VendorRepo, VendorProfilePicture, AdminProfilePicture } from "../repos";
+import { convertImage, Password, processImage } from "../utils";
 import { env } from "../config";
 
 export default class Admin {
+
+    private static readonly profilePicRepo: AdminProfilePicture = new AdminProfilePicture();
 
     public static async defaultAdmin() {
         const email = env('defaultAdminEmail')!
@@ -20,6 +22,7 @@ export default class Admin {
             lastName: "Admin",
             email: email,
             role: 'SUPER_ADMIN',
+            createdBy: "self",
             password: env('defaultAdminPassword')!
         }
         const passwordHash = Password.hashPassword(defaultAminData.password, env("storedSalt")!);
@@ -50,39 +53,35 @@ export default class Admin {
         return Service.responseData(statusCode, error, error ? constants("400Email")! : null);
     }
 
-    // public static async addProfilePicture(image: Express.Multer.File, vendorId: number) {
-    //     const filePath = image.path;
-    //     const outputPath = `compressed/${image.filename}`;
-    //     const mimeType = mime.lookup(filePath);
-    //     const fileName = image.filename;
+    public static async uploadProfilePicture(image: Express.Multer.File, adminId: number) {
+        const result = await processImage(image);
 
-    //     const result = await convertImage(fileName, filePath, outputPath, mimeType);
+        if (result.error) {
+            console.error(result.message);
+            return Service.responseData(
+                500,
+                true,
+                http("500")!,
+            );
+        }
 
-    //     if (result.error) {
-    //         console.error(result.message);
-    //         return Service.responseData(
-    //             500,
-    //             true,
-    //             http("500")!,
-    //         );
-    //     }
+        const mimeType = await mime.lookup(image.path);
+        const repoResult = await Admin.profilePicRepo.insert({
+            mimeType: mimeType,
+            picture: result.data!,
+            adminId: adminId
+        });
 
-    //     const repoResult = await VendorProfilePicture.insert({
-    //         mimeType: mimeType,
-    //         picture: result.data,
-    //         vendorId: vendorId
-    //     });
-
-    //     return repoResult ?
-    //         Service.responseData(
-    //             201,
-    //             false,
-    //             "profile picture was created successfully"
-    //         ) :
-    //         Service.responseData(
-    //             500,
-    //             true,
-    //             http("500")!,
-    //         );
-    // }
+        return repoResult ?
+            Service.responseData(
+                201,
+                false,
+                constants('201ProfilePic')!
+            ) :
+            Service.responseData(
+                500,
+                true,
+                http("500")!,
+            );
+    }
 }

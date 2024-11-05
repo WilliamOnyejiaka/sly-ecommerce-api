@@ -2,7 +2,7 @@ import mime from "mime";
 import Service from ".";
 import constants, { http, urls } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
-import { convertImage } from "../utils";
+import { convertImage, processImage } from "../utils";
 import { Request } from "express";
 
 export default class Vendor {
@@ -38,12 +38,7 @@ export default class Vendor {
     }
 
     public static async uploadProfilePicture(image: Express.Multer.File, vendorId: number, baseUrl: string) {
-        const filePath = image.path;
-        const outputPath = `compressed/${image.filename}`;
-        const mimeType = mime.lookup(filePath);
-        const fileName = image.filename;
-
-        const result = await convertImage(fileName, filePath, outputPath, mimeType);
+        const result = await processImage(image);
 
         if (result.error) {
             console.error(result.message);
@@ -54,6 +49,7 @@ export default class Vendor {
             );
         }
 
+        const mimeType = mime.lookup(image.path);
         const repoResult = await Vendor.profilePicRepo.insert({
             mimeType: mimeType,
             picture: result.data,

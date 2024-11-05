@@ -4,10 +4,66 @@ import { http, urls } from "../constants";
 import { convertImage, processImage } from "../utils";
 import { Banner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
+import { PictureData } from "../interfaces/PictureData";
 
 export default class Store {
 
     private static readonly storeLogoRepo: StoreLogo = new StoreLogo();
+    private static readonly bannerRepo: Banner = new Banner();
+
+
+    public static async createStoreAll(storeDetailsDto: StoreDetailsDto, images: Express.Multer.File[], baseUrl: string) {
+
+        let base64Images: any = {
+            firstBanner: null,
+            secondBanner: null,
+            storeLogo: null
+        };
+
+        try {
+            for (const image of images) {
+                let mimeType = mime.lookup(image.path);
+                let base64Image = await processImage(image);
+                if (base64Image.error) {
+                    return Service.responseData(
+                        500,
+                        true,
+                        http("500")!
+                    );
+                }
+                base64Images[image.fieldname] = {
+                    mimeType: mimeType,
+                    picture: base64Image.data!,
+                };
+            }
+        } catch (error) {
+            return Service.responseData(
+                500,
+                true,
+                http("500")!,
+            );
+        }
+
+        const repoResult = await StoreDetails.insertWithRelations(
+            storeDetailsDto,
+            base64Images.storeLogo as PictureData,
+            base64Images.firstBanner as PictureData,
+            base64Images.secondBanner as PictureData
+        );
+
+        if (repoResult) {
+            const storeId: string = (repoResult as any).id;
+            const baseImageUrl: string = urls("baseImageUrl")!;
+
+            (repoResult as any)['storeLogoUrl'] = baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId;
+            (repoResult as any)['firstBannerUrl'] = baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId;
+            (repoResult as any)['secondBannerUrl'] = baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId;
+
+            return Service.responseData(201, false, "Store was created successfully", repoResult);
+        }
+
+        return Service.responseData(500, true, http("500")!);
+    }
 
     public static async createStore(storeDetailsDto: StoreDetailsDto) {
 
@@ -86,7 +142,7 @@ export default class Store {
                 201,
                 false,
                 "store logo was created successfully",
-                {imageUrl: imageUrl}
+                { imageUrl: imageUrl }
             ) :
             Service.responseData(
                 500,
@@ -158,10 +214,10 @@ export default class Store {
         const statusCode = repoResult.data ? 200 : 404;
         const error: boolean = repoResult.data ? false : true;
 
-        if(repoResult.data){
+        if (repoResult.data) {
             const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
 
-            return Service.responseData(statusCode, error, null,{
+            return Service.responseData(statusCode, error, null, {
                 imageBuffer: imageBuffer,
                 bufferLength: imageBuffer.length,
                 mimeType: (repoResult.data as any).mimeType
@@ -172,7 +228,29 @@ export default class Store {
     }
 
     public static async getFirstStoreBanner(storeId: any) {
-        const repoResult = await Store.storeLogoRepo.getStoreLogo(storeId);
+        const repoResult = await Store.bannerRepo.getFirstStoreBanner(storeId)
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.data ? 200 : 404;
+        const error: boolean = repoResult.data ? false : true;
+
+        if (repoResult.data) {
+            const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
+
+            return Service.responseData(statusCode, error, null, {
+                imageBuffer: imageBuffer,
+                bufferLength: imageBuffer.length,
+                mimeType: (repoResult.data as any).mimeType
+            });
+        }
+
+        return Service.responseData(statusCode, error, null, repoResult.data);
+    }
+
+    public static async getSecondStoreBanner(storeId: any) {
+        const repoResult = await Store.bannerRepo.getSecondStoreBanner(storeId)
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
         }

@@ -17,7 +17,7 @@ const validateUser = <T extends Cache, U extends Repository>(cache: T, repo: U) 
     }
 
     if (!cacheResult.data) {
-        const user = await repo.getUserWithEmail(email);
+        const user = await repo.getUserWithEmail!(email);
 
         if (user.error) {
             res.status(404).json({
