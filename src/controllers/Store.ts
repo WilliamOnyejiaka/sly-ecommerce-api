@@ -102,7 +102,7 @@ export default class Store {
     }
 
     public static async getStoreLogo(req: Request, res: Response) {
-        const idResult = idValidator(req.params.storeId);
+        const idResult = idValidator(req.params.id);
 
         if (idResult.error) {
             res.status(400).send("Id must be an integer");
@@ -123,7 +123,7 @@ export default class Store {
     }
 
     public static async getFirstStoreBanner(req: Request, res: Response) {
-        const idResult = idValidator(req.params.storeId);
+        const idResult = idValidator(req.params.id);
 
         if (idResult.error) {
             res.status(400).send("Id must be an integer");
@@ -144,7 +144,7 @@ export default class Store {
     }
 
     public static async getSecondStoreBanner(req: Request, res: Response) {
-        const idResult = idValidator(req.params.storeId);
+        const idResult = idValidator(req.params.id);
 
         if (idResult.error) {
             res.status(400).send("Id must be an integer");

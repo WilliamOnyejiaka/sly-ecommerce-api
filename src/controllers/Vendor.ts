@@ -21,7 +21,7 @@ export default class Vendor {
     }
 
     public static async getProfilePicture(req: Request, res: Response) {
-        const idResult = idValidator(req.params.vendorId);
+        const idResult = idValidator(req.params.id);
 
         if (idResult.error) {
             res.status(400).send("id must be an integer");

@@ -1,6 +1,7 @@
 import prisma from ".";
+import { ImageRepository } from "../interfaces/Repository";
 
-export default class VendorProfilePicture {
+export default class VendorProfilePicture implements ImageRepository {
 
     public async insert(pictureData: any) { // TODO: create a separate type for this
         try {
@@ -23,7 +24,7 @@ export default class VendorProfilePicture {
         }
     }
 
-    public async getProfilePicture(vendorId: number) {
+    public async getImage(vendorId: number) {
         try {
             const profilePicture = await prisma.vendorProfilePicture.findUnique({
                 where: {

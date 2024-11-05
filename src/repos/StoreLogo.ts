@@ -1,11 +1,12 @@
 import prisma from ".";
+import { ImageRepository } from "../interfaces/Repository";
 
-export default class StoreLogo {
+export default class StoreLogo implements ImageRepository {
 
     public async insert(pictureData: any) { // TODO: create a separate type for this
         try {
             const newStoreLogo = await prisma.storeLogo.upsert({
-                where: { storeId: pictureData.storeId},
+                where: { storeId: pictureData.storeId },
                 update: {
                     mimeType: pictureData.mimeType,
                     picture: pictureData.picture,
@@ -23,7 +24,7 @@ export default class StoreLogo {
         }
     }
 
-    public async getStoreLogo(storeId: number) {
+    public async getImage(storeId: number) {
         try {
             const storeLogo = await prisma.storeLogo.findUnique({
                 where: {

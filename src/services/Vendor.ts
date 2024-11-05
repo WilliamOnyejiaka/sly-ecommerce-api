@@ -130,7 +130,7 @@ export default class Vendor {
     }
 
     public static async getProfilePic(id: any) {
-        const repoResult = await Vendor.profilePicRepo.getProfilePicture(id);
+        const repoResult = await Vendor.profilePicRepo.getImage(id);
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
         }
@@ -138,10 +138,10 @@ export default class Vendor {
         const statusCode = repoResult.data ? 200 : 404;
         const error: boolean = repoResult.data ? false : true;
 
-        if(repoResult.data){
+        if (repoResult.data) {
             const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
 
-            return Service.responseData(statusCode, error, null,{
+            return Service.responseData(statusCode, error, null, {
                 imageBuffer: imageBuffer,
                 bufferLength: imageBuffer.length,
                 mimeType: (repoResult.data as any).mimeType

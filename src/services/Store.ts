@@ -206,7 +206,7 @@ export default class Store {
     }
 
     public static async getStoreLogo(storeId: any) {
-        const repoResult = await Store.storeLogoRepo.getStoreLogo(storeId);
+        const repoResult = await Store.storeLogoRepo.getImage(storeId);
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
         }

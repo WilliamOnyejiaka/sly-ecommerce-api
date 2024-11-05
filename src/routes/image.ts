@@ -1,14 +1,13 @@
 import asyncHandler from "express-async-handler";
-import { Vendor, Store } from "../controllers";
+import { ImageController } from "../controllers";
 import { Router } from "express";
 import { urls } from "../constants";
 
 const image = Router();
 
-image.get(urls("vendorPic")!, asyncHandler(Vendor.getProfilePicture));
-image.get(urls("storeLogo")!, asyncHandler(Store.getStoreLogo));
-image.get(urls("firstBanner")!, asyncHandler(Store.getFirstStoreBanner));
-image.get(urls("secondBanner")!, asyncHandler(Store.getSecondStoreBanner));
-
+image.get(urls("vendorPic")!, asyncHandler(ImageController.getVendorProfilePic()));
+image.get(urls("storeLogo")!, asyncHandler(ImageController.getStoreLogo()));
+image.get(urls("firstBanner")!, asyncHandler(ImageController.getFirstStoreBanner()));
+image.get(urls("secondBanner")!, asyncHandler(ImageController.getSecondStoreBanner()));
 
 export default image;
