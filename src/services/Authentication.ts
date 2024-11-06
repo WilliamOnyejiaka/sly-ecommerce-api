@@ -108,21 +108,13 @@ class Authentication {
         const otpServiceResult = await otp.confirmOTP(otpCode);
 
         if (otpServiceResult.json.error) {
-            return Service.responseData(
-                otpServiceResult.statusCode,
-                true,
-                otpServiceResult.json.message
-            );
+            return otpServiceResult;
         }
 
         const deletedOTPServiceResult = await otp.deleteOTP();
 
         if (deletedOTPServiceResult.json.error) {
-            return Service.responseData(
-                deletedOTPServiceResult.statusCode,
-                true,
-                deletedOTPServiceResult.json.message
-            );
+            return deletedOTPServiceResult;
         }
 
         const updated = await Authentication.vendorRepo.updateVerifiedStatus(vendorEmail);
@@ -131,11 +123,31 @@ class Authentication {
             return Service.responseData(500, true, http("500")!);
         }
 
-        return Service.responseData(
-            otpServiceResult.statusCode,
-            otpServiceResult.json.error,
-            otpServiceResult.json.message
-        );
+        if (otpServiceResult.json.error){
+            return otpServiceResult;
+        }
+
+        const repoResult = await Authentication.vendorRepo.getVendorWithEmail(vendorEmail);
+
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500")!);
+        }
+
+        const vendor: VendorDto = (repoResult.data as VendorDto);
+
+        if (vendor) {
+            delete vendor.password;
+            const cacheSuccessful = await Authentication.vendorCache.set(
+                vendor.email,
+                vendor
+            );
+
+            return cacheSuccessful ? Service.responseData(200, false, otpServiceResult.json.message , {
+                token: Token.createToken(env('tokenSecret')!, vendor, ["vendor"]),
+                vendor: vendor
+            }) : Service.responseData(500, true, http('500')!);
+        }
+        return Service.responseData(404, true, constants("404Vendor")!);
     }
 }
 

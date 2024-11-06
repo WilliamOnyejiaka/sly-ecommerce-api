@@ -12,7 +12,7 @@ export default class OTP {
     private otpCode!: string;
     private otpCache: OTPCache = new OTPCache();
 
-    constructor(email: string, templateData: any=null){
+    constructor(email: string, templateData: any = null) {
         this.email = email;
         this.templateData = templateData;
     }
@@ -24,7 +24,7 @@ export default class OTP {
     }
 
     private async storeOTP() {
-        return await this.otpCache.set(this.email,this.otpCode);
+        return await this.otpCache.set(this.email, this.otpCode);
     }
 
     private async sendOTP() {
@@ -39,47 +39,48 @@ export default class OTP {
         return mailResult;
     }
 
-    private setOTP(){
+    private setOTP() {
         this.otpCode = this.generateOTP();
         this.templateData.otpCode = this.otpCode;
     }
 
-    public async send(){
+    public async send() {
         this.setOTP();
         const storedOTP = await this.storeOTP();
 
-        if(storedOTP){
+        if (storedOTP) {
             const sentOTP = await this.sendOTP();
             const error: boolean = sentOTP ? false : true;
             const statusCode: number = sentOTP ? 200 : 500;
             const message: string = sentOTP ? "OTP has been sent successfully" : http("500")!;
 
-            return Service.responseData(statusCode,error,message);
+            return Service.responseData(statusCode, error, message);
         }
-        return Service.responseData(500,true,constants("failedCache")!);
+        return Service.responseData(500, true, constants("failedCache")!);
     }
 
     public async confirmOTP(otpCode: string) {
         const cacheResult = await this.otpCache.get(this.email);
-        
-        if(cacheResult.error){
+
+        if (cacheResult.error) {
             return Service.responseData(500, cacheResult.error, http("500")!);
         }
-        
-        if(!cacheResult.otpCode){
+
+        if (!cacheResult.otpCode) {
             return Service.responseData(404, true, "OTP code was no found");
         }
 
         const validOTPCode = cacheResult.otpCode === otpCode;
         const message = validOTPCode ? "Email has been verified successfully" : "Invalid otp";
         const statusCode = validOTPCode ? 200 : 401;
-        return Service.responseData(statusCode, false,message);
+        const error = statusCode == 200;
+        return Service.responseData(statusCode, !error, message);
     }
 
-    public async deleteOTP(){
+    public async deleteOTP() {
         const deleted: boolean = await this.otpCache.delete(this.email);
         const message: string | null = deleted ? null : http("500")!;
         const statusCode: number = deleted ? 500 : 200;
-        return Service.responseData(statusCode, !deleted    , message);
+        return Service.responseData(statusCode, !deleted, message);
     }
 }
