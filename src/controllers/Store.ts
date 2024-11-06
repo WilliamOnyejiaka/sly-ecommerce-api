@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Store as StoreService } from "../services";
+import { ImageService, Store as StoreService } from "../services";
 import constants, { http } from "../constants";
 import { idValidator } from "../validators";
 import { StoreDetailsDto } from "../types/dtos";
@@ -9,9 +9,19 @@ import { baseUrl } from "../utils";
 export default class Store {
 
     public static async createAll(req: Request, res: Response) {
+        const images = req.files!;
+
+        if(!req.body.name || !req.body.address){
+            ImageService.deleteImages(images as Express.Multer.File[]);
+            res.status(400).json({
+                'error': true,
+                'message': "name and address are required",
+                'data': {}
+            });
+            return;
+        }
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
-        const images = req.files!;
 
         const storeExists = await StoreService.storeExists(storeDetailsDto.vendorId);
         if (storeExists.json.error) {

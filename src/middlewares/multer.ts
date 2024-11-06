@@ -56,7 +56,7 @@ const storeImagesFilter = (req: Request, file: Express.Multer.File, cb: FileFilt
         return cb(new Error("LIMIT_INVALID_FILE_TYPE"));
     }
     if (!storeImagesFields.includes(file.fieldname)) {
-        return cb(new Error("INVALID_BANNER_FIELD_NAME"));
+        return cb(new Error("INVALID_FIELD_NAME"));
     }
     return cb(null, true);
 }

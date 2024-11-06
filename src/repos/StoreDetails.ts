@@ -17,25 +17,37 @@ export default class StoreDetails {
 
     static async insertWithRelations(
         storeDetailsDto: StoreDetailsDto,
-        storeLogo: PictureData,
-        firstStoreBanner: PictureData,
-        secondStoreBanner: PictureData
+        storeLogo: PictureData | null,
+        firstStoreBanner: PictureData | null,
+        secondStoreBanner: PictureData | null
     ) {
         try {
+            const data: any = {
+                ...storeDetailsDto as any
+            };
+
+            storeLogo && (data['storeLogo'] = { create: storeLogo });
+            secondStoreBanner && (data['secondStoreBanner'] = { create: secondStoreBanner });
+            firstStoreBanner && (data['firstStoreBanner'] = { create: firstStoreBanner });
+
             const newStore = await prisma.storeDetails.create({
-                data: {
-                    ...storeDetailsDto as any,
-                    storeLogo: {
-                        create: storeLogo
-                    },
-                    firstStoreBanner: {
-                        create: firstStoreBanner
-                    },
-                    secondStoreBanner: {
-                        create: secondStoreBanner
-                    }
-                }
+                data: data
             });
+
+            // const newStore = await prisma.storeDetails.create({
+            //     data: {
+            //         ...storeDetailsDto as any,
+            //         storeLogo: {
+            //             create: storeLogo
+            //         },
+            //         firstStoreBanner: {
+            //             create: firstStoreBanner
+            //         },
+            //         secondStoreBanner: {
+            //             create: secondStoreBanner
+            //         }
+            //     }
+            // });
 
             return newStore;
         } catch (error) {

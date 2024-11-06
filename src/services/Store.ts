@@ -55,11 +55,19 @@ export default class Store {
             const storeId: string = (repoResult as any).id;
             const baseImageUrl: string = urls("baseImageUrl")!;
 
-            (repoResult as any)['storeLogoUrl'] = baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId;
-            (repoResult as any)['firstBannerUrl'] = baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId;
-            (repoResult as any)['secondBannerUrl'] = baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId;
+            base64Images.storeLogo &&
+                ((repoResult as any)['storeLogoUrl'] = baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId);
+            base64Images.firstBanner &&
+                ((repoResult as any)['firstBannerUrl'] = baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId);
+            base64Images.firstBanner &&
+                ((repoResult as any)['secondBannerUrl'] = baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId);
 
-            return Service.responseData(201, false, "Store was created successfully", repoResult);
+            return Service.responseData(
+                201,
+                false,
+                "Store was created successfully",
+                repoResult
+            );
         }
 
         return Service.responseData(500, true, http("500")!);

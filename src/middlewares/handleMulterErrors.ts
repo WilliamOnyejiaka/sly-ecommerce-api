@@ -26,10 +26,10 @@ const handleMulterErrors = (err: any, req: Request, res: Response, next: NextFun
         });
     }
 
-    if (err.message === 'INVALID_BANNER_FIELD_NAME') {
+    if (err.message === 'INVALID_FIELD_NAME') {
         res.status(400).json({
             error: true,
-            message: 'Invalid banner field name'
+            message: 'Invalid field name'
         });
     }
     next();
