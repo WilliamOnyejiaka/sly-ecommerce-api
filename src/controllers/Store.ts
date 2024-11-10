@@ -11,11 +11,11 @@ export default class Store {
     public static async createAll(req: Request, res: Response) {
         const images = req.files!;
 
-        if(!req.body.name || !req.body.address){
+        if (!req.body.name || !req.body.address || !req.body.city || !req.body.description || !req.body.tagLine){
             ImageService.deleteImages(images as Express.Multer.File[]);
             res.status(400).json({
                 'error': true,
-                'message': "name and address are required",
+                'message': "all values are required",
                 'data': {}
             });
             return;
@@ -172,5 +172,18 @@ export default class Store {
             'Content-Length': serviceResult.json.data.bufferLength
         })
             .end(serviceResult.json.data.imageBuffer);
+    }
+
+    public static async getStoreAll(req: Request, res: Response) {
+        const idResult = idValidator(req.params.storeId);
+
+        if (idResult.error) {
+            res.status(400).send("Id must be an integer");
+            return;
+        }
+
+        const baseServerUrl = baseUrl(req);
+        const serviceResult = await StoreService.getStoreAll(idResult.id,baseServerUrl);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 }

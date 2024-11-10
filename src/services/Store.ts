@@ -1,7 +1,7 @@
 import mime from "mime";
 import Service from ".";
 import { http, urls } from "../constants";
-import { convertImage, processImage } from "../utils";
+import { processImage } from "../utils";
 import { Banner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
 import { PictureData } from "../interfaces/PictureData";
@@ -10,7 +10,7 @@ export default class Store {
 
     private static readonly storeLogoRepo: StoreLogo = new StoreLogo();
     private static readonly bannerRepo: Banner = new Banner();
-
+    private static readonly storeRepo: StoreDetails = new StoreDetails();
 
     public static async createStoreAll(storeDetailsDto: StoreDetailsDto, images: Express.Multer.File[], baseUrl: string) {
 
@@ -55,12 +55,12 @@ export default class Store {
             const storeId: string = (repoResult as any).id;
             const baseImageUrl: string = urls("baseImageUrl")!;
 
-            base64Images.storeLogo &&
-                ((repoResult as any)['storeLogoUrl'] = baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId);
-            base64Images.firstBanner &&
-                ((repoResult as any)['firstBannerUrl'] = baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId);
-            base64Images.firstBanner &&
-                ((repoResult as any)['secondBannerUrl'] = baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId);
+            (repoResult as any)['storeLogoUrl'] =
+                base64Images.storeLogo ? baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId : null;
+            (repoResult as any)['firstBannerUrl'] =
+                base64Images.firstBanner ? baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId : null;
+            (repoResult as any)['secondBannerUrl'] =
+                base64Images.secondBanner ? baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId : null;
 
             return Service.responseData(
                 201,
@@ -277,5 +277,33 @@ export default class Store {
         }
 
         return Service.responseData(statusCode, error, null, repoResult.data);
+    }
+
+    public static async getStoreAll(storeId: number, baseUrl: string) {
+        const repoResult = await Store.storeRepo.getStoreAndRelationsWithId(storeId) as any;
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.data ? 200 : 404;
+        const error: boolean = repoResult.data ? false : true;
+
+        if (repoResult.data) {
+            const baseImageUrl: string = urls("baseImageUrl")!;
+            console.log(repoResult.data.storeLogo);
+            console.log(repoResult.data.storeLogo);
+            
+            // repoResult.data['storeLogoUrl'] = repoResult.data.storeLogo !== null ? baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId : null;
+            // base64Images.storeLogo &&
+            // ((repoResult as any)['storeLogoUrl'] = baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId);
+            // base64Images.firstBanner &&
+            //     ((repoResult as any)['firstBannerUrl'] = baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId);
+            // base64Images.firstBanner &&
+            //     ((repoResult as any)['secondBannerUrl'] = baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId);
+
+            return Service.responseData(statusCode, error, "Store was retrieved successfully", repoResult.data);
+        }
+
+        return Service.responseData(statusCode, error, "Store was not found", repoResult.data);
     }
 }

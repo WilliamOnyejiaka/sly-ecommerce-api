@@ -34,21 +34,6 @@ export default class StoreDetails {
                 data: data
             });
 
-            // const newStore = await prisma.storeDetails.create({
-            //     data: {
-            //         ...storeDetailsDto as any,
-            //         storeLogo: {
-            //             create: storeLogo
-            //         },
-            //         firstStoreBanner: {
-            //             create: firstStoreBanner
-            //         },
-            //         secondStoreBanner: {
-            //             create: secondStoreBanner
-            //         }
-            //     }
-            // });
-
             return newStore;
         } catch (error) {
             console.error("Failed to create store: ", error);
@@ -106,6 +91,41 @@ export default class StoreDetails {
             return {
                 error: false,
                 data: store as StoreDetailsDto
+            };
+        } catch (error) {
+            console.error("Failed to find store with id: ", error);
+            return {
+                error: true,
+                data: {}
+            };
+        }
+    }
+
+    public async getStoreAndRelationsWithId(id: number){
+        try {
+            const store = await prisma.storeDetails.findUnique({
+                where: {id: id},
+                include: {
+                    storeLogo: {
+                        select: {
+                            mimeType: true
+                        }
+                    },
+                    firstStoreBanner: {
+                        select: {
+                            mimeType: true
+                        }
+                    },
+                    secondStoreBanner: {
+                        select: {
+                            mimeType: true
+                        }
+                    }
+                }
+            });
+            return {
+                error: false,
+                data: store
             };
         } catch (error) {
             console.error("Failed to find store with id: ", error);

@@ -6,10 +6,22 @@ import { storeImagesUploads } from "../middlewares/multer";
 
 const store: Router = Router();
 
-store.post("/create-store", validateBody([
-    'name',
-    'address',
-]), asyncHandler(Store.createStore));
+store.get(
+    "/:storeId",
+    asyncHandler(Store.getStoreAll)
+);
+
+store.post(
+    "/create-store",
+    validateBody([
+        'name',
+        'address',
+        'city',
+        'description',
+        'tagLine'
+    ]),
+    asyncHandler(Store.createStore)
+);
 
 store.post("/create-vendor-store",
     storeImagesUploads.any(),

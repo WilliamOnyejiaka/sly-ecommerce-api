@@ -15,6 +15,9 @@ export interface StoreDetailsDto {
     id?: number,
     name: string,
     address: string,
+    city: string,
+    description: string,
+    tagLine: string,
     createdAt?: any,
     updatedAt?: any,
     vendorId?: number

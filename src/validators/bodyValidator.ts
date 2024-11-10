@@ -5,7 +5,7 @@ export default function bodyValidator(requestBody: any, neededAttributes: string
             if (!requestBody[attr]) {
                 return {
                     error: true,
-                    message: "all values needed",
+                    message: "all values are required",
                     "missing value": attr,
                 };
             }

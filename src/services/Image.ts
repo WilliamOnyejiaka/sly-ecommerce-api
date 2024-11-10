@@ -7,7 +7,7 @@ import * as fs from "fs";
 
 export default class ImageService {
 
-    public static async getImage<T extends ImageRepository>(repo: T, id: number) {
+    public static async getImage<T extends ImageRepository>(repo: T, id: number) {        
         const repoResult = await repo.getImage(id)
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
