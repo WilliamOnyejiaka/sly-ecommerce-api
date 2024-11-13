@@ -10,6 +10,8 @@ export default function constants(key: string) {
         '404Vendor': "Vendor was not found.",
         '404User': "User was not found.",
         'updatedVendor': "Vendor has been updated successfully.",
+        'deletedVendor': "Vendor has been deleted successfully",
+        'deletedStore': "Store has been deleted successfully",
         '404Image': "Image was not found",
         '201ProfilePic': "Profile picture was created successfully"
 

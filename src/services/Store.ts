@@ -1,6 +1,6 @@
 import mime from "mime";
 import Service from ".";
-import { http, urls } from "../constants";
+import constants, { http, urls } from "../constants";
 import { processImage } from "../utils";
 import { Banner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
@@ -305,5 +305,17 @@ export default class Store {
         }
 
         return Service.responseData(statusCode, error, "Store was not found", repoResult.data);
+    }
+
+    public static async delete(id: number) {
+        const repoResult = await Store.storeRepo.delete(id);
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.updated ? 200 : 500;
+        const message = !repoResult.updated ? http("500")! : constants('deletedStore')!;
+
+        return Service.responseData(statusCode, !repoResult.updated, message);
     }
 }

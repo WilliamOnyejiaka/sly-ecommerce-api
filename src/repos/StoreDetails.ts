@@ -101,10 +101,10 @@ export default class StoreDetails {
         }
     }
 
-    public async getStoreAndRelationsWithId(id: number){
+    public async getStoreAndRelationsWithId(id: number) {
         try {
             const store = await prisma.storeDetails.findUnique({
-                where: {id: id},
+                where: { id: id },
                 include: {
                     storeLogo: {
                         select: {
@@ -133,6 +133,36 @@ export default class StoreDetails {
                 error: true,
                 data: {}
             };
+        }
+    }
+
+    public async delete(id: number) {
+        try {
+            const store = await prisma.storeDetails.delete({
+                where: {
+                    id: id,
+                    // vendorId: vendorId
+                }
+            });
+            return {
+                error: false,
+                updated: true
+            };
+        } catch (error: any) {
+
+            if (error.code === 'P2025') {
+                console.error(`Store with id ${id} does not exist.`);
+                return {
+                    error: true,
+                    updated: false
+                };
+            } else {
+                console.error('Error deleting store:', error);
+                return {
+                    error: true,
+                    updated: false
+                };
+            }
         }
     }
 }

@@ -186,4 +186,16 @@ export default class Store {
         const serviceResult = await StoreService.getStoreAll(idResult.id,baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
+
+    public static async deleteStore(req: Request, res: Response) {
+        const idResult = idValidator(req.params.storeId);
+
+        if (idResult.error) {
+            res.status(400).send("Id must be an integer");
+            return;
+        }
+
+        const serviceResult = await StoreService.delete(idResult.id);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
 }

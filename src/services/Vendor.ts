@@ -124,7 +124,7 @@ export default class Vendor {
         }
 
         const statusCode = repoResult.updated ? 200 : 500;
-        const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
+        const message = !repoResult.updated ? http("500")! : constants('deletedVendor')!;
 
         return Service.responseData(statusCode, !repoResult.updated, message);
     }

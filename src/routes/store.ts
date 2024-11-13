@@ -40,4 +40,9 @@ store.post(
     asyncHandler(Store.uploadBanners)
 );
 
+store.delete(
+    "/:storeId",
+    asyncHandler(Store.deleteStore)   
+);
+
 export default store;
