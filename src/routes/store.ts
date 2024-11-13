@@ -6,10 +6,7 @@ import { storeImagesUploads } from "../middlewares/multer";
 
 const store: Router = Router();
 
-store.get(
-    "/:storeId",
-    asyncHandler(Store.getStoreAll)
-);
+
 
 store.post(
     "/create-store",
@@ -38,11 +35,6 @@ store.post(
     "/upload-banners/:storeId",
     bannerUploads.any(),
     asyncHandler(Store.uploadBanners)
-);
-
-store.delete(
-    "/:storeId",
-    asyncHandler(Store.deleteStore)   
 );
 
 export default store;
