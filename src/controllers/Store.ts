@@ -46,6 +46,9 @@ export default class Store {
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
 
+        console.log(storeDetailsDto);
+
+
         const storeExists = await StoreService.storeExists(storeDetailsDto.vendorId);
         if (storeExists.json.error) {
             res.status(storeExists.statusCode).json(storeExists.json);
@@ -57,6 +60,7 @@ export default class Store {
             res.status(nameExists.statusCode).json(nameExists.json);
             return;
         }
+
         const serviceResult = await StoreService.createStore(storeDetailsDto);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
