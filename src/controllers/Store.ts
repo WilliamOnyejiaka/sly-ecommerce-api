@@ -46,9 +46,6 @@ export default class Store {
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
 
-        console.log(storeDetailsDto);
-
-
         const storeExists = await StoreService.storeExists(storeDetailsDto.vendorId);
         if (storeExists.json.error) {
             res.status(storeExists.statusCode).json(storeExists.json);

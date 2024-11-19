@@ -290,16 +290,14 @@ export default class Store {
 
         if (repoResult.data) {
             const baseImageUrl: string = urls("baseImageUrl")!;
-            console.log(repoResult.data.storeLogo);
-            console.log(repoResult.data.storeLogo);
             
-            // repoResult.data['storeLogoUrl'] = repoResult.data.storeLogo !== null ? baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId : null;
-            // base64Images.storeLogo &&
-            // ((repoResult as any)['storeLogoUrl'] = baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId);
-            // base64Images.firstBanner &&
-            //     ((repoResult as any)['firstBannerUrl'] = baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId);
-            // base64Images.firstBanner &&
-            //     ((repoResult as any)['secondBannerUrl'] = baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId);
+            repoResult.data.storeLogoUrl = repoResult.data.storeLogo.length != 0 ? baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId : null;
+            repoResult.data.firstStoreBannerUrl = repoResult.data.firstStoreBanner.length != 0 ? baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId : null;
+            repoResult.data.secondBannerUrl = repoResult.data.secondStoreBanner.length != 0 ? baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId : null;
+
+            delete repoResult.data.storeLogo;
+            delete repoResult.data.firstStoreBanner;
+            delete repoResult.data.secondStoreBanner;
 
             return Service.responseData(statusCode, error, "Store was retrieved successfully", repoResult.data);
         }

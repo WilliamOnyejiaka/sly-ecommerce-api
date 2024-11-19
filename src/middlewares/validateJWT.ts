@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Token } from '../services';
+import { http } from '../constants';
 
 const validateJWT = (types: string[], tokenSecret: string, neededData: string[] = ['data']) => (req: Request, res: Response, next: NextFunction) => {
     if (!req.headers.authorization || req.headers.authorization.indexOf('Bearer ') === -1) {
@@ -16,28 +17,18 @@ const validateJWT = (types: string[], tokenSecret: string, neededData: string[] 
         return;
     }
     const tokenValidationResult: any = Token.validateToken(token, types, tokenSecret);    
-
-    if (tokenValidationResult.error === true) {
-        if (tokenValidationResult.decodingError) {
-            res.status(400).json({
-                error: true,
-                message: tokenValidationResult.decodingError,
-            });
-            return;
-        }
-
-        if (tokenValidationResult.typeError) {
-            res.status(400).json({
-                error: true,
-                message: tokenValidationResult.typeError,
-            });
-            return;
-        }
+    
+    if(tokenValidationResult.error){
+        const statusCode = tokenValidationResult.message == http("401") ? 401 : 400;
+        res.status(statusCode).json({
+            error: true,
+            message: tokenValidationResult.message
+        });
+        return;
     }
 
-
     for (let item of neededData) {
-        res.locals[item] = tokenValidationResult.decoded[item];
+        res.locals[item] = tokenValidationResult.data[item];
     }
     next();
 }
