@@ -18,7 +18,7 @@ export default class Store {
             firstBanner: null,
             secondBanner: null,
             storeLogo: null
-        };
+        };        
 
         try {
             for (const image of images) {
@@ -308,12 +308,9 @@ export default class Store {
     public static async delete(id: number) {
         const repoResult = await Store.storeRepo.delete(id);
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return Service.responseData(repoResult.type!, true, repoResult.message!);
         }
 
-        const statusCode = repoResult.error ? 200 : 500;
-        const message = !repoResult.error ? http("500")! : constants('deletedStore')!;
-
-        return Service.responseData(statusCode, !repoResult.error, message);
+        return Service.responseData(200, !repoResult.error, "Store was deleted successfully");
     }
 }

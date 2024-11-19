@@ -31,7 +31,7 @@ export default class Token {
         return validTypes ? {
             error: false,
             message: null,
-            data: {}
+            data: result
         } : {
             error: true,
             message: http("401"),

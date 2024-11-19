@@ -15,12 +15,13 @@ export default class Store {
             ImageService.deleteImages(images as Express.Multer.File[]);
             res.status(400).json({
                 'error': true,
-                'message': "all values are required",
+                'message': "All values are required",
                 'data': {}
             });
             return;
         }
-        const storeDetailsDto: StoreDetailsDto = req.body;
+        
+        const storeDetailsDto: StoreDetailsDto = req.body;        
         storeDetailsDto.vendorId = Number(res.locals.data.id);
 
         const storeExists = await StoreService.storeExists(storeDetailsDto.vendorId);
@@ -29,6 +30,7 @@ export default class Store {
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
+                console.log("hello");
 
         const nameExists = await StoreService.storeNameExists(storeDetailsDto.name);
         if (nameExists.json.error) {

@@ -1,7 +1,7 @@
-import { create } from "domain";
 import prisma from ".";
 import { PictureData } from "../interfaces/PictureData";
 import { StoreDetailsDto } from "../types/dtos";
+import { http } from "../constants";
 
 export default class StoreDetails {
 
@@ -150,16 +150,19 @@ export default class StoreDetails {
         } catch (error: any) {
 
             if (error.code === 'P2025') {
-                console.error(`Store with id ${id} does not exist.`);
+                const message = `Store with id ${id} does not exist.`;
+                console.error(message);
                 return {
                     error: true,
-                    404: true
+                    message: message,
+                    type: 404
                 };
             } else {
                 console.error('Error deleting store:', error);
                 return {
                     error: true,
-                    404: false
+                    message: http('500')!,
+                    type: 500
                 };
             }
         }
