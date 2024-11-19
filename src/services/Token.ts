@@ -5,14 +5,13 @@ export default class Token {
 
     public static validateToken(token: string, types: string[], tokenSecret: string) {
         let result: any = {};
-
         try {
             result = jsonwebtoken.verify(token, tokenSecret);
 
         } catch (err: any) {
-            console.log(err);
-            const message = err.message[0].toUpperCase() + err.message.slice(1)
+            console.error("\nError: ",err.message,"\n");
 
+            const message = err.message[0].toUpperCase() + err.message.slice(1);
             return {
                 error: true,
                 message: message,

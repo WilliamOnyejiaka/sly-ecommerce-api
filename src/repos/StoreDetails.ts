@@ -146,7 +146,6 @@ export default class StoreDetails {
             });
             return {
                 error: false,
-                updated: true
             };
         } catch (error: any) {
 
@@ -154,13 +153,13 @@ export default class StoreDetails {
                 console.error(`Store with id ${id} does not exist.`);
                 return {
                     error: true,
-                    updated: false
+                    404: true
                 };
             } else {
                 console.error('Error deleting store:', error);
                 return {
                     error: true,
-                    updated: false
+                    404: false
                 };
             }
         }

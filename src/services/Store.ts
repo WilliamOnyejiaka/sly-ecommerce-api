@@ -311,9 +311,9 @@ export default class Store {
             return Service.responseData(500, true, http("500") as string);
         }
 
-        const statusCode = repoResult.updated ? 200 : 500;
-        const message = !repoResult.updated ? http("500")! : constants('deletedStore')!;
+        const statusCode = repoResult.error ? 200 : 500;
+        const message = !repoResult.error ? http("500")! : constants('deletedStore')!;
 
-        return Service.responseData(statusCode, !repoResult.updated, message);
+        return Service.responseData(statusCode, !repoResult.error, message);
     }
 }
