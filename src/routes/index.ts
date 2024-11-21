@@ -6,5 +6,6 @@ import image from "./image";
 import asyncHandler from "express-async-handler";
 import { Vendor } from "../controllers";
 import { Router, Request, Response } from "express";
+import seed from "./seed";
 
-export { auth, vendor, store, admin, image };
+export { auth, vendor, store, admin, image, seed };

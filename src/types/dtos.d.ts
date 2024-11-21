@@ -3,12 +3,16 @@ export interface AdminDto {
     id?: number,
     firstName: string,
     lastName: string,
-    password: string,
+    password?: string,
     email: string,
     phoneNumber?: string,
-    role: string
+    roleId: number
     createdAt?: any,
     updatedAt?: any,
+    role?: any[],
+    createdBy: string,
+    directPermissions?: any[],
+    active?: boolean
 }
 
 export interface StoreDetailsDto {

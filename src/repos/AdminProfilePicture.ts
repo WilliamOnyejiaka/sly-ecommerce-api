@@ -1,8 +1,8 @@
 import prisma from ".";
 import { AdminProfilePictureData } from "../interfaces/PictureData";
-import Repository from "../interfaces/Repository";
+import Repository, { ImageRepository }from "../interfaces/Repository";
 
-export default class AdminProfilePicture implements Repository{
+export default class AdminProfilePicture implements ImageRepository {
 
     public async insert(pictureData: AdminProfilePictureData) {
         try {
@@ -25,7 +25,7 @@ export default class AdminProfilePicture implements Repository{
         }
     }
 
-    public async getProfilePicture(adminId: number) {
+    public async getImage(adminId: number) {
         try {
             const profilePicture = await prisma.adminProfilePicture.findUnique({
                 where: {

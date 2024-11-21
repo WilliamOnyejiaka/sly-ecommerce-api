@@ -29,14 +29,19 @@ vendor.patch(
     asyncHandler(Vendor.updateEmail)
 );
 
+// vendor.get(
+//     "/",
+//     asyncHandler(Vendor.getVendor)
+// );
+
 vendor.get(
     "/",
-    asyncHandler(Vendor.getVendor)
+    asyncHandler(Vendor.getVendorAll)
 );
 
 vendor.delete(
     "/",
-    asyncHandler(Vendor.deleteVendor)
+    asyncHandler(Vendor.delete)
 );
 
 export default vendor;

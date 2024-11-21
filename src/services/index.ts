@@ -6,6 +6,8 @@ import OTP from "./OTP";
 import Store from "./Store";
 import Admin from "./Admin";
 import ImageService from "./Image";
+import Seed from "./Seed";
+import Role from "./Role";
 
 export default class Service {
 
@@ -25,4 +27,4 @@ export default class Service {
 
 
 
-export { Token, Authentication, Vendor, Email, OTP, Store, Admin, ImageService };
+export { Token, Authentication, Vendor, Email, OTP, Store, Admin, ImageService, Seed, Role };

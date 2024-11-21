@@ -13,6 +13,7 @@ auth.post("/vendor-sign-up", validateBody([
     'phoneNumber'
 ]), asyncHandler(Auth.vendorSignUp));
 
+auth.post("/admin-login", validateBody(['email', 'password']), asyncHandler(Auth.adminLogin));
 auth.post("/vendor-login",validateBody(['email','password']), asyncHandler(Auth.vendorLogin));
 auth.get("/vendor-email-otp/:email", asyncHandler(Auth.vendorEmailOTP));
 auth.get("/confirm-vendor-email/:email/:otpCode",asyncHandler(Auth.vendorEmailVerification));

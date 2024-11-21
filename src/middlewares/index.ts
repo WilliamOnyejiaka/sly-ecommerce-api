@@ -6,6 +6,7 @@ import handleMulterErrors from "./handleMulterErrors";
 import validateBody from "./validateBody";
 import secureApi from "./secureApi";
 import redisClientMiddleware from "./redisClientMiddleware";
+import adminAuthorization from "./adminAuthorize";
 
 export {
     getBasicAuthHeader,
@@ -16,5 +17,6 @@ export {
     validateBody,
     secureApi,
     redisClientMiddleware,
-    bannerUploads
+    bannerUploads,
+    adminAuthorization
 };

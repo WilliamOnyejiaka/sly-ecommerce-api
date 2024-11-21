@@ -30,7 +30,6 @@ export default class Store {
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
-                console.log("hello");
 
         const nameExists = await StoreService.storeNameExists(storeDetailsDto.name);
         if (nameExists.json.error) {
@@ -178,12 +177,12 @@ export default class Store {
     }
 
     public static async getStoreAll(req: Request, res: Response) {
-        const idResult = idValidator(req.params.storeId);
+            const idResult = idValidator(req.params.storeId);
 
-        if (idResult.error) {
-            res.status(400).send("Id must be an integer");
-            return;
-        }
+            if (idResult.error) {
+                res.status(400).send("Id must be an integer");
+                return;
+            }
 
         const baseServerUrl = baseUrl(req);
         const serviceResult = await StoreService.getStoreAll(idResult.id,baseServerUrl);

@@ -1,7 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { corsConfig, env } from ".";
-import { auth, vendor, store, image } from "./../routes";
+import { auth, vendor, store, image, seed, admin } from "./../routes";
 import { Email } from "../services";
 import path from "path";
 import ejs from "ejs";
@@ -25,7 +25,10 @@ function createApp() {
     app.use(cors());
     app.use(express.json());
     app.use(morgan("combined"));
-    app.use(urls("baseImageUrl")!,image);
+    app.use(urls("baseImageUrl")!, image);
+    app.use("/api/v1/seed", seed);
+    app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
+
     // app.use(secureApi); TODO: uncomment this
     app.use("/api/v1/auth", auth);
     app.use(
@@ -35,9 +38,7 @@ function createApp() {
         vendor
     );
     app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), store);
-    app.get("/api/v1/admin/default-admin", asyncHandler(Admin.defaultAdmin));
-    app.use("/api/v1/admin", validateJWT(["superAdmin"], env("tokenSecret")!), store);
-
+    app.use("/api/v1/admin", validateJWT(["admin"], env("tokenSecret")!), admin);
 
     app.post("/test2", async (req: Request, res: Response) => {
         // const result = await Email();

@@ -1,4 +1,5 @@
 import prisma from ".";
+import { http } from "../constants";
 import Repository from "../interfaces/Repository";
 import VendorDto from "../types/dtos";
 
@@ -21,6 +22,31 @@ export default class Vendor implements Repository {
             return {};
         }
 
+    }
+
+    public async getVendorAndRelationsWithId(id: number) {
+        try {
+            const vendor = await prisma.vendor.findUnique({
+                where: { id: id },
+                include: {
+                    profilePicture: {
+                        select: {
+                            mimeType: true
+                        }
+                    }
+                }
+            });
+            return {
+                error: false,
+                data: vendor
+            };
+        } catch (error) {
+            console.error("Failed to find vendor with id: ", error);
+            return {
+                error: true,
+                data: {}
+            };
+        }
     }
 
     public async getVendorWithEmail(email: string) {
@@ -84,23 +110,32 @@ export default class Vendor implements Repository {
         return await this.update(email, { verified: true });
     }
 
-    public async delete(id: number){
+    public async delete(email: string) {
         try {
             const vendor = await prisma.vendor.delete({
-                where: {
-                    id: id
-                }
+                where: { email: email }
             });
             return {
                 error: false,
-                updated: true
             };
-        } catch (error) {
-            console.error("Failed to update vendor: ", error);
-            return {
-                error: true,
-                updated: false
-            };
+        } catch (error: any) {
+
+            if (error.code === 'P2025') {
+                const message = `Vendor with id ${email} does not exist.`;
+                console.error(message);
+                return {
+                    error: true,
+                    message: message,
+                    type: 404
+                };
+            } else {
+                console.error('Error deleting vendor:', error);
+                return {
+                    error: true,
+                    message: http('500')!,
+                    type: 500
+                };
+            }
         }
     }
 }

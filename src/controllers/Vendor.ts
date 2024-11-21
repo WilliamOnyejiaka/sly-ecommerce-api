@@ -63,9 +63,17 @@ export default class Vendor {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
-    public static async deleteVendor(req: Request, res: Response) {
-        const vendorEmail = res.locals.data.email;
-        const serviceResult = await VendorService.getVendorWithEmail(vendorEmail);
+    public static async delete(req: Request, res: Response) {
+        const vendorEmail = res.locals.data.email as string;
+        const serviceResult = await VendorService.delete(vendorEmail);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
+    public static async getVendorAll(req: Request, res: Response) {
+        const vendorId = Number(res.locals.data.id);
+
+        const baseServerUrl = baseUrl(req);
+        const serviceResult = await VendorService.getVendorAll(vendorId, baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 }

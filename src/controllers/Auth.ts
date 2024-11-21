@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Authentication, Vendor } from "./../services";
 import { emailValidator, phoneNumberValidator } from "./../validators";
 import VendorDto from "./../types/dtos";
+import constants from "../constants";
 class Auth {
 
     public static async vendorSignUp(req: Request, res: Response) {
@@ -27,7 +28,7 @@ class Auth {
         if (!emailValidator(vendorDto.email)) {
             res.status(400).json({
                 error: true,
-                message: "invalid email"
+                message: constants('400Email')!
             });
             return;
         }
@@ -52,6 +53,17 @@ class Auth {
 
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
+
+    public static async adminLogin(req: Request, res: Response) {
+        const { email, password } = req.body;
+        const serviceResult = await Authentication.adminLogin(
+            email as string,
+            password as string
+        );
+
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
 
     public static async vendorEmailOTP(req: Request, res: Response) {
         const serviceResult = await Authentication.vendorEmailOTP(req.params.email);

@@ -2,13 +2,14 @@ import mime from "mime";
 import Service from ".";
 import constants, { http, urls } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
-import { convertImage, processImage } from "../utils";
-import { Request } from "express";
+import {  processImage } from "../utils";
+import { VendorCache } from "../cache";
 
 export default class Vendor {
 
     private static readonly repo: VendorRepo = new VendorRepo();
     private static readonly profilePicRepo = new VendorProfilePicture();
+    private static readonly cache = new VendorCache();
 
     public static async emailExists(email: string) {
         const emailExists = await Vendor.repo.getVendorWithEmail(email);
@@ -34,8 +35,35 @@ export default class Vendor {
         const error: boolean = vendor ? false : true;
         const message = error ? http("404")! : "Vendor has been retrieved";
 
+        if (!error) {
+            delete (repoResult.data as any).password;
+        }
+
         return Service.responseData(statusCode, error, message, vendor);
     }
+
+    public static async getVendorAll(vendorId: number, baseUrl: string) {
+        const repoResult = await Vendor.repo.getVendorAndRelationsWithId(vendorId) as any;
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500") as string);
+        }
+
+        const statusCode = repoResult.data ? 200 : 404;
+        const error: boolean = repoResult.data ? false : true;
+
+        if (repoResult.data) {
+            const baseImageUrl: string = urls("baseImageUrl")!;
+
+            repoResult.data.profilePictureUrl = repoResult.data.profilePicture.length != 0 ? baseUrl + baseImageUrl + urls("vendorPic")!.split(":")[0] + vendorId : null;
+            delete repoResult.data.profilePicture;
+            delete repoResult.data.password;
+
+            return Service.responseData(statusCode, error, "Vendor was retrieved successfully", repoResult.data);
+        }
+
+        return Service.responseData(statusCode, error, "Vendor was not found", repoResult.data);
+    }
+
 
     public static async uploadProfilePicture(image: Express.Multer.File, vendorId: number, baseUrl: string) {
         const result = await processImage(image);
@@ -117,16 +145,17 @@ export default class Vendor {
         return Service.responseData(statusCode, !repoResult.updated, message);
     }
 
-    public static async delete(id: number) {
-        const repoResult = await Vendor.repo.updateLastName(id, "lastName");
+    public static async delete(email: string) {
+        const repoResult = await Vendor.repo.delete(email);
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return Service.responseData(repoResult.type!, true, repoResult.message!);
         }
 
-        const statusCode = repoResult.updated ? 200 : 500;
-        const message = !repoResult.updated ? http("500")! : constants('deletedVendor')!;
+        const deleted = await Vendor.cache.delete(email);
 
-        return Service.responseData(statusCode, !repoResult.updated, message);
+        return deleted ?
+            Service.responseData(200, false, "Vendor was deleted successfully") :
+            Service.responseData(500, true, http('500')!);
     }
 
     public static async getProfilePic(id: any) {
@@ -149,6 +178,5 @@ export default class Vendor {
         }
 
         return Service.responseData(statusCode, error, null, repoResult.data);
-
     }
 }

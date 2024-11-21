@@ -2,7 +2,7 @@ import Service, { OTP, Token } from ".";
 import { Admin, Vendor } from "../repos";
 import { Password } from "../utils";
 import { env } from "../config";
-import VendorDto from "../types/dtos";
+import VendorDto, { AdminDto } from "../types/dtos";
 import constants, { http } from "../constants";
 import { VendorCache } from "../cache";
 class Authentication {
@@ -10,6 +10,7 @@ class Authentication {
     private static readonly storedSalt: string = env("storedSalt")!;
     private static readonly vendorRepo: Vendor = new Vendor();
     private static readonly vendorCache: VendorCache = new VendorCache();
+    private static readonly adminRepo: Admin = new Admin();
 
     public static async vendorSignUp(vendorDto: VendorDto) {
         const passwordHash: string = Password.hashPassword(vendorDto.password!, Authentication.storedSalt);
@@ -34,25 +35,6 @@ class Authentication {
         return Service.responseData(statusCode, error, message, result);
     }
 
-    public static async adminSignUp(signUpData: any) {
-        const passwordHash = Password.hashPassword(signUpData.password, Authentication.storedSalt);
-        signUpData.password = passwordHash;
-
-        const result = await Admin.insert(signUpData);
-        const error: boolean = result ? false : true
-        const statusCode = error ? 500 : 201;
-        const message: string = !error ? "Admin has been created successfully" : http("500")!;
-
-        if (!error) {
-            delete (result as any).password;
-            return Service.responseData(statusCode, error, message, {
-                token: Token.createToken(env('tokenSecret')!, result, []),
-                vendor: result
-            });
-        }
-        return Service.responseData(statusCode, error, message, result);
-    }
-
     public static async vendorLogin(email: string, password: string) {
         const repoResult = await Authentication.vendorRepo.getVendorWithEmail(email);
 
@@ -73,7 +55,7 @@ class Authentication {
                     vendor
                 );
 
-                return cacheSuccessful ? Service.responseData(200, false, "login successful", {
+                return cacheSuccessful ? Service.responseData(200, false, "Login successful", {
                     token: Token.createToken(env('tokenSecret')!, vendor, ["vendor"]),
                     vendor: vendor
                 }) : Service.responseData(500, true, http('500')!);
@@ -82,6 +64,46 @@ class Authentication {
         }
         return Service.responseData(404, true, constants("404Vendor")!);
     }
+
+    public static async adminLogin(email: string, password: string) {
+        const repoResult = await Authentication.adminRepo.getAdminAndRoleWithEmail(email);
+
+        if (repoResult.error) {
+            return Service.responseData(500, true, http("500")!);
+        }
+
+        const admin: AdminDto = (repoResult.data as AdminDto);
+
+        if (admin) {
+            const hashedPassword = admin.password
+            const validPassword = Password.compare(password, hashedPassword!, Authentication.storedSalt);
+
+            if (validPassword) {
+                delete admin.password;
+                const token = Token.createToken(env('tokenSecret')!, admin, ["admin"]);
+                delete admin.role;
+                delete admin.directPermissions;
+
+                // const cacheSuccessful = await Authentication.vendorCache.set(
+                //     admin.email,
+                //     admin
+                // );
+
+                return Service.responseData(200, false, "Login successful", {
+                    token: token,
+                    admin: admin
+                })
+
+                // return cacheSuccessful ? Service.responseData(200, false, "login successful", {
+                //     token: Token.createToken(env('tokenSecret')!, admin, ["vendor"]),
+                //     vendor: admin
+                // }) : Service.responseData(500, true, http('500')!);
+            }
+            return Service.responseData(400, true, "Invalid password");
+        }
+        return Service.responseData(404, true, constants("404Vendor")!);
+    }
+
 
     public static async vendorEmailOTP(email: string) {
         const repoResult = await Authentication.vendorRepo.getVendorWithEmail(email);

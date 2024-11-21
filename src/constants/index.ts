@@ -13,7 +13,9 @@ export default function constants(key: string) {
         'deletedVendor': "Vendor has been deleted successfully",
         'deletedStore': "Store has been deleted successfully",
         '404Image': "Image was not found",
-        '201ProfilePic': "Profile picture was created successfully"
+        '201ProfilePic': "Profile picture was uploaded successfully",
+        '400Email': "Invalid email",
+        'service400Email': "Email already exists"
 
     }[key];
 }
