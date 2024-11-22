@@ -6,8 +6,9 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
-    "build": "tsc -p . && npm run copy-views",
+    "build": "tsc -p . && npm run copy-views && npm run copy-seeds",
     "copy-views": "cp -R src/views dist/views",
+    "copy-seeds": "cp -R src/seeds dist/seeds",
     "change": "npx prisma generate && npx prisma migrate dev --name init --create-only",
     "migrate": "npx prisma migrate deploy",
     "format": "npx prisma format",
