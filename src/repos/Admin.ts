@@ -75,7 +75,7 @@ export default class Admin extends Repo {
 
     public async unassignRole(roleId: number) {
         try {
-            await (prisma['admin'] as any).updateMany({
+            await (prisma['admin'] as any).updateMany({ // checking a bug out
                 where: {
                     roleId: roleId
                 },
