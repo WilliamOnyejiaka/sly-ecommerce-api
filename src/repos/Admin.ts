@@ -21,7 +21,7 @@ export default class Admin extends Repo {
         const where = typeof idOrEmail == "number" ? { id: idOrEmail } : { email: idOrEmail };
 
         try {
-            const admin = await prisma.admin.findUnique({
+            const admin = await (prisma['admin'] as any).findUnique({
                 where: where,
                 include: {
                     role: {
@@ -75,7 +75,7 @@ export default class Admin extends Repo {
 
     public async unassignRole(roleId: number) {
         try {
-            await prisma.admin.updateMany({
+            await (prisma['admin'] as any).updateMany({
                 where: {
                     roleId: roleId
                 },
