@@ -24,7 +24,7 @@ class Authentication {
         if (!error) {
             delete (result as VendorDto).password;
             const cacheSuccessful = await Authentication.vendorCache.set(
-                (result as VendorDto).email,
+                String((result as VendorDto).id),
                 result as VendorDto
             );
             return cacheSuccessful ? Service.responseData(statusCode, error, message, {
@@ -51,7 +51,7 @@ class Authentication {
             if (validPassword) {
                 delete vendor.password;
                 const cacheSuccessful = await Authentication.vendorCache.set(
-                    vendor.email,
+                    String(vendor.id),
                     vendor
                 );
 

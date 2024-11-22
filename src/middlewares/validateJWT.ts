@@ -27,7 +27,6 @@ const validateJWT = (types: string[], tokenSecret: string, neededData: string[] 
         return;
     }
 
-    let data = {};
     for (let item of neededData) {
         res.locals[item] = tokenValidationResult.data[item];
     }

@@ -7,5 +7,16 @@ import asyncHandler from "express-async-handler";
 import { Vendor } from "../controllers";
 import { Router, Request, Response } from "express";
 import seed from "./seed";
+import role from "./role";
+import adminVendor from "./adminVendor";
 
-export { auth, vendor, store, admin, image, seed };
+export {
+    auth,
+    vendor,
+    store,
+    admin,
+    image,
+    seed,
+    role,
+    adminVendor
+};

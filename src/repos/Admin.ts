@@ -73,9 +73,13 @@ export default class Admin extends Repo {
         return await super.getItemWithEmail(email);
     }
 
-    public async unassignRole(roleId: number) {
+    public async assignRole(adminId: number, roleId: number) {
+        return await super.update({ id: adminId }, { roleId: roleId });
+    }
+
+    public async massUnassignRole(roleId: number) {
         try {
-            await (prisma['admin'] as any).updateMany({ // checking a bug out
+            await (prisma['admin'] as any).updateMany({
                 where: {
                     roleId: roleId
                 },
@@ -102,7 +106,7 @@ export default class Admin extends Repo {
     }
 
     public async updateActiveStatus(id: number, activeStatus: boolean) {
-        return await super.update(id, { active: activeStatus })
+        return await super.updateWithIdOrEmail(id, { active: activeStatus })
     }
 
 }

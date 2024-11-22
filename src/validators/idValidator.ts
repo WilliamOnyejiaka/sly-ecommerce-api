@@ -1,24 +1,24 @@
 
-export default function idValidator(id: any) {
+export default function numberValidator(number: any) {
     try {
-        id = Number(id);
+        number = Number(number);
 
-        if (isNaN(id)) {
+        if (isNaN(number)) {
             return {
                 error: true,
-                message: "Id must be an integer",
+                message: "Item must be an integer",
             }
         }
 
         return {
             error: false,
-            id: id
+            number: number
         }
     } catch (error) {
-        console.error("Invalid store id: ", error);
+        console.error("Invalid Item: ", error);
         return {
             error: true,
-            message: "Id must be an integer",
+            message: "Item must be an integer",
         }
     }
 

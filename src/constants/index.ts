@@ -15,7 +15,10 @@ export default function constants(key: string) {
         '404Image': "Image was not found",
         '201ProfilePic': "Profile picture was uploaded successfully",
         '400Email': "Invalid email",
-        'service400Email': "Email already exists"
+        'service400Email': "Email already exists",
+        '200Role': "Role has been retrieved successfully",
+        '200Roles': "Roles were retrieved successfully",
+        '200Vendors': "Vendors were retrieved successfully"
 
     }[key];
 }

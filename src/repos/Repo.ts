@@ -7,7 +7,7 @@ interface IRepoDelete {
     where: any
 }
 
-export default class Repo {
+export default class Repo implements Repository {
 
     protected tblName: any;
 
@@ -16,6 +16,16 @@ export default class Repo {
     }
 
 
+    public async insert(data: any) {
+        try {
+            const newItem = await (prisma[this.tblName] as any).create({ data: data });
+            return newItem;
+        } catch (error) {
+            console.error(`Failed to create ${this.tblName}: `, error);
+            return {};
+        }
+
+    }
 
     public async insertMany(data: any[]) {
         try {
@@ -82,6 +92,24 @@ export default class Repo {
         }
     }
 
+    protected async getItem(where: any) {
+        try {
+            const item = await (prisma[this.tblName] as any).findUnique({
+                where: where
+            });
+            return {
+                error: false,
+                data: item
+            };
+        } catch (error) {
+            console.error(`Failed to get item from the ${this.tblName} table: `, error);
+            return {
+                error: true,
+                data: {}
+            };
+        }
+    }
+
     protected async delete(where: any, message404: string) {
         try {
             await (prisma[this.tblName] as any).delete({
@@ -109,7 +137,7 @@ export default class Repo {
         }
     }
 
-    protected async update(idOrEmail: number | string, data: any) {
+    protected async updateWithIdOrEmail(idOrEmail: number | string, data: any) {
         const where = typeof idOrEmail == "number" ? { id: idOrEmail } : { email: idOrEmail };
         try {
             await (prisma[this.tblName] as any).update({
@@ -127,6 +155,67 @@ export default class Repo {
                 error: true,
                 updated: false
             };
+        }
+    }
+
+    protected async update(where: any, data: any) {
+        try {
+            await (prisma[this.tblName] as any).update({
+                where: where,
+                data: data
+            });
+
+            return {
+                error: false,
+                updated: true
+            };
+        } catch (error) {
+            console.error(`Failed to update ${this.tblName}: `, error);
+            return {
+                error: true,
+                updated: false
+            };
+        }
+    }
+
+
+    protected async paginate(skip: number, take: number) {
+        try {
+            const items = await (prisma[this.tblName] as any).findMany({
+                skip,   // Skips the first 'skip' records
+                take,   // Fetches 'take' records
+            });
+            const totalItems = await (prisma[this.tblName] as any).count();
+
+            return {
+                error: false,
+                data: items,
+                totalItems: totalItems
+            };
+
+        } catch (error) {
+            console.log(`Failed to paginate ${this.tblName} items: `, error);
+            return {
+                error: true,
+                data: {}
+            }
+        }
+    }
+
+    protected async getAll() {
+        try {
+            const items = await (prisma[this.tblName] as any).findMany();
+            return {
+                error: false,
+                data: items
+            };
+
+        } catch (error) {
+            console.log(`Failed to get all ${this.tblName} items: `, error);
+            return {
+                error: true,
+                data: {}
+            }
         }
     }
 }

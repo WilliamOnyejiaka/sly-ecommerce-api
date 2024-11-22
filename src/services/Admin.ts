@@ -20,7 +20,7 @@ export default class Admin {
             return Service.responseData(400, true, "This admin already exists");
         }
 
-        const roleExistsResult = await this.roleService.getRole(roleId);
+        const roleExistsResult = await this.roleService.getRoleWithId(roleId);
 
         if (roleExistsResult.json.error) {
             return roleExistsResult;
@@ -140,7 +140,7 @@ export default class Admin {
     }
 
     public async createAdmin(createData: AdminDto, adminName: string) {
-        const roleExistsResult = await this.roleService.getRole(createData.roleId);
+        const roleExistsResult = await this.roleService.getRoleWithId(createData.roleId);
 
         if (roleExistsResult.json.error) {
             return roleExistsResult;
@@ -175,8 +175,8 @@ export default class Admin {
         return Service.responseData(200, !repoResult.error, "Admin was deleted successfully");
     }
 
-    public async deactivateAdmin(id: number){
-        const repoResult = await this.repo.updateActiveStatus(id,false);
+    public async deactivateAdmin(id: number) {
+        const repoResult = await this.repo.updateActiveStatus(id, false);
         if (repoResult.error) {
             return Service.responseData(500, true, http('500')!);
         }
@@ -191,5 +191,35 @@ export default class Admin {
         }
 
         return Service.responseData(200, !repoResult.error, "Admin was activated successfully");
+    }
+
+    public async paginateRoles(page: number, pageSize: number) {
+        return await this.roleService.paginateRoles(page, pageSize);
+    }
+
+    public async massUnassignRole(roleId: number) {
+        const repoResult = await this.repo.massUnassignRole(roleId);
+        if (repoResult.error) {
+            return Service.responseData(500, true, http('500')!);
+        }
+
+        return Service.responseData(200, false, "Mass UnAssignment was successfully");
+    }
+
+    public async assignRole(adminId: number,roleId: number) {
+        const repoResult = await this.repo.assignRole(adminId,roleId);
+        if (repoResult.error) {
+            return Service.responseData(500, true, http('500')!);
+        }
+
+        return Service.responseData(200, false, "Role was assigned successfully");
+    }
+
+    public async getRoleWithId(roleId: number){
+        return await this.roleService.getRoleWithId(roleId);
+    }
+
+    public async getVendor(vendorId: number){
+
     }
 }

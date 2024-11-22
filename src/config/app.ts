@@ -1,7 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { corsConfig, env } from ".";
-import { auth, vendor, store, image, seed, admin } from "./../routes";
+import { auth, vendor, store, image, seed, admin, role, adminVendor } from "./../routes";
 import { Email } from "../services";
 import path from "path";
 import ejs from "ejs";
@@ -39,6 +39,9 @@ function createApp() {
     );
     app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), store);
     app.use("/api/v1/admin", validateJWT(["admin"], env("tokenSecret")!), admin);
+    app.use("/api/v1/admin/role", validateJWT(["admin"], env("tokenSecret")!), role);
+    app.use("/api/v1/admin/vendor", validateJWT(["admin"], env("tokenSecret")!), adminVendor);
+
 
     app.post("/test2", async (req: Request, res: Response) => {
         // const result = await Email();

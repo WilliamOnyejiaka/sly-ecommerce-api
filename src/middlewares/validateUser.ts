@@ -4,8 +4,8 @@ import Repository from "../interfaces/Repository";
 import Cache from "../interfaces/Cache";
 
 const validateUser = <T extends Cache, U extends Repository>(cache: T, repo: U) => async (req: Request, res: Response, next: NextFunction) => {
-    const email = res.locals.data.email;
-    const cacheResult = await cache.get(email);
+    const id = res.locals.data.id;
+    const cacheResult = await cache.get(String(id));
 
     if (cacheResult.error) {
         res.status(500).json({
@@ -17,7 +17,7 @@ const validateUser = <T extends Cache, U extends Repository>(cache: T, repo: U) 
     }
 
     if (!cacheResult.data) {
-        const user = await repo.getUserWithEmail!(email);
+        const user = await repo.getUserWithId!(id);
 
         if (user.error) {
             res.status(404).json({
@@ -34,7 +34,7 @@ const validateUser = <T extends Cache, U extends Repository>(cache: T, repo: U) 
             });
             return;
         } else {
-            cache.set(email, user.data);
+            cache.set(id, user.data);
             next();
             return;
 

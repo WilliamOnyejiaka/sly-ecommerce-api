@@ -15,6 +15,13 @@ export interface AdminDto {
     active?: boolean
 }
 
+export interface RoleDto {
+    id?: number
+    name: string,
+    description: string,
+    level: number
+}
+
 export interface StoreDetailsDto {
     id?: number,
     name: string,
@@ -29,6 +36,7 @@ export interface StoreDetailsDto {
 
 
 export default interface VendorDto {
+    id?: number,
     firstName: string,
     lastName: string,
     password?: string,

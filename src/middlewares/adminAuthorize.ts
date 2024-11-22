@@ -31,7 +31,7 @@ const adminAuthorization = (requiredPermissions: string[]) => async (req: Reques
     const directPermissionsNames = directPermissions.map((rp: any) => rp.permission.name);
 
     const allPermissions = new Set([...rolePermissionsNames, ...directPermissionsNames]);
-    const hasPermission = requiredPermissions.some((perm) => allPermissions.has(perm));
+    const hasPermission = requiredPermissions.includes("any") ? true : requiredPermissions.some((perm) => allPermissions.has(perm));
 
     if (!hasPermission) {
         res.status(403).json({

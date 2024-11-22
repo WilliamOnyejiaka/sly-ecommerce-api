@@ -5,6 +5,8 @@ import VendorDto from "./../types/dtos";
 import constants from "../constants";
 class Auth {
 
+    private static readonly vendorService: Vendor = new Vendor();
+
     public static async vendorSignUp(req: Request, res: Response) {
         const vendorDto: VendorDto = req.body;
         if (vendorDto.password!.length < 5) {
@@ -33,7 +35,7 @@ class Auth {
             return;
         }
 
-        const emailExistsResult = await Vendor.emailExists(vendorDto.email);
+        const emailExistsResult = await Auth.vendorService.emailExists(vendorDto.email);
 
         if (emailExistsResult.json.error) {
             res.status(emailExistsResult.statusCode).json(emailExistsResult.json);
@@ -45,7 +47,7 @@ class Auth {
     }
 
     public static async vendorLogin(req: Request, res: Response) {
-        const { email, password }= req.body;
+        const { email, password } = req.body;
         const serviceResult = await Authentication.vendorLogin(
             email as string,
             password as string
@@ -103,7 +105,7 @@ class Auth {
             return;
         }
 
-        const emailExistsResult = await Vendor.emailExists(email);
+        const emailExistsResult = await Auth.vendorService.emailExists(email);
 
         if (emailExistsResult.json.error) {
             res.status(emailExistsResult.statusCode).json(emailExistsResult.json);
@@ -121,8 +123,6 @@ class Auth {
         const serviceResult = await Authentication.vendorSignUp(vendorSignUpData);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
-
-
 }
 
 export default Auth;

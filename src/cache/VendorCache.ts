@@ -8,10 +8,10 @@ export default class VendorCache implements Cache {
     private readonly preKey: string = "vendor";
     private readonly expirationTime: number = 2_592_000;
 
-    public async set(email: string, vendorDto: VendorDto) {
+    public async set(vendorId: string, vendorDto: VendorDto) {
         try {
             const success = await redisClient.set(
-                `${this.preKey}-${email}`,
+                `${this.preKey}-${vendorId}`,
                 JSON.stringify(vendorDto),
                 'EX',
                 this.expirationTime
@@ -23,9 +23,9 @@ export default class VendorCache implements Cache {
         }
     }
 
-    public async get(email: string) {
+    public async get(vendorId: string) {
         try {
-            const vendor = await redisClient.get(`${this.preKey}-${email}`);
+            const vendor = await redisClient.get(`${this.preKey}-${vendorId}`);
             return {
                 error: false,
                 data: vendor ?? JSON.parse(vendor!),
@@ -39,9 +39,9 @@ export default class VendorCache implements Cache {
         }
     }
 
-    public async delete(email: string) {
+    public async delete(vendorId: string) {
         try {
-            const result = await redisClient.del(`${this.preKey}-${email}`);
+            const result = await redisClient.del(`${this.preKey}-${vendorId}`);
             return result === 1 ? true : false;
         } catch (error) {
             console.error("Failed to delete cached item: ", error);

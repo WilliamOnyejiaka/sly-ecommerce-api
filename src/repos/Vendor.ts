@@ -2,6 +2,7 @@ import prisma from ".";
 import { http } from "../constants";
 import Repository from "../interfaces/Repository";
 import VendorDto from "../types/dtos";
+import Repo from "./Repo";
 
 interface UpdateData {
     firstName?: string,
@@ -11,7 +12,11 @@ interface UpdateData {
     verified?: boolean
 }
 
-export default class Vendor implements Repository {
+export default class Vendor extends Repo {
+
+    public constructor(){
+        super("vendor");
+    }
 
     public async insert(vendorData: VendorDto) {
         try {
@@ -67,13 +72,17 @@ export default class Vendor implements Repository {
                 data: {}
             };
         }
+    }       
+
+    public async getUserWithId(id: number) {
+        return await super.getItemWithId(id);
     }
 
     public async getUserWithEmail(email: string) {
         return await this.getVendorWithEmail(email);
     }
 
-    private async update(idOrEmail: number | string, data: UpdateData) {
+    public async update(idOrEmail: number | string, data: UpdateData) {
         const where = typeof idOrEmail == "number" ? { id: idOrEmail } : { email: idOrEmail };
         try {
             const vendor = await prisma.vendor.update({
@@ -110,10 +119,10 @@ export default class Vendor implements Repository {
         return await this.update(email, { verified: true });
     }
 
-    public async delete(email: string) {
+    public async delete(id: number) {
         try {
             const vendor = await prisma.vendor.delete({
-                where: { email: email }
+                where: { id: id }
             });
             return {
                 error: false,
@@ -121,7 +130,7 @@ export default class Vendor implements Repository {
         } catch (error: any) {
 
             if (error.code === 'P2025') {
-                const message = `Vendor with id ${email} does not exist.`;
+                const message = `Vendor with id ${id} does not exist.`;
                 console.error(message);
                 return {
                     error: true,
@@ -137,5 +146,13 @@ export default class Vendor implements Repository {
                 };
             }
         }
+    }
+
+    public async paginateVendors(skip: number, take: number){
+        return await super.paginate(skip,take);
+    }
+
+    public async getAllVendors(){
+        return await super.getAll();
     }
 }

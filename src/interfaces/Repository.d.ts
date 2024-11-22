@@ -1,6 +1,6 @@
 
 export default interface Repository {
-    getUserWithEmail?: (email: string) => Promise<{ error: boolean; data?: any }>,
+    getUserWithId?: (id: number) => Promise<{ error: boolean; data?: any }>,
     insert: (data: any) => Promise<{}>,
 }
 

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Admin as AdminService } from "../services";
-import { emailValidator, idValidator, phoneNumberValidator } from "../validators";
+import { emailValidator, numberValidator, phoneNumberValidator } from "../validators";
 import { baseUrl } from "../utils";
 import { AdminDto } from "../types/dtos";
 import constants from "../constants";
@@ -10,7 +10,7 @@ export default class Admin {
     private static readonly service: AdminService = new AdminService();
 
     public static async defaultAdmin(req: Request, res: Response) {
-        const idResult = idValidator(req.params.roleId);
+        const idResult = numberValidator(req.params.roleId);
 
         if (idResult.error) {
             res.status(400).json({
@@ -20,7 +20,7 @@ export default class Admin {
             });
             return;
         }
-        const serviceResult = await Admin.service.defaultAdmin(idResult.id);
+        const serviceResult = await Admin.service.defaultAdmin(idResult.number);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -77,27 +77,27 @@ export default class Admin {
     }
 
     public static async delete(req: Request, res: Response) {
-        const idResult = idValidator(req.params.adminId);
+        const idResult = numberValidator(req.params.adminId);
 
         if (idResult.error) {
             res.status(400).send("Id must be an integer");
             return;
         }
 
-        const serviceResult = await Admin.service.delete(idResult.id);
+        const serviceResult = await Admin.service.delete(idResult.number);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
     public static toggleActivate(activate: boolean = true) {
         return async (req: Request, res: Response) => {
-            const idResult = idValidator(req.body.adminId);
+            const idResult = numberValidator(req.body.adminId);
 
             if (idResult.error) {
                 res.status(400).send("Admin id must be an integer");
                 return;
             }
 
-            const serviceResult = activate ? await Admin.service.activateAdmin(idResult.id) : await Admin.service.deactivateAdmin(idResult.id);
+            const serviceResult = activate ? await Admin.service.activateAdmin(idResult.number) : await Admin.service.deactivateAdmin(idResult.number);
             res.status(serviceResult.statusCode).json(serviceResult.json);
         }
     }
@@ -108,5 +108,29 @@ export default class Admin {
 
     public static activateAdmin() {
         return Admin.toggleActivate();
+    }
+
+    public static async assignRole(req: Request, res: Response) {
+        const idResult = numberValidator(req.body.adminId);
+
+        if (idResult.error) {
+            res.status(400).send("Admin id must be an integer");
+            return;
+        }
+
+        const roleIdResult = numberValidator(req.body.roleId);
+
+        if (roleIdResult.error) {
+            res.status(400).send("Role id must be an integer");
+            return;
+        }
+        const roleExistsResult = await Admin.service.getRoleWithId(roleIdResult.number);
+        if (roleExistsResult.json.error) {
+            res.status(roleExistsResult.statusCode).json(roleExistsResult.json);
+            return;
+        }
+
+        const serviceResult = await Admin.service.assignRole(idResult.number, roleIdResult.number);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 }

@@ -11,16 +11,11 @@ admin.post(
     asyncHandler(Admin.uploadProfilePicture)
 );
 
-admin.get(
-    "/",
-    asyncHandler(Admin.getAdmin)
-);
-
 admin.get("/get-admin-and-role", asyncHandler(Admin.getAdminAndRole));
 
 admin.post(
     "/create-admin",
-    adminAuthorization(['manage_finance', 'manage_support']),
+    adminAuthorization(['manage_all']),
     validateBody([
         "firstName",
         "password",
@@ -31,12 +26,6 @@ admin.post(
         "active"
     ]),
     asyncHandler(Admin.createAdmin)
-);
-
-admin.delete(
-    "/:adminId",
-    adminAuthorization(['manage_all']),
-    asyncHandler(Admin.delete)
 );
 
 admin.patch(
@@ -52,5 +41,25 @@ admin.patch(
     validateBody(['adminId']),
     asyncHandler(Admin.activateAdmin())
 );
+
+admin.patch(
+    "/assign-role",
+    adminAuthorization(['manage_all']),
+    validateBody(['adminId','roleId']),
+    asyncHandler(Admin.assignRole)
+);
+
+admin.get(
+    "/",
+    asyncHandler(Admin.getAdmin)
+);
+
+admin.delete(
+    "/:adminId",
+    adminAuthorization(['manage_all']),
+    asyncHandler(Admin.delete)
+);
+
+
 
 export default admin;
