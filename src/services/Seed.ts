@@ -3,7 +3,7 @@ import Repo from "../repos/Repo";
 import { http } from "../constants";
 import { loadJsonFile } from "../utils";
 import jsonRoles from "./../seeds/roles.json";
-import jsonPermissions from "./../seeds/roles.json";
+import jsonPermissions from "./../seeds/permissions.json";
 
 
 export default class Seed {
