@@ -39,6 +39,8 @@ export default class Repo implements Repository {
 
     public async checkIfTblHasData() {
         try {
+            console.log(prisma);
+            
             const count = await (prisma[this.tblName] as any).count();
             return {
                 error: false,
