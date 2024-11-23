@@ -102,7 +102,6 @@ export default class Admin {
     }
 
 
-
     public async getAdminWithEmail(email: string) {
         const repoResult = await this.repo.getAdminWithEmail(email);
         if (repoResult.error) {
@@ -175,22 +174,22 @@ export default class Admin {
         return Service.responseData(200, !repoResult.error, "Admin was deleted successfully");
     }
 
-    public async deactivateAdmin(id: number) {
-        const repoResult = await this.repo.updateActiveStatus(id, false);
+    private async toggleActiveStatus(id: number, activate: boolean = true) {
+        const repoResult = activate ? await this.repo.updateActiveStatus(id, true) : await this.repo.updateActiveStatus(id, false);
         if (repoResult.error) {
-            return Service.responseData(500, true, http('500')!);
+            const message = repoResult.type == 404 ? constants('404Admin')! : http('500')!;
+            return Service.responseData(repoResult.type!, true, message);
         }
+        const message = activate ? "Admin was activated successfully" : "Admin was deactivated successfully";
+        return Service.responseData(200, false, message);
+    }
 
-        return Service.responseData(200, !repoResult.error, "Admin was deactivated successfully");
+    public async deactivateAdmin(id: number) {
+        return this.toggleActiveStatus(id, false);
     }
 
     public async activateAdmin(id: number) {
-        const repoResult = await this.repo.updateActiveStatus(id, true);
-        if (repoResult.error) {
-            return Service.responseData(500, true, http('500')!);
-        }
-
-        return Service.responseData(200, !repoResult.error, "Admin was activated successfully");
+        return this.toggleActiveStatus(id);
     }
 
     public async paginateRoles(page: number, pageSize: number) {
@@ -206,20 +205,17 @@ export default class Admin {
         return Service.responseData(200, false, "Mass UnAssignment was successfully");
     }
 
-    public async assignRole(adminId: number,roleId: number) {
-        const repoResult = await this.repo.assignRole(adminId,roleId);
+    public async assignRole(adminId: number, roleId: number) {
+        const repoResult = await this.repo.assignRole(adminId, roleId);
         if (repoResult.error) {
-            return Service.responseData(500, true, http('500')!);
+            const message = repoResult.type == 404 ? "Admin was not found" : http('500')!;
+            return Service.responseData(repoResult.type!, true, message);
         }
 
         return Service.responseData(200, false, "Role was assigned successfully");
     }
 
-    public async getRoleWithId(roleId: number){
+    public async getRoleWithId(roleId: number) {
         return await this.roleService.getRoleWithId(roleId);
-    }
-
-    public async getVendor(vendorId: number){
-
     }
 }

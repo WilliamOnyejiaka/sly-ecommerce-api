@@ -18,7 +18,8 @@ export default function constants(key: string) {
         'service400Email': "Email already exists",
         '200Role': "Role has been retrieved successfully",
         '200Roles': "Roles were retrieved successfully",
-        '200Vendors': "Vendors were retrieved successfully"
+        '200Vendors': "Vendors were retrieved successfully",
+        '404Admin': "Admin was not found"
 
     }[key];
 }

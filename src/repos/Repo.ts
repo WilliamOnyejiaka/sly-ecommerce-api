@@ -38,7 +38,7 @@ export default class Repo implements Repository {
     }
 
     public async checkIfTblHasData() {
-        try {            
+        try {
             const count = await (prisma[this.tblName] as any).count();
             return {
                 error: false,
@@ -53,43 +53,11 @@ export default class Repo implements Repository {
     }
 
     protected async getItemWithId(id: number) {
-        try {
-            const item = await (prisma[this.tblName] as any).findUnique({
-                where: {
-                    id: id
-                }
-            });
-            return {
-                error: false,
-                data: item
-            };
-        } catch (error) {
-            console.error(`Failed to get ${this.tblName} with id: `, error);
-            return {
-                error: true,
-                data: {}
-            };
-        }
+        return await this.getItem({ id: id });
     }
 
     protected async getItemWithEmail(email: string) {
-        try {
-            const item = await (prisma[this.tblName] as any).findUnique({
-                where: {
-                    email: email
-                }
-            });
-            return {
-                error: false,
-                data: item
-            };
-        } catch (error) {
-            console.error(`Failed to get ${this.tblName} with email: `, error);
-            return {
-                error: true,
-                data: {}
-            };
-        }
+        return await this.getItem({ email: email });
     }
 
     protected async getItem(where: any) {
@@ -137,25 +105,10 @@ export default class Repo implements Repository {
         }
     }
 
+
     protected async updateWithIdOrEmail(idOrEmail: number | string, data: any) {
         const where = typeof idOrEmail == "number" ? { id: idOrEmail } : { email: idOrEmail };
-        try {
-            await (prisma[this.tblName] as any).update({
-                where: where,
-                data: data
-            });
-
-            return {
-                error: false,
-                updated: true
-            };
-        } catch (error) {
-            console.error(`Failed to update ${this.tblName}: `, error);
-            return {
-                error: true,
-                updated: false
-            };
-        }
+        return await this.update(where, data);
     }
 
     protected async update(where: any, data: any) {
@@ -166,15 +119,25 @@ export default class Repo implements Repository {
             });
 
             return {
-                error: false,
-                updated: true
+                error: false
             };
-        } catch (error) {
-            console.error(`Failed to update ${this.tblName}: `, error);
-            return {
-                error: true,
-                updated: false
-            };
+        } catch (error: any) {
+            if (error.code === 'P2025') {
+                const message404 = `Record not found for update operation for the ${this.tblName} table`;
+                console.error(message404);
+                return {
+                    error: true,
+                    message: message404,
+                    type: 404
+                };
+            } else {
+                console.error(`Failed to update the ${this.tblName} table: `, error);
+                return {
+                    error: true,
+                    message: http('500')!,
+                    type: 500
+                };
+            }
         }
     }
 

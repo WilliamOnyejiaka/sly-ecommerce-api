@@ -68,7 +68,6 @@ export default class Admin extends Repo {
         return await super.getItemWithId(id);
     }
 
-
     public async getAdminWithEmail(email: string) {
         return await super.getItemWithEmail(email);
     }
