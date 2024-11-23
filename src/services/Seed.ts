@@ -25,20 +25,10 @@ export default class Seed {
     }
 
     public static async defaultRoles() {
-        // const result = loadJsonFile("./../../seeds/roles.json");
         return await Seed.defaultData('role',jsonRoles);
-
-        // return !result.error ?
-        //     await Seed.defaultData('role', result.data) :
-        //     Service.responseData(500, true, http('500')!);
     }
 
     public static async defaultPermissions() {
         return await Seed.defaultData('permission', jsonPermissions);
-
-        // const result = loadJsonFile("./../../seed/permissions.json");
-        // return !result.error ?
-        //     await Seed.defaultData('permission', result.data) :
-        //     Service.responseData(500, true, http('500')!);
     }
 }
