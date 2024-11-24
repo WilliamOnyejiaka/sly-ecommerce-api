@@ -6,6 +6,8 @@ import ImageController from "./Image";
 import Seed from "./Seed";
 import Role from "./Role";
 import AdminVendor from "./AdminVendor";
+import Permission from "./Permission";
+import AdminPermission from "./AdminPermission";
 
 
 export {
@@ -16,5 +18,7 @@ export {
     ImageController,
     Seed,
     Role,
-    AdminVendor
+    AdminVendor,
+    Permission,
+    AdminPermission
 };

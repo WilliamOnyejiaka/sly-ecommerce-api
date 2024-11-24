@@ -40,7 +40,7 @@ export default class Admin {
             defaultAminData.password = passwordHash;
 
             const result = await this.repo.insert(defaultAminData);
-            const error: boolean = result ? false : true
+            const error: boolean = !result;
             const statusCode = error ? 500 : 201;
             const message: string = !error ? "Admin has been created successfully" : http("500")!;
 
@@ -53,7 +53,7 @@ export default class Admin {
     }
 
 
-    public async emailExists(email: string) { // Create a general function to handle this
+    public async emailExists(email: string) { // TODO:Create a general function to handle this
         const emailExists = await this.repo.getAdminWithEmail(email);
 
         if (emailExists.error) {
@@ -61,7 +61,7 @@ export default class Admin {
         }
 
         const statusCode = emailExists.data ? 400 : 200;
-        const error: boolean = emailExists.data ? true : false;
+        const error: boolean = !!emailExists.data;
 
         return Service.responseData(statusCode, error, error ? constants("service400Email")! : null);
     }
@@ -151,7 +151,7 @@ export default class Admin {
             createData.createdBy = adminName;
 
             const result = await this.repo.insert(createData);
-            const error: boolean = result ? false : true
+            const error: boolean = !result
             const statusCode = error ? 500 : 201;
             const message: string = !error ? "Admin has been created successfully" : http("500")!;
 
@@ -214,6 +214,17 @@ export default class Admin {
 
         return Service.responseData(200, false, "Role was assigned successfully");
     }
+
+    public async assignPermission(adminId: number, permissionId: number) {
+        const repoResult = await this.repo.assignRole(adminId, permissionId);
+        if (repoResult.error) {
+            const message = repoResult.type == 404 ? "Admin was not found" : http('500')!;
+            return Service.responseData(repoResult.type!, true, message);
+        }
+
+        return Service.responseData(200, false, "Permission was assigned successfully");
+    }
+
 
     public async getRoleWithId(roleId: number) {
         return await this.roleService.getRoleWithId(roleId);

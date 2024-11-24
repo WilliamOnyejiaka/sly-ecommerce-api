@@ -196,6 +196,8 @@ export default class Vendor {
 
         const pagination = getPagination(page, pageSize, totalRecords);
 
+        repoResult.data.forEach((item: any) => delete item.password);
+
         return Service.responseData(200, false, constants('200Vendors')!, {
             data: repoResult.data,
             pagination
@@ -207,7 +209,8 @@ export default class Vendor {
         if (repoResult.error) {
             return Service.responseData(500, true, http('500')!);
         }
-
+        
+        repoResult.data.forEach((item: any) => delete item.password);
         return Service.responseData(200, false, constants('200Vendors')!, repoResult.data);
     }
 }

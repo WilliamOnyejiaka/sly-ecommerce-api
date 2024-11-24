@@ -15,7 +15,6 @@ export default class Repo implements Repository {
         this.tblName = tblName;
     }
 
-
     public async insert(data: any) {
         try {
             const newItem = await (prisma[this.tblName] as any).create({ data: data });
@@ -62,7 +61,7 @@ export default class Repo implements Repository {
 
     protected async getItem(where: any) {
         try {
-            const item = await (prisma[this.tblName] as any).findUnique({
+            const item = await (prisma[this.tblName] as any).findFirst({
                 where: where
             });
             return {
@@ -157,7 +156,7 @@ export default class Repo implements Repository {
             };
 
         } catch (error) {
-            console.log(`Failed to paginate ${this.tblName} items: `, error);
+            console.error(`Failed to paginate ${this.tblName} items: `, error);
             return {
                 error: true,
                 data: {}
@@ -174,7 +173,7 @@ export default class Repo implements Repository {
             };
 
         } catch (error) {
-            console.log(`Failed to get all ${this.tblName} items: `, error);
+            console.error(`Failed to get all ${this.tblName} items: `, error);
             return {
                 error: true,
                 data: {}

@@ -22,6 +22,20 @@ export interface RoleDto {
     level: number
 }
 
+export interface PermissionDto {
+    id?: number
+    name: string,
+    description: string
+}
+
+export interface AdminPermissionDto {
+    id?: number
+    adminId: number,
+    roleId: number
+}
+
+
+
 export interface StoreDetailsDto {
     id?: number,
     name: string,

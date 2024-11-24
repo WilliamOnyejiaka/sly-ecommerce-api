@@ -18,7 +18,7 @@ export default class Role {
 
         const role = repoResult.data;
         const statusCode = role ? 200 : 404;
-        const error: boolean = role ? false : true;
+        const error: boolean = !role;
         const message = error ? "Role was not found" : constants('200Role')!;
 
         return Service.responseData(statusCode, error, message, role);

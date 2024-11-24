@@ -19,8 +19,11 @@ export default function constants(key: string) {
         '200Role': "Role has been retrieved successfully",
         '200Roles': "Roles were retrieved successfully",
         '200Vendors': "Vendors were retrieved successfully",
-        '404Admin': "Admin was not found"
-
+        '404Admin': "Admin was not found",
+        '200Permission': "Permission has been retrieved successfully",
+        '200Permissions': "Permissions were retrieved successfully",
+        '200AdminPermissions': "AdminPermissions were retrieved successfully",
+        '200AdminPermission': "AdminPermission has been retrieved successfully"
     }[key];
 }
 

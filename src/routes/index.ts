@@ -9,6 +9,8 @@ import { Router, Request, Response } from "express";
 import seed from "./seed";
 import role from "./role";
 import adminVendor from "./adminVendor";
+import permission from "./permission";
+import adminPermission from "./adminPermission";
 
 export {
     auth,
@@ -18,5 +20,7 @@ export {
     image,
     seed,
     role,
-    adminVendor
+    adminVendor,
+    permission,
+    adminPermission
 };

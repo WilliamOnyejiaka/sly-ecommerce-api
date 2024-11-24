@@ -17,7 +17,7 @@ class Authentication {
         vendorDto.password = passwordHash;
 
         const result = await Authentication.vendorRepo.insert(vendorDto);
-        const error: boolean = result ? false : true
+        const error: boolean = !result
         const statusCode = error ? 500 : 201;
         const message: string = !error ? "Vendor has been created successfully" : http("500")!;
 
