@@ -1,7 +1,7 @@
 import mime from "mime";
 import Service from ".";
 import constants, { http, urls } from "../constants";
-import { processImage } from "../utils";
+import { getPagination, processImage } from "../utils";
 import { Banner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
 import { PictureData } from "../interfaces/PictureData";
@@ -312,5 +312,34 @@ export default class Store {
         }
 
         return Service.responseData(200, false, "Store was deleted successfully");
+    }
+
+    public async paginateStores(page: number, pageSize: number) {
+        const skip = (page - 1) * pageSize;
+        const take = pageSize;
+        const repoResult = await this.storeRepo.paginateStore(skip, take);
+
+        if (repoResult.error) {
+            return Service.responseData(500, true, http('500')!);
+        }
+
+        const totalRecords = repoResult.totalItems;
+
+        const pagination = getPagination(page, pageSize, totalRecords);
+
+        return Service.responseData(200, false, constants('200Stores')!, {
+            data: repoResult.data,
+            pagination
+        });
+    }
+
+    public async getAllStores() {
+        const repoResult = await this.storeRepo.getAllStores();
+
+        if (repoResult.error) {
+            return Service.responseData(500, true, http('500')!);
+        }
+
+        return Service.responseData(200, false, constants('200Stores')!, repoResult.data);
     }
 }

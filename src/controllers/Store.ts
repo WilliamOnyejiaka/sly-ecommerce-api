@@ -65,7 +65,7 @@ export default class Store {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
-    static async deleteImages(images: Express.Multer.File[]) {
+    static async deleteImages(images: Express.Multer.File[]) { // TODO: Remove this
         for (const image of images) {
             fs.unlinkSync(image.path);
         }

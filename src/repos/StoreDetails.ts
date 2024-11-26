@@ -2,8 +2,13 @@ import prisma from ".";
 import { PictureData } from "../interfaces/PictureData";
 import { StoreDetailsDto } from "../types/dtos";
 import { http } from "../constants";
+import Repo from "./Repo";
 
-export default class StoreDetails {
+export default class StoreDetails extends Repo {
+
+    public constructor() {
+        super('storeDetails');
+    }
 
     public async insert(storeDetailsDto: StoreDetailsDto) {
         try {
@@ -165,5 +170,13 @@ export default class StoreDetails {
                 };
             }
         }
+    }
+
+    public async getAllStores(){
+        return await super.getAll();
+    }
+
+    public async paginateStore(skip: number, take: number){
+        return await super.paginate(skip,take);
     }
 }

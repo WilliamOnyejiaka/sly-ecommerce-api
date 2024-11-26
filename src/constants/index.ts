@@ -23,7 +23,9 @@ export default function constants(key: string) {
         '200Permission': "Permission has been retrieved successfully",
         '200Permissions': "Permissions were retrieved successfully",
         '200AdminPermissions': "AdminPermissions were retrieved successfully",
-        '200AdminPermission': "AdminPermission has been retrieved successfully"
+        '200AdminPermission': "AdminPermission has been retrieved successfully",
+        '200tore': "Store has been retrieved successfully",
+        '200Stores': "Stores has been retrieved successfully"
     }[key];
 }
 
