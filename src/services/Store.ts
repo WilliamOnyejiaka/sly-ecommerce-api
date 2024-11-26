@@ -311,6 +311,6 @@ export default class Store {
             return Service.responseData(repoResult.type!, true, repoResult.message!);
         }
 
-        return Service.responseData(200, !repoResult.error, "Store was deleted successfully");
+        return Service.responseData(200, false, "Store was deleted successfully");
     }
 }
