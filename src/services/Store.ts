@@ -8,17 +8,17 @@ import { PictureData } from "../interfaces/PictureData";
 
 export default class Store {
 
-    private static readonly storeLogoRepo: StoreLogo = new StoreLogo();
-    private static readonly bannerRepo: Banner = new Banner();
-    private static readonly storeRepo: StoreDetails = new StoreDetails();
+    private readonly storeLogoRepo: StoreLogo = new StoreLogo();
+    private readonly bannerRepo: Banner = new Banner();
+    private readonly storeRepo: StoreDetails = new StoreDetails();
 
-    public static async createStoreAll(storeDetailsDto: StoreDetailsDto, images: Express.Multer.File[], baseUrl: string) {
+    public async createStoreAll(storeDetailsDto: StoreDetailsDto, images: Express.Multer.File[], baseUrl: string) {
 
         let base64Images: any = {
             firstBanner: null,
             secondBanner: null,
             storeLogo: null
-        };        
+        };
 
         try {
             for (const image of images) {
@@ -44,7 +44,7 @@ export default class Store {
             );
         }
 
-        const repoResult = await StoreDetails.insertWithRelations(
+        const repoResult = await this.storeRepo.insertWithRelations(
             storeDetailsDto,
             base64Images.storeLogo as PictureData,
             base64Images.firstBanner as PictureData,
@@ -73,16 +73,16 @@ export default class Store {
         return Service.responseData(500, true, http("500")!);
     }
 
-    public static async createStore(storeDetailsDto: StoreDetailsDto) {
+    public async createStore(storeDetailsDto: StoreDetailsDto) {
 
-        const repoResult = await StoreDetails.insert(storeDetailsDto);
+        const repoResult = await this.storeRepo.insert(storeDetailsDto);
 
         return repoResult ? Service.responseData(201, false, "Store was created successfully", repoResult) :
             Service.responseData(500, true, http("500")!);
     }
 
-    public static async storeNameExists(name: string) {
-        const nameExists = await StoreDetails.getStoreWithName(name);
+    public async storeNameExists(name: string) {
+        const nameExists = await this.storeRepo.getStoreWithName(name);
 
         if (nameExists.error) {
             return Service.responseData(500, true, http("500") as string);
@@ -94,8 +94,8 @@ export default class Store {
         return Service.responseData(statusCode, error, error ? "This name already exists" : null);
     }
 
-    public static async storeExists(vendorId: number) {
-        const storeExists = await StoreDetails.getStoreWithVendorId(vendorId);
+    public async storeExists(vendorId: number) {
+        const storeExists = await this.storeRepo.getStoreWithVendorId(vendorId);
 
         if (storeExists.error) {
             return Service.responseData(500, true, http("500") as string);
@@ -107,8 +107,8 @@ export default class Store {
         return Service.responseData(statusCode, error, error ? "This vendor already has a store" : null);
     }
 
-    public static async getStoreWithId(id: number) {
-        const repoResult = await StoreDetails.getStoreWithId(id);
+    public async getStoreWithId(id: number) {
+        const repoResult = await this.storeRepo.getStoreWithId(id);
 
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
@@ -125,7 +125,7 @@ export default class Store {
         );
     }
 
-    public static async uploadStoreLogo(image: Express.Multer.File, storeId: number, baseUrl: string) {
+    public async uploadStoreLogo(image: Express.Multer.File, storeId: number, baseUrl: string) {
         const result = await processImage(image);
 
         if (result.error) {
@@ -137,7 +137,7 @@ export default class Store {
             );
         }
 
-        const repoResult = await Store.storeLogoRepo.insert({
+        const repoResult = await this.storeLogoRepo.insert({
             mimeType: mime.lookup(image.path),
             picture: result.data,
             storeId: storeId
@@ -159,7 +159,7 @@ export default class Store {
             );
     }
 
-    public static async uploadBanners(banners: Express.Multer.File[], storeId: number, baseUrl: string) {
+    public async uploadBanners(banners: Express.Multer.File[], storeId: number, baseUrl: string) {
         let base64Banners: any = {
             firstBanner: null,
             secondBanner: null
@@ -213,8 +213,8 @@ export default class Store {
             );
     }
 
-    public static async getStoreLogo(storeId: any) {
-        const repoResult = await Store.storeLogoRepo.getImage(storeId);
+    public async getStoreLogo(storeId: any) {
+        const repoResult = await this.storeLogoRepo.getImage(storeId);
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
         }
@@ -235,8 +235,8 @@ export default class Store {
         return Service.responseData(statusCode, error, null, repoResult.data);
     }
 
-    public static async getFirstStoreBanner(storeId: any) {
-        const repoResult = await Store.bannerRepo.getFirstStoreBanner(storeId)
+    public async getFirstStoreBanner(storeId: any) {
+        const repoResult = await this.bannerRepo.getFirstStoreBanner(storeId)
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
         }
@@ -257,8 +257,8 @@ export default class Store {
         return Service.responseData(statusCode, error, null, repoResult.data);
     }
 
-    public static async getSecondStoreBanner(storeId: any) {
-        const repoResult = await Store.bannerRepo.getSecondStoreBanner(storeId)
+    public async getSecondStoreBanner(storeId: any) {
+        const repoResult = await this.bannerRepo.getSecondStoreBanner(storeId)
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
         }
@@ -279,8 +279,8 @@ export default class Store {
         return Service.responseData(statusCode, error, null, repoResult.data);
     }
 
-    public static async getStoreAll(storeId: number, baseUrl: string) {
-        const repoResult = await Store.storeRepo.getStoreAndRelationsWithId(storeId) as any;
+    public async getStoreAll(vendorId: number, baseUrl: string) {
+        const repoResult = await this.storeRepo.getStoreAndRelationsWithVendorId(vendorId) as any;
         if (repoResult.error) {
             return Service.responseData(500, true, http("500") as string);
         }
@@ -290,10 +290,10 @@ export default class Store {
 
         if (repoResult.data) {
             const baseImageUrl: string = urls("baseImageUrl")!;
-            
-            repoResult.data.storeLogoUrl = repoResult.data.storeLogo.length != 0 ? baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId : null;
-            repoResult.data.firstStoreBannerUrl = repoResult.data.firstStoreBanner.length != 0 ? baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId : null;
-            repoResult.data.secondBannerUrl = repoResult.data.secondStoreBanner.length != 0 ? baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId : null;
+
+            repoResult.data.storeLogoUrl = repoResult.data.storeLogo.length != 0 ? baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + vendorId : null;
+            repoResult.data.firstStoreBannerUrl = repoResult.data.firstStoreBanner.length != 0 ? baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + vendorId : null;
+            repoResult.data.secondBannerUrl = repoResult.data.secondStoreBanner.length != 0 ? baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + vendorId : null;
 
             delete repoResult.data.storeLogo;
             delete repoResult.data.firstStoreBanner;
@@ -302,11 +302,11 @@ export default class Store {
             return Service.responseData(statusCode, error, "Store was retrieved successfully", repoResult.data);
         }
 
-        return Service.responseData(statusCode, error, "Store was not found", repoResult.data);
+        return Service.responseData(statusCode, error, "This vendor does not have a store", repoResult.data);
     }
 
-    public static async delete(id: number) {
-        const repoResult = await Store.storeRepo.delete(id);
+    public async delete(vendorId: number) {
+        const repoResult = await this.storeRepo.delete(vendorId);
         if (repoResult.error) {
             return Service.responseData(repoResult.type!, true, repoResult.message!);
         }

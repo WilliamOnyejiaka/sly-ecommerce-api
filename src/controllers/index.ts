@@ -8,6 +8,7 @@ import Role from "./Role";
 import AdminVendor from "./AdminVendor";
 import Permission from "./Permission";
 import AdminPermission from "./AdminPermission";
+import AdminStore from "./AdminStore";
 
 
 export {
@@ -20,5 +21,6 @@ export {
     Role,
     AdminVendor,
     Permission,
-    AdminPermission
+    AdminPermission,
+    AdminStore
 };

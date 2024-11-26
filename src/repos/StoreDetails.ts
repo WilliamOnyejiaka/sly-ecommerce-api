@@ -5,7 +5,7 @@ import { http } from "../constants";
 
 export default class StoreDetails {
 
-    static async insert(storeDetailsDto: StoreDetailsDto) {
+    public async insert(storeDetailsDto: StoreDetailsDto) {
         try {
             const newStore = await prisma.storeDetails.create({ data: storeDetailsDto as any });
             return newStore;
@@ -15,7 +15,7 @@ export default class StoreDetails {
         }
     }
 
-    static async insertWithRelations(
+    public async insertWithRelations(
         storeDetailsDto: StoreDetailsDto,
         storeLogo: PictureData | null,
         firstStoreBanner: PictureData | null,
@@ -41,7 +41,7 @@ export default class StoreDetails {
         }
     }
 
-    static async getStoreWithName(name: string) {
+    public async getStoreWithName(name: string) {
         try {
             const store = await prisma.storeDetails.findUnique({
                 where: {
@@ -61,7 +61,7 @@ export default class StoreDetails {
         }
     }
 
-    static async getStoreWithVendorId(vendorId: number) {
+    public async getStoreWithVendorId(vendorId: number) {
         try {
             const store = await prisma.storeDetails.findFirst({
                 where: {
@@ -81,7 +81,7 @@ export default class StoreDetails {
         }
     }
 
-    static async getStoreWithId(id: number) {
+    public async getStoreWithId(id: number) {
         try {
             const store = await prisma.storeDetails.findUnique({
                 where: {
@@ -101,10 +101,10 @@ export default class StoreDetails {
         }
     }
 
-    public async getStoreAndRelationsWithId(id: number) {
+    public async getStoreAndRelationsWithVendorId(vendorId: number) {
         try {
             const store = await prisma.storeDetails.findUnique({
-                where: { id: id },
+                where: { vendorId: vendorId },
                 include: {
                     storeLogo: {
                         select: {
@@ -136,12 +136,11 @@ export default class StoreDetails {
         }
     }
 
-    public async delete(id: number) {
+    public async delete(vendorId: number) {
         try {
             const store = await prisma.storeDetails.delete({
                 where: {
-                    id: id,
-                    // vendorId: vendorId
+                    vendorId: vendorId,
                 }
             });
             return {
@@ -150,7 +149,7 @@ export default class StoreDetails {
         } catch (error: any) {
 
             if (error.code === 'P2025') {
-                const message = `Store with id ${id} does not exist.`;
+                const message = `Store with vendor id ${vendorId} does not exist.`;
                 console.error(message);
                 return {
                     error: true,

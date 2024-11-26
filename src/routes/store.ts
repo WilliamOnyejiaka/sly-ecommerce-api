@@ -35,10 +35,10 @@ store.post(
     asyncHandler(Store.uploadBanners)
 );
 
-store.get("/:storeId",asyncHandler(Store.getStoreAll));
+store.get("/",asyncHandler(Store.getStoreAll));
 
 store.delete(
-    "/:storeId",
+    "/",
     asyncHandler(Store.deleteStore)
 );
 

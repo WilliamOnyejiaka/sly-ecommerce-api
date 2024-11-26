@@ -10,6 +10,7 @@ import Seed from "./Seed";
 import Role from "./Role";
 import Permission from "./Permission";
 import AdminPermission from "./AdminPermission";
+import AdminStore from "./AdminStore";
 
 export default class Service {
 
@@ -41,5 +42,6 @@ export {
     Seed,
     Role,
     Permission,
-    AdminPermission
+    AdminPermission,
+    AdminStore
 };

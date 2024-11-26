@@ -7,6 +7,8 @@ import * as fs from "fs";
 import { baseUrl } from "../utils";
 
 export default class Store {
+    
+    private static readonly service: StoreService = new StoreService();
 
     public static async createAll(req: Request, res: Response) {
         const images = req.files!;
@@ -24,14 +26,14 @@ export default class Store {
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
 
-        const storeExists = await StoreService.storeExists(storeDetailsDto.vendorId);
+        const storeExists = await Store.service.storeExists(storeDetailsDto.vendorId);
         if (storeExists.json.error) {
             Store.deleteImages(images as Express.Multer.File[]);
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
 
-        const nameExists = await StoreService.storeNameExists(storeDetailsDto.name);
+        const nameExists = await Store.service.storeNameExists(storeDetailsDto.name);
         if (nameExists.json.error) {
             Store.deleteImages(images as Express.Multer.File[]);
             res.status(nameExists.statusCode).json(nameExists.json);
@@ -39,7 +41,7 @@ export default class Store {
         }
 
         const baseServerUrl = baseUrl(req);
-        const serviceResult = await StoreService.createStoreAll(storeDetailsDto, images as Express.Multer.File[], baseServerUrl);
+        const serviceResult = await Store.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[], baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -47,19 +49,19 @@ export default class Store {
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
 
-        const storeExists = await StoreService.storeExists(storeDetailsDto.vendorId);
+        const storeExists = await Store.service.storeExists(storeDetailsDto.vendorId);
         if (storeExists.json.error) {
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
 
-        const nameExists = await StoreService.storeNameExists(storeDetailsDto.name);
+        const nameExists = await Store.service.storeNameExists(storeDetailsDto.name);
         if (nameExists.json.error) {
             res.status(nameExists.statusCode).json(nameExists.json);
             return;
         }
 
-        const serviceResult = await StoreService.createStore(storeDetailsDto);
+        const serviceResult = await Store.service.createStore(storeDetailsDto);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -79,7 +81,7 @@ export default class Store {
             return;
         }
 
-        const storeExists = await StoreService.getStoreWithId(idResult.number);
+        const storeExists = await Store.service.getStoreWithId(idResult.number);
         if (storeExists.json.error) {
             Store.deleteImages([image]);
             res.status(storeExists.statusCode).json(storeExists.json);
@@ -87,7 +89,7 @@ export default class Store {
         }
 
         const baseServerUrl = baseUrl(req);
-        const serviceResult = await StoreService.uploadStoreLogo(image, idResult.number, baseServerUrl);
+        const serviceResult = await Store.service.uploadStoreLogo(image, idResult.number, baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -101,7 +103,7 @@ export default class Store {
             return;
         }
 
-        const storeExists = await StoreService.getStoreWithId(idResult.number);
+        const storeExists = await Store.service.getStoreWithId(idResult.number);
         if (storeExists.json.error) {
             Store.deleteImages(images as Express.Multer.File[]);
             res.status(storeExists.statusCode).json(storeExists.json);
@@ -109,7 +111,7 @@ export default class Store {
         }
 
         const baseServerUrl = baseUrl(req);
-        const serviceResult = await StoreService.uploadBanners(images as Express.Multer.File[], idResult.number, baseServerUrl);
+        const serviceResult = await Store.service.uploadBanners(images as Express.Multer.File[], idResult.number, baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -120,7 +122,7 @@ export default class Store {
             res.status(400).send("Id must be an integer");
             return;
         }
-        const serviceResult = await StoreService.getStoreLogo(idResult.number);
+        const serviceResult = await Store.service.getStoreLogo(idResult.number);
 
         if (serviceResult.json.error) {
             res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
@@ -141,7 +143,7 @@ export default class Store {
             res.status(400).send("Id must be an integer");
             return;
         }
-        const serviceResult = await StoreService.getFirstStoreBanner(idResult.number);
+        const serviceResult = await Store.service.getFirstStoreBanner(idResult.number);
 
         if (serviceResult.json.error) {
             res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
@@ -162,7 +164,7 @@ export default class Store {
             res.status(400).send("Id must be an integer");
             return;
         }
-        const serviceResult = await StoreService.getSecondStoreBanner(idResult.number);
+        const serviceResult = await Store.service.getSecondStoreBanner(idResult.number);
 
         if (serviceResult.json.error) {
             res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
@@ -177,27 +179,16 @@ export default class Store {
     }
 
     public static async getStoreAll(req: Request, res: Response) {
-        const idResult = numberValidator(req.params.storeId);
-
-        if (idResult.error) {
-            res.status(400).send("Id must be an integer");
-            return;
-        }
-
+        const vendorId = Number(res.locals.data.id);
         const baseServerUrl = baseUrl(req);
-        const serviceResult = await StoreService.getStoreAll(idResult.number, baseServerUrl);
+        const serviceResult = await Store.service.getStoreAll(vendorId, baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
     public static async deleteStore(req: Request, res: Response) {
-        const idResult = numberValidator(req.params.storeId);
+        const vendorId = Number(res.locals.data.id);
 
-        if (idResult.error) {
-            res.status(400).send("Id must be an integer");
-            return;
-        }
-
-        const serviceResult = await StoreService.delete(idResult.number);
+        const serviceResult = await Store.service.delete(vendorId);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 }

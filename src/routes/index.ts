@@ -11,6 +11,7 @@ import role from "./role";
 import adminVendor from "./adminVendor";
 import permission from "./permission";
 import adminPermission from "./adminPermission";
+import adminStore from "./adminStore";
 
 export {
     auth,
@@ -22,5 +23,6 @@ export {
     role,
     adminVendor,
     permission,
-    adminPermission
+    adminPermission,
+    adminStore
 };
