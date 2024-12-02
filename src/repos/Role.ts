@@ -8,7 +8,7 @@ export default class Role extends Repo {
         super('role');
     }
 
-    public async insertRole(data: RoleDto) {
+    public async insert(data: RoleDto) {
         return await super.insert(data)
     }
     public async getRoleWithId(id: number) {
@@ -23,9 +23,9 @@ export default class Role extends Repo {
         return super.delete({ id: id }, `${this.tblName} with id - ${id} does not exist.`)
     }
 
-    public async getAllRoles() {
-        return await super.getAll();
-    }
+    // public async getAll() {
+    //     return await super.getAll();
+    // }
 
     public async paginateRoles(skip: number, take: number) {
         return super.paginate(skip, take);

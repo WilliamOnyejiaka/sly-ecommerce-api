@@ -62,3 +62,12 @@ export default interface VendorDto {
     createdAt?: any,
     updatedAt?: any
 }
+
+export interface CategoryDto {
+    id?: number
+    name: string,
+    priority: number,
+    active: boolean,
+    adminId: number
+}
+

@@ -10,22 +10,7 @@ import Seed from "./Seed";
 import Role from "./Role";
 import Permission from "./Permission";
 import AdminPermission from "./AdminPermission";
-
-export default class Service {
-
-    constructor() { }
-
-    public static responseData(statusCode: number, error: boolean, message: string | null, data: any = {}) {
-        return {
-            statusCode: statusCode,
-            json: {
-                error: error,
-                message: message,
-                data: data
-            }
-        };
-    }
-}
+import Category from "./Category";
 
 export {
     Token,
@@ -39,5 +24,6 @@ export {
     Seed,
     Role,
     Permission,
-    AdminPermission
+    AdminPermission,
+    Category
 };

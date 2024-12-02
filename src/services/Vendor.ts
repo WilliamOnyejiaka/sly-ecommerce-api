@@ -1,33 +1,24 @@
 import mime from "mime";
-import Service from ".";
+import Service from "./Service";
 import constants, { http, urls } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
-import {  getPagination, processImage } from "../utils";
+import { getPagination, processImage } from "../utils";
 import { VendorCache } from "../cache";
+import ImageService from "./Image";
 
-export default class Vendor {
+export default class Vendor extends Service<VendorRepo> {
 
-    private readonly repo: VendorRepo = new VendorRepo();
     private readonly profilePicRepo = new VendorProfilePicture();
     private readonly cache = new VendorCache();
 
-    public async emailExists(email: string) {
-        const emailExists = await this.repo.getVendorWithEmail(email);
-
-        if (emailExists.error) {
-            return Service.responseData(500, true, http("500") as string);
-        }
-
-        const statusCode = emailExists.data ? 400 : 200;
-        const error: boolean = emailExists.data ? true : false;
-
-        return Service.responseData(statusCode, error, error ? "Email already exists" : null);
+    public constructor() {
+        super(new VendorRepo());
     }
 
     public async getVendorWithEmail(email: string) {
-        const repoResult = await this.repo.getVendorWithEmail(email);
+        const repoResult = await this.repo!.getVendorWithEmail(email);
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const vendor = repoResult.data;
@@ -39,13 +30,13 @@ export default class Vendor {
             delete (repoResult.data as any).password;
         }
 
-        return Service.responseData(statusCode, error, message, vendor);
+        return super.responseData(statusCode, error, message, vendor);
     }
 
     public async getVendorAll(vendorId: number, baseUrl: string) {
-        const repoResult = await this.repo.getVendorAndRelationsWithId(vendorId) as any;
+        const repoResult = await this.repo!.getVendorAndRelationsWithId(vendorId) as any;
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const statusCode = repoResult.data ? 200 : 404;
@@ -58,19 +49,29 @@ export default class Vendor {
             delete repoResult.data.profilePicture;
             delete repoResult.data.password;
 
-            return Service.responseData(statusCode, error, "Vendor was retrieved successfully", repoResult.data);
+            return super.responseData(statusCode, error, "Vendor was retrieved successfully", repoResult.data);
         }
 
-        return Service.responseData(statusCode, error, "Vendor was not found", repoResult.data);
+        return super.responseData(statusCode, error, "Vendor was not found", repoResult.data);
     }
 
+    // public async uploadProfilePicture(image: Express.Multer.File, vendorId: number, baseUrl: string) {
+    //     return await (new ImageService()).uploadImage<VendorProfilePicture>(
+    //         image,
+    //         {vendorId: vendorId},
+    //         this.repo,
+    //         vendorId,
+    //         baseUrl
+    //     );
+    // }
 
-    public async uploadProfilePicture(image: Express.Multer.File, vendorId: number, baseUrl: string) {
+
+    public async uploadProfilePicture(image: Express.Multer.File, vendorId: number, baseUrl: string) { // TODO: make this function general
         const result = await processImage(image);
 
         if (result.error) {
             console.error(result.message);
-            return Service.responseData(
+            return super.responseData(
                 500,
                 true,
                 http("500")!,
@@ -87,13 +88,13 @@ export default class Vendor {
         const imageUrl = baseUrl + urls("baseImageUrl")! + urls("vendorPic")!.split(":")[0] + vendorId;
 
         return repoResult ?
-            Service.responseData(
+            super.responseData(
                 201,
                 false,
                 "Profile picture was created successfully",
                 { imageUrl: imageUrl }
             ) :
-            Service.responseData(
+            super.responseData(
                 500,
                 true,
                 http("500")!,
@@ -101,67 +102,67 @@ export default class Vendor {
     }
 
     public async updateFirstName(id: number, firstName: string) {
-        const repoResult = await this.repo.updateFirstName(id, firstName);
+        const repoResult = await this.repo!.updateFirstName(id, firstName);
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const statusCode = repoResult.updated ? 200 : 500;
         const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
 
-        return Service.responseData(statusCode, !repoResult.updated, message);
+        return super.responseData(statusCode, !repoResult.updated, message);
     }
 
-    public  async updateLastName(id: number, lastName: string) {
-        const repoResult = await this.repo.updateLastName(id, lastName);
+    public async updateLastName(id: number, lastName: string) {
+        const repoResult = await this.repo!.updateLastName(id, lastName);
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const statusCode = repoResult.updated ? 200 : 500;
         const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
 
-        return Service.responseData(statusCode, !repoResult.updated, message);
+        return super.responseData(statusCode, !repoResult.updated, message);
     }
 
     public async updateEmail(id: number, email: string) {
-        const emailExists = await this.repo.getVendorWithEmail(email);
+        const emailExists = await this.repo!.getVendorWithEmail(email);
         if (emailExists.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         if (emailExists.data) {
-            return Service.responseData(400, true, "Email already exists.");
+            return super.responseData(400, true, "Email already exists.");
         }
 
-        const repoResult = await this.repo.updateEmail(id, email);
+        const repoResult = await this.repo!.updateEmail(id, email);
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const statusCode = repoResult.updated ? 200 : 500;
         const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
 
-        return Service.responseData(statusCode, !repoResult.updated, message);
+        return super.responseData(statusCode, !repoResult.updated, message);
     }
 
     public async delete(vendorId: number) {
-        const repoResult = await this.repo.delete(vendorId);
+        const repoResult = await this.repo!.delete(vendorId);
         if (repoResult.error) {
-            return Service.responseData(repoResult.type!, true, repoResult.message!);
+            return super.responseData(repoResult.type!, true, repoResult.message!);
         }
 
         const deleted = await this.cache.delete(String(vendorId));
 
         return deleted ?
-            Service.responseData(200, false, "Vendor was deleted successfully") :
-            Service.responseData(500, true, http('500')!);
+            super.responseData(200, false, "Vendor was deleted successfully") :
+            super.responseData(500, true, http('500')!);
     }
 
     public async getProfilePic(id: any) {
         const repoResult = await this.profilePicRepo.getImage(id);
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const statusCode = repoResult.data ? 200 : 404;
@@ -170,26 +171,23 @@ export default class Vendor {
         if (repoResult.data) {
             const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
 
-            return Service.responseData(statusCode, error, null, {
+            return super.responseData(statusCode, error, null, {
                 imageBuffer: imageBuffer,
                 bufferLength: imageBuffer.length,
                 mimeType: (repoResult.data as any).mimeType
             });
         }
 
-        return Service.responseData(statusCode, error, null, repoResult.data);
+        return super.responseData(statusCode, error, null, repoResult.data);
     }
 
     public async paginateVendors(page: number, pageSize: number) {
         const skip = (page - 1) * pageSize;  // Calculate the offset
         const take = pageSize;  // Limit the number of records
-        const repoResult = await this.repo.paginateVendors(skip, take);
-
-        console.log("here");
-        
+        const repoResult = await this.repo!.paginateVendors(skip, take);
 
         if (repoResult.error) {
-            return Service.responseData(500, true, http('500')!);
+            return super.responseData(500, true, http('500')!);
         }
 
         const totalRecords = repoResult.totalItems;
@@ -198,19 +196,20 @@ export default class Vendor {
 
         repoResult.data.forEach((item: any) => delete item.password);
 
-        return Service.responseData(200, false, constants('200Vendors')!, {
+        return super.responseData(200, false, constants('200Vendors')!, {
             data: repoResult.data,
             pagination
         });
     }
+    
     public async getAllVendors() {
-        const repoResult = await this.repo.getAllVendors();
+        const repoResult = await this.repo!.getAllVendors();
 
         if (repoResult.error) {
-            return Service.responseData(500, true, http('500')!);
+            return super.responseData(500, true, http('500')!);
         }
-        
+
         repoResult.data.forEach((item: any) => delete item.password);
-        return Service.responseData(200, false, constants('200Vendors')!, repoResult.data);
+        return super.responseData(200, false, constants('200Vendors')!, repoResult.data);
     }
 }

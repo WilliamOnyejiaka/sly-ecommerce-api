@@ -9,6 +9,7 @@ import AdminProfilePicture from "./AdminProfilePicture";
 import Role from "./Role";
 import Permission from "./Permission";
 import AdminPermission from "./AdminPermission";
+import Category from "./Category";
 
 const prisma: PrismaClient = new PrismaClient();
 
@@ -24,5 +25,6 @@ export {
     AdminProfilePicture,
     Role,
     Permission,
-    AdminPermission
+    AdminPermission,
+    Category
 };

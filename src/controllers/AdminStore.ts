@@ -44,13 +44,15 @@ export default class AdminStore {
 
         const page = pageResult.number;
         const pageSize = pageSizeResult.number;
+        const baseServerUrl = baseUrl(req);
 
-        const serviceResult = await AdminStore.service.paginateStores(page, pageSize);
+        const serviceResult = await AdminStore.service.paginateStores(page, pageSize, baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
     public static async getAllStores(req: Request, res: Response) {
-        const serviceResult = await AdminStore.service.getAllStores();
+        const baseServerUrl = baseUrl(req);
+        const serviceResult = await AdminStore.service.getAllStores(baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

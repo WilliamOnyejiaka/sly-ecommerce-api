@@ -2,17 +2,20 @@ import { randomInt } from "../utils";
 import { Email } from ".";
 import { OTPCache } from "../cache";
 import constants, { http } from "../constants";
-import Service from ".";
+import Service from "./Service";
 
 
-export default class OTP {
+// TODO: Refractor this Service
+
+export default class OTP extends Service {
 
     private readonly email: string;
     private readonly templateData: any;
     private otpCode!: string;
     private otpCache: OTPCache = new OTPCache();
 
-    constructor(email: string, templateData: any = null) {
+    public constructor(email: string, templateData: any = null) {
+        super();
         this.email = email;
         this.templateData = templateData;
     }
@@ -54,33 +57,33 @@ export default class OTP {
             const statusCode: number = sentOTP ? 200 : 500;
             const message: string = sentOTP ? "OTP has been sent successfully" : http("500")!;
 
-            return Service.responseData(statusCode, error, message);
+            return super.responseData(statusCode, error, message);
         }
-        return Service.responseData(500, true, constants("failedCache")!);
+        return super.responseData(500, true, constants("failedCache")!);
     }
 
     public async confirmOTP(otpCode: string) {
         const cacheResult = await this.otpCache.get(this.email);
 
         if (cacheResult.error) {
-            return Service.responseData(500, cacheResult.error, http("500")!);
+            return super.responseData(500, cacheResult.error, http("500")!);
         }
 
         if (!cacheResult.otpCode) {
-            return Service.responseData(404, true, "OTP code was no found");
+            return super.responseData(404, true, "OTP code was no found");
         }
 
         const validOTPCode = cacheResult.otpCode === otpCode;
         const message = validOTPCode ? "Email has been verified successfully" : "Invalid otp";
         const statusCode = validOTPCode ? 200 : 401;
         const error = statusCode == 200;
-        return Service.responseData(statusCode, !error, message);
+        return super.responseData(statusCode, !error, message);
     }
 
     public async deleteOTP() {
         const deleted: boolean = await this.otpCache.delete(this.email);
         const message: string | null = deleted ? null : http("500")!;
         const statusCode: number = deleted ? 500 : 200;
-        return Service.responseData(statusCode, !deleted, message);
+        return super.responseData(statusCode, !deleted, message);
     }
 }

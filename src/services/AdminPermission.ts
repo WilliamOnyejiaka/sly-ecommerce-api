@@ -1,18 +1,20 @@
-import Service, { Admin } from ".";
+import { Admin } from ".";
 import constants, { http } from "../constants";
 import { AdminPermission as AdminPermissionRepo } from "../repos";
 import { AdminPermissionDto } from "../types/dtos";
-import { getPagination } from "../utils";
+import Service from "./Service";
 
-export default class AdminPermission {
+export default class AdminPermission extends Service<AdminPermissionRepo> {
 
-    private readonly repo: AdminPermissionRepo = new AdminPermissionRepo();
+    public constructor(){
+        super(new AdminPermissionRepo());
+    }
 
     public async getAdminPermissionAndPermissionWithAdminId(adminId: number) {
-        const repoResult =  await this.repo.getAdminPermissionAndPermissionWithAdminId(adminId);
+        const repoResult =  await this.repo!.getAdminPermissionAndPermissionWithAdminId(adminId);
 
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const permission = repoResult.data;
@@ -20,15 +22,15 @@ export default class AdminPermission {
         const error: boolean = !permission;
         const message = error ? "AdminPermission was not found" : constants('200AdminPermission')!;
 
-        return Service.responseData(statusCode, error, message, permission);
+        return super.responseData(statusCode, error, message, permission);
     }
 
     private async getAdminPermission(id: number, isAdmin: boolean = true) {
-        const repoResult = isAdmin ? await this.repo.getAdminPermissionWithAdminId(id) :
-            await this.repo.getAdminPermissionWithPermissionId(id);
+        const repoResult = isAdmin ? await this.repo!.getAdminPermissionWithAdminId(id) :
+            await this.repo!.getAdminPermissionWithPermissionId(id);
 
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const permission = repoResult.data;
@@ -36,7 +38,7 @@ export default class AdminPermission {
         const error: boolean = !permission;
         const message = error ? "AdminPermission was not found" : constants('200AdminPermission')!;
 
-        return Service.responseData(statusCode, error, message, permission);
+        return super.responseData(statusCode, error, message, permission);
     }
 
     public async getAdminPermissionWithRoleId(permissionId: number) {
@@ -48,37 +50,11 @@ export default class AdminPermission {
     }
 
     public async getAllAdminPermissions() {
-        const repoResult = await this.repo.getAllAdminPermission();
-
-        if (repoResult.error) {
-            return Service.responseData(500, true, http('500')!);
-        }
-
-        return Service.responseData(200, false, constants('200AdminPermissions')!, repoResult.data);
-    }
-
-    public async paginateAdminPermissions(page: number, pageSize: number) {
-        const skip = (page - 1) * pageSize;  // Calculate the offset
-        const take = pageSize;  // Limit the number of records
-        const repoResult = await this.repo.paginateAdminPermission(skip, take);
-
-        if (repoResult.error) {
-            return Service.responseData(500, true, http('500')!);
-        }
-
-        const totalRecords = repoResult.totalItems;
-
-        const pagination = getPagination(page, pageSize, totalRecords);
-
-        return Service.responseData(200, false, constants('200AdminPermissions')!, {
-            data: repoResult.data,
-            pagination
-        });
+        return await super.getAllItems(constants('200AdminPermissions')!);
     }
 
     public async createAdminPermission(adminPermissionData: AdminPermissionDto) {
-        const repoResult = await this.repo.insertAdminPermission(adminPermissionData);
-        return repoResult ? Service.responseData(200, false, "AdminPermission was created successfully", repoResult) : Service.responseData(500, true, http('500')!);
+        return await super.create<AdminPermissionDto>(adminPermissionData,"AdminPermission");
     }
 
     public async delete(id: number) {

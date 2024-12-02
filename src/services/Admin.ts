@@ -1,23 +1,27 @@
 import mime from "mime";
-import Service, { Role } from ".";
+import { Role } from ".";
 import constants, { http, urls } from "../constants";
 import { Admin as AdminRepo, AdminProfilePicture } from "../repos";
 import { Password, processImage } from "../utils";
 import { env } from "../config";
 import { AdminDto } from "../types/dtos";
+import Service from "./Service";
 
-export default class Admin {
+export default class Admin extends Service<AdminRepo> {
 
     private readonly profilePicRepo: AdminProfilePicture = new AdminProfilePicture();
-    private readonly repo: AdminRepo = new AdminRepo();
     private readonly roleService: Role = new Role();
+
+    public constructor() {
+        super(new AdminRepo());
+    }
 
     public async defaultAdmin(roleId: number) {
         const email = env('defaultAdminEmail')!
         const emailExistsResult = await this.emailExists(email);
 
         if (emailExistsResult.json.error) {
-            return Service.responseData(400, true, "This admin already exists");
+            return super.responseData(400, true, "This admin already exists");
         }
 
         const roleExistsResult = await this.roleService.getRoleWithId(roleId);
@@ -39,31 +43,17 @@ export default class Admin {
             const passwordHash = Password.hashPassword(defaultAminData.password, env("storedSalt")!);
             defaultAminData.password = passwordHash;
 
-            const result = await this.repo.insert(defaultAminData);
+            const result = await this.repo!.insert(defaultAminData);
             const error: boolean = !result;
             const statusCode = error ? 500 : 201;
             const message: string = !error ? "Admin has been created successfully" : http("500")!;
 
             if (!error) {
-                return Service.responseData(statusCode, error, message);
+                return super.responseData(statusCode, error, message);
             }
-            return Service.responseData(statusCode, error, message, result);
+            return super.responseData(statusCode, error, message, result);
         }
         return roleExistsResult;
-    }
-
-
-    public async emailExists(email: string) { // TODO:Create a general function to handle this
-        const emailExists = await this.repo.getAdminWithEmail(email);
-
-        if (emailExists.error) {
-            return Service.responseData(500, true, http("500") as string);
-        }
-
-        const statusCode = emailExists.data ? 400 : 200;
-        const error: boolean = !!emailExists.data;
-
-        return Service.responseData(statusCode, error, error ? constants("service400Email")! : null);
     }
 
     public async uploadProfilePicture(image: Express.Multer.File, adminId: number, baseUrl: string) {
@@ -71,7 +61,7 @@ export default class Admin {
 
         if (result.error) {
             console.error(result.message);
-            return Service.responseData(
+            return super.responseData(
                 500,
                 true,
                 http("500")!,
@@ -88,13 +78,13 @@ export default class Admin {
         const imageUrl = baseUrl + urls("baseImageUrl")! + urls("adminPic")!.split(":")[0] + adminId;
 
         return repoResult ?
-            Service.responseData(
+            super.responseData(
                 201,
                 false,
                 constants('201ProfilePic')!,
                 { imageUrl: imageUrl }
             ) :
-            Service.responseData(
+            super.responseData(
                 500,
                 true,
                 http("500")!,
@@ -103,9 +93,9 @@ export default class Admin {
 
 
     public async getAdminWithEmail(email: string) {
-        const repoResult = await this.repo.getAdminWithEmail(email);
+        const repoResult = await this.repo!.getAdminWithEmail(email);
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const admin = repoResult.data;
@@ -117,13 +107,13 @@ export default class Admin {
             delete (repoResult.data as any).password;
         }
 
-        return Service.responseData(statusCode, error, message, admin);
+        return super.responseData(statusCode, error, message, admin);
     }
 
     public async getAdminAndRole(id: number) {
-        const repoResult = await this.repo.getAdminAndRoleWithId(id);
+        const repoResult = await this.repo!.getAdminAndRoleWithId(id);
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const admin = repoResult.data;
@@ -135,7 +125,7 @@ export default class Admin {
             delete (repoResult.data as any).password;
         }
 
-        return Service.responseData(statusCode, error, message, admin);
+        return super.responseData(statusCode, error, message, admin);
     }
 
     public async createAdmin(createData: AdminDto, adminName: string) {
@@ -150,38 +140,38 @@ export default class Admin {
             createData.password = passwordHash;
             createData.createdBy = adminName;
 
-            const result = await this.repo.insert(createData);
+            const result = await this.repo!.insert(createData);
             const error: boolean = !result
             const statusCode = error ? 500 : 201;
             const message: string = !error ? "Admin has been created successfully" : http("500")!;
 
             if (!error) {
                 delete (result as any).password;
-                return Service.responseData(statusCode, error, message, result);
+                return super.responseData(statusCode, error, message, result);
             }
-            return Service.responseData(statusCode, error, message, result);
+            return super.responseData(statusCode, error, message, result);
         }
 
         return roleExistsResult;
     }
 
     public async delete(id: number) {
-        const repoResult = await this.repo.deleteAdmin(id);
+        const repoResult = await this.repo!.deleteAdmin(id);
         if (repoResult.error) {
-            return Service.responseData(repoResult.type!, true, repoResult.message!);
+            return super.responseData(repoResult.type!, true, repoResult.message!);
         }
 
-        return Service.responseData(200, !repoResult.error, "Admin was deleted successfully");
+        return super.responseData(200, !repoResult.error, "Admin was deleted successfully");
     }
 
     private async toggleActiveStatus(id: number, activate: boolean = true) {
-        const repoResult = activate ? await this.repo.updateActiveStatus(id, true) : await this.repo.updateActiveStatus(id, false);
+        const repoResult = activate ? await this.repo!.updateActiveStatus(id, true) : await this.repo!.updateActiveStatus(id, false);
         if (repoResult.error) {
             const message = repoResult.type == 404 ? constants('404Admin')! : http('500')!;
-            return Service.responseData(repoResult.type!, true, message);
+            return super.responseData(repoResult.type!, true, message);
         }
         const message = activate ? "Admin was activated successfully" : "Admin was deactivated successfully";
-        return Service.responseData(200, false, message);
+        return super.responseData(200, false, message);
     }
 
     public async deactivateAdmin(id: number) {
@@ -197,32 +187,32 @@ export default class Admin {
     }
 
     public async massUnassignRole(roleId: number) {
-        const repoResult = await this.repo.massUnassignRole(roleId);
+        const repoResult = await this.repo!.massUnassignRole(roleId);
         if (repoResult.error) {
-            return Service.responseData(500, true, http('500')!);
+            return super.responseData(500, true, http('500')!);
         }
 
-        return Service.responseData(200, false, "Mass UnAssignment was successfully");
+        return super.responseData(200, false, "Mass UnAssignment was successfully");
     }
 
     public async assignRole(adminId: number, roleId: number) {
-        const repoResult = await this.repo.assignRole(adminId, roleId);
+        const repoResult = await this.repo!.assignRole(adminId, roleId);
         if (repoResult.error) {
             const message = repoResult.type == 404 ? "Admin was not found" : http('500')!;
-            return Service.responseData(repoResult.type!, true, message);
+            return super.responseData(repoResult.type!, true, message);
         }
 
-        return Service.responseData(200, false, "Role was assigned successfully");
+        return super.responseData(200, false, "Role was assigned successfully");
     }
 
     public async assignPermission(adminId: number, permissionId: number) {
-        const repoResult = await this.repo.assignRole(adminId, permissionId);
+        const repoResult = await this.repo!.assignRole(adminId, permissionId);
         if (repoResult.error) {
             const message = repoResult.type == 404 ? "Admin was not found" : http('500')!;
-            return Service.responseData(repoResult.type!, true, message);
+            return super.responseData(repoResult.type!, true, message);
         }
 
-        return Service.responseData(200, false, "Permission was assigned successfully");
+        return super.responseData(200, false, "Permission was assigned successfully");
     }
 
 

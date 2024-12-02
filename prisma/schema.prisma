@@ -141,6 +141,7 @@ model Admin {
   updatedAt         DateTime              @updatedAt
   profilePicture    AdminProfilePicture[]
   directPermissions AdminPermission[]
+  Category          Category[]
 }
 
 model AdminProfilePicture {
@@ -163,25 +164,94 @@ model AdminPermission {
   @@unique([adminId, permissionId]) // Prevent duplicate admin-permission pairs
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
+model Customer {
+  id        Int               @id @default(autoincrement())
   firstName String
   lastName  String
-  email     String   @unique
+  email     String            @unique
   password  String
-  address   Address? @relation(fields: [addressId], references: [id])
-  active    Boolean  @default(false)
-  addressId Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  active    Boolean           @default(false)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  Address   CustomerAddress[]
 }
 
-model Address {
-  id      Int    @id @default(autoincrement())
-  street  String
-  city    String
-  state   String
-  zip     String
-  country String
-  user    User[]
+model CustomerAddress {
+  id         Int      @id @default(autoincrement())
+  street     String
+  city       String
+  state      String
+  zip        String
+  country    String
+  customerId Int      @unique
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Category {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  priority    Int
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  adminId     Int
+  admin       Admin         @relation(fields: [adminId], references: [id])
+  SubCategory SubCategory[]
+}
+
+model SubCategory {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique
+  priority         Int
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  categoryId       Int
+  category         Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  SubSubCategory   SubSubCategory[]
+  SubCategoryImage SubCategoryImage[]
+
+  CategoryImage CategoryImage[]
+}
+
+model SubSubCategory {
+  id                  Int                   @id @default(autoincrement())
+  name                String                @unique
+  priority            Int
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  subCategoryId       Int
+  subCategory         SubCategory           @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  SubSubCategoryImage SubSubCategoryImage[]
+}
+
+model SubSubCategoryImage {
+  id               Int            @id @default(autoincrement())
+  mimeType         String
+  picture          String         @db.LongText
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  subSubCategory   SubSubCategory @relation(fields: [subSubCategoryId], references: [id], onDelete: Cascade)
+  subSubCategoryId Int            @unique
+}
+
+model SubCategoryImage {
+  id            Int         @id @default(autoincrement())
+  mimeType      String
+  picture       String      @db.LongText
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  subCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  subCategoryId Int         @unique
+}
+
+model CategoryImage {
+  id         Int         @id @default(autoincrement())
+  mimeType   String
+  picture    String      @db.LongText
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  category   SubCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId Int         @unique
 }

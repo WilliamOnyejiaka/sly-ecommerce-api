@@ -1,19 +1,26 @@
-import Service, { Admin } from ".";
+import { Admin } from ".";
 import constants, { http } from "../constants";
 import { Role as RoleRepo } from "../repos";
 import { RoleDto } from "../types/dtos";
 import { getPagination } from "../utils";
+import Service from "./Service";
 
-export default class Role {
+export default class Role extends Service<RoleRepo> {
 
-    private readonly repo: RoleRepo = new RoleRepo();
+    public constructor() {
+        super(new RoleRepo());
+    }
 
-    private async getRole(nameOrId: string | number) {
-        const repoResult = typeof nameOrId == "number" ? await this.repo.getRoleWithId(nameOrId) :
-            await this.repo.getRoleWithName(nameOrId);
+    public async createRole(roleData: RoleDto) {
+        return await super.create<RoleDto>(roleData, "Role");
+    }
+
+    public async getRoleWithName(roleName: string) {
+        const repoResult = await this.repo!.getRoleWithName(roleName);
+            
 
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500") as string);
+            return super.responseData(500, true, http("500") as string);
         }
 
         const role = repoResult.data;
@@ -21,63 +28,33 @@ export default class Role {
         const error: boolean = !role;
         const message = error ? "Role was not found" : constants('200Role')!;
 
-        return Service.responseData(statusCode, error, message, role);
+        return super.responseData(statusCode, error, message, role);
     }
 
     public async getRoleWithId(roleId: number) {
-        return await this.getRole(roleId);
-    }
-
-    public async getRoleWithName(roleName: string) {
-        return await this.getRole(roleName);
+        return await super.getItemWithId(roleId, "Role was not found", constants('200Role')!);
     }
 
     public async getAllRoles() {
-        const repoResult = await this.repo.getAllRoles();
-
-        if (repoResult.error) {
-            return Service.responseData(500, true, http('500')!);
-        }
-
-        return Service.responseData(200, false, constants('200Roles')!, repoResult.data);
+        return await super.getAllItems(constants('200Roles')!);
     }
 
     public async paginateRoles(page: number, pageSize: number) {
-        const skip = (page - 1) * pageSize;  // Calculate the offset
-        const take = pageSize;  // Limit the number of records
-        const repoResult = await this.repo.paginateRoles(skip, take);
-
-        if (repoResult.error) {
-            return Service.responseData(500, true, http('500')!);
-        }
-
-        const totalRecords = repoResult.totalItems;
-
-        const pagination = getPagination(page, pageSize, totalRecords);
-
-        return Service.responseData(200, false, constants('200Roles')!, {
-            data: repoResult.data,
-            pagination
-        });
-    }
-
-    public async createRole(roleData: RoleDto) {
-        const repoResult = await this.repo.insertRole(roleData);
-        return repoResult ? Service.responseData(200, false, "Role was created successfully", repoResult) : Service.responseData(500, true, http('500')!);
+        return await super.paginate(page,pageSize);
     }
 
     public async delete(id: number) {
         const adminRepoResult = await (new Admin()).massUnassignRole(id);
         if (adminRepoResult.json.error) {
-            return Service.responseData(500, true, http('500')!);
+            return super.responseData(500, true, http('500')!);
         }
 
-        const repoResult = await this.repo.deleteRole(id);
+        const repoResult = await this.repo!.deleteRole(id);
         if (repoResult.error) {
-            return Service.responseData(repoResult.type!, true, repoResult.message!);
+            return super.responseData(repoResult.type!, true, repoResult.message!);
         }
 
-        return Service.responseData(200, !repoResult.error, "Role was deleted successfully");
+        return super.responseData(200, !repoResult.error, "Role was deleted successfully");
     }
 
 }

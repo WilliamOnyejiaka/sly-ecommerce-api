@@ -14,19 +14,8 @@ interface UpdateData {
 
 export default class Vendor extends Repo {
 
-    public constructor(){
+    public constructor() {
         super("vendor");
-    }
-
-    public async insert(vendorData: VendorDto) {
-        try {
-            const newVendor = await prisma.vendor.create({ data: vendorData as any });
-            return newVendor;
-        } catch (error) {
-            console.error("Failed to create vendor: ", error);
-            return {};
-        }
-
     }
 
     public async getVendorAndRelationsWithId(id: number) {
@@ -72,7 +61,7 @@ export default class Vendor extends Repo {
                 data: {}
             };
         }
-    }       
+    }
 
     public async getUserWithId(id: number) {
         return await super.getItemWithId(id);
@@ -148,11 +137,11 @@ export default class Vendor extends Repo {
         }
     }
 
-    public async paginateVendors(skip: number, take: number){
-        return await super.paginate(skip,take);
+    public async paginateVendors(skip: number, take: number) {
+        return await super.paginate(skip, take);
     }
 
-    public async getAllVendors(){
+    public async getAllVendors() {
         return await super.getAll();
     }
 }

@@ -8,7 +8,7 @@ const permission: Router = Router();
 permission.get(
     "/paginate-permissions",
     adminAuthorization(['any']),
-    asyncHandler(Permission.paginatePermissions)
+    asyncHandler(Permission.paginatePermissions())
 );
 
 permission.get(

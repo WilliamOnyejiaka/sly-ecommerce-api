@@ -56,15 +56,18 @@ export default class Role {
     }
 
     public static async createRole(req: Request, res: Response) {
-        const roleData: RoleDto = req.body;
-        const levelResult = numberValidator(roleData.level);
-        if(levelResult.error){
+
+        const levelResult = numberValidator(req.body.level);
+        if (levelResult.error) {
             res.status(400).json({
                 error: true,
                 message: "level must be an integer"
             });
             return;
         }
+
+        req.body.level = levelResult.number;
+        const roleData: RoleDto = req.body;
         roleData.name = roleData.name.toUpperCase();
 
         const roleExistsResult = await Role.service.getRoleWithName(roleData.name);

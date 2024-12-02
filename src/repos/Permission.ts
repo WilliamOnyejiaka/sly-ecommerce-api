@@ -12,6 +12,7 @@ export default class Permission extends Repo {
     public async insertPermission(data: PermissionDto) {
         return await super.insert(data)
     }
+    
     public async getPermissionWithId(id: number) {
         return await super.getItemWithId(id);
     }

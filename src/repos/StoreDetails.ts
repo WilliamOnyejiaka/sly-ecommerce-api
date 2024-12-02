@@ -172,11 +172,82 @@ export default class StoreDetails extends Repo {
         }
     }
 
-    public async getAllStores(){
-        return await super.getAll();
+    public async getAllStores() {
+        return await this.getAll();
     }
 
-    public async paginateStore(skip: number, take: number){
-        return await super.paginate(skip,take);
+    public async getAll() {
+        try {
+            const items = await prisma.storeDetails.findMany({
+                include: {
+                    storeLogo: {
+                        select: {
+                            mimeType: true
+                        }
+                    },
+                    firstStoreBanner: {
+                        select: {
+                            mimeType: true
+                        }
+                    },
+                    secondStoreBanner: {
+                        select: {
+                            mimeType: true
+                        }
+                    }
+                }
+            });
+            return {
+                error: false,
+                data: items
+            };
+
+        } catch (error) {
+            console.error(`Failed to get all ${this.tblName} items: `, error);
+            return {
+                error: true,
+                data: {}
+            }
+        }
+    }
+
+    public async paginateStore(skip: number, take: number) {
+        try {
+            const items = await prisma.storeDetails.findMany({
+                skip,
+                take,
+                include: {
+                    storeLogo: {
+                        select: {
+                            mimeType: true
+                        }
+                    },
+                    firstStoreBanner: {
+                        select: {
+                            mimeType: true
+                        }
+                    },
+                    secondStoreBanner: {
+                        select: {
+                            mimeType: true
+                        }
+                    }
+                }
+            });
+            const totalItems = await prisma.storeDetails.count();
+
+            return {
+                error: false,
+                data: items,
+                totalItems: totalItems
+            };
+
+        } catch (error) {
+            console.error(`Failed to paginate ${this.tblName} items: `, error);
+            return {
+                error: true,
+                data: {}
+            }
+        }
     }
 }

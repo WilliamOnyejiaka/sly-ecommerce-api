@@ -3,13 +3,15 @@ import { Seed as SeedService } from "./../services";
 
 export default class Seed {
 
+    private static readonly service: SeedService = new SeedService();
+
     public static async defaultRoles(req: Request, res: Response) {
-        const serviceResult = await SeedService.defaultRoles();
+        const serviceResult = await Seed.service.defaultRoles();
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
     public static async defaultPermissions(req: Request, res: Response) {
-        const serviceResult = await SeedService.defaultPermissions();
+        const serviceResult = await Seed.service.defaultPermissions();
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

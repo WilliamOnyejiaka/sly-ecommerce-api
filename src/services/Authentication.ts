@@ -1,82 +1,87 @@
-import Service, { OTP, Token } from ".";
+import { OTP, Token } from ".";
 import { Admin, Vendor } from "../repos";
 import { Password } from "../utils";
 import { env } from "../config";
 import VendorDto, { AdminDto } from "../types/dtos";
 import constants, { http } from "../constants";
 import { VendorCache } from "../cache";
-class Authentication {
+import Service from "./Service";
+export default class Authentication extends Service {
 
-    private static readonly storedSalt: string = env("storedSalt")!;
-    private static readonly vendorRepo: Vendor = new Vendor();
-    private static readonly vendorCache: VendorCache = new VendorCache();
-    private static readonly adminRepo: Admin = new Admin();
+    private readonly storedSalt: string = env("storedSalt")!;
+    private readonly vendorRepo: Vendor = new Vendor();
+    private readonly vendorCache: VendorCache = new VendorCache();
+    private readonly adminRepo: Admin = new Admin();
 
-    public static async vendorSignUp(vendorDto: VendorDto) {
-        const passwordHash: string = Password.hashPassword(vendorDto.password!, Authentication.storedSalt);
+    public constructor() {
+        super();
+    }
+
+    public async vendorSignUp(vendorDto: VendorDto) {
+        const passwordHash: string = Password.hashPassword(vendorDto.password!, this.storedSalt);
         vendorDto.password = passwordHash;
 
-        const result = await Authentication.vendorRepo.insert(vendorDto);
+        const result = await this.vendorRepo.insert(vendorDto);
         const error: boolean = !result
         const statusCode = error ? 500 : 201;
         const message: string = !error ? "Vendor has been created successfully" : http("500")!;
 
         if (!error) {
             delete (result as VendorDto).password;
-            const cacheSuccessful = await Authentication.vendorCache.set(
+            const cacheSuccessful = await this.vendorCache.set(
                 String((result as VendorDto).id),
                 result as VendorDto
             );
-            return cacheSuccessful ? Service.responseData(statusCode, error, message, {
+            return cacheSuccessful ? super.responseData(statusCode, error, message, {
                 token: Token.createToken(env('tokenSecret')!, result, ["vendor"]),
                 vendor: result
-            }) : Service.responseData(statusCode, error, message);
+            }) : super.responseData(statusCode, error, message);
         }
-        return Service.responseData(statusCode, error, message, result);
+        return super.responseData(statusCode, error, message, result);
     }
 
-    public static async vendorLogin(email: string, password: string) {
-        const repoResult = await Authentication.vendorRepo.getVendorWithEmail(email);
+    public async vendorLogin(email: string, password: string) {
+        const repoResult = await this.vendorRepo.getVendorWithEmail(email);
 
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500")!);
+            return super.responseData(500, true, http("500")!);
         }
 
         const vendor: VendorDto = (repoResult.data as VendorDto);
 
         if (vendor) {
             const hashedPassword = vendor.password
-            const validPassword = Password.compare(password, hashedPassword!, Authentication.storedSalt);
+            const validPassword = Password.compare(password, hashedPassword!, this.storedSalt);
 
             if (validPassword) {
                 delete vendor.password;
-                const cacheSuccessful = await Authentication.vendorCache.set(
+                const cacheSuccessful = await this.vendorCache.set(
                     String(vendor.id),
                     vendor
                 );
 
-                return cacheSuccessful ? Service.responseData(200, false, "Login successful", {
+                return cacheSuccessful ? super.responseData(200, false, "Login successful", {
                     token: Token.createToken(env('tokenSecret')!, vendor, ["vendor"]),
                     vendor: vendor
-                }) : Service.responseData(500, true, http('500')!);
+                }) : super.responseData(500, true, http('500')!);
             }
-            return Service.responseData(400, true, "Invalid password");
+            return super.responseData(400, true, "Invalid password");
         }
-        return Service.responseData(404, true, constants("404Vendor")!);
+        return super.responseData(404, true, constants("404Vendor")!);
     }
 
-    public static async adminLogin(email: string, password: string) {
-        const repoResult = await Authentication.adminRepo.getAdminAndRoleWithEmail(email);
+    public async adminLogin(email: string, password: string) {
+        const repoResult = await this.adminRepo.getAdminAndRoleWithEmail(email);
 
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500")!);
+            return super.responseData(500, true, http("500")!);
         }
 
         const admin: AdminDto = (repoResult.data as AdminDto);
 
         if (admin) {
             const hashedPassword = admin.password
-            const validPassword = Password.compare(password, hashedPassword!, Authentication.storedSalt);
+            const validPassword = Password.compare(password, hashedPassword!, this.storedSalt);
 
             if (validPassword) {
                 delete admin.password;
@@ -89,7 +94,7 @@ class Authentication {
                 //     admin
                 // );
 
-                return Service.responseData(200, false, "Login successful", {
+                return super.responseData(200, false, "Login successful", {
                     token: token,
                     admin: admin
                 })
@@ -99,17 +104,17 @@ class Authentication {
                 //     vendor: admin
                 // }) : Service.responseData(500, true, http('500')!);
             }
-            return Service.responseData(400, true, "Invalid password");
+            return super.responseData(400, true, "Invalid password");
         }
-        return Service.responseData(404, true, constants("404Vendor")!);
+        return super.responseData(404, true, constants("404Vendor")!);
     }
 
 
-    public static async vendorEmailOTP(email: string) {
-        const repoResult = await Authentication.vendorRepo.getVendorWithEmail(email);
+    public async vendorEmailOTP(email: string) {
+        const repoResult = await this.vendorRepo.getVendorWithEmail(email);
 
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500")!);
+            return super.responseData(500, true, http("500")!);
         }
 
         const vendor = repoResult.data;
@@ -118,14 +123,14 @@ class Authentication {
             const vendorName = (vendor as VendorDto).firstName + " " + (vendor as VendorDto).lastName;
             const otpService = new OTP((vendor as VendorDto).email, { name: vendorName });
             const otpServiceResult = await otpService.send();
-            return Service.responseData(otpServiceResult.statusCode, otpServiceResult.json.error, otpServiceResult.json.message);
+            return super.responseData(otpServiceResult.statusCode, otpServiceResult.json.error, otpServiceResult.json.message);
         }
 
-        return Service.responseData(404, true, constants("404Vendor")!);
+        return super.responseData(404, true, constants("404Vendor")!);
     }
 
 
-    public static async vendorEmailVerification(vendorEmail: string, otpCode: string) {
+    public async vendorEmailVerification(vendorEmail: string, otpCode: string) {
         const otp = new OTP(vendorEmail);
         const otpServiceResult = await otp.confirmOTP(otpCode);
 
@@ -139,38 +144,36 @@ class Authentication {
             return deletedOTPServiceResult;
         }
 
-        const updated = await Authentication.vendorRepo.updateVerifiedStatus(vendorEmail);
+        const updated = await this.vendorRepo.updateVerifiedStatus(vendorEmail);
 
         if (updated.error) {
-            return Service.responseData(500, true, http("500")!);
+            return super.responseData(500, true, http("500")!);
         }
 
-        if (otpServiceResult.json.error){
+        if (otpServiceResult.json.error) {
             return otpServiceResult;
         }
 
-        const repoResult = await Authentication.vendorRepo.getVendorWithEmail(vendorEmail);
+        const repoResult = await this.vendorRepo.getVendorWithEmail(vendorEmail);
 
         if (repoResult.error) {
-            return Service.responseData(500, true, http("500")!);
+            return super.responseData(500, true, http("500")!);
         }
 
         const vendor: VendorDto = (repoResult.data as VendorDto);
 
         if (vendor) {
             delete vendor.password;
-            const cacheSuccessful = await Authentication.vendorCache.set(
+            const cacheSuccessful = await this.vendorCache.set(
                 vendor.email,
                 vendor
             );
 
-            return cacheSuccessful ? Service.responseData(200, false, otpServiceResult.json.message , {
+            return cacheSuccessful ? super.responseData(200, false, otpServiceResult.json.message, {
                 token: Token.createToken(env('tokenSecret')!, vendor, ["vendor"]),
                 vendor: vendor
-            }) : Service.responseData(500, true, http('500')!);
+            }) : super.responseData(500, true, http('500')!);
         }
-        return Service.responseData(404, true, constants("404Vendor")!);
+        return super.responseData(404, true, constants("404Vendor")!);
     }
 }
-
-export default Authentication;

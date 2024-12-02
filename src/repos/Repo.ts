@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import prisma from ".";
 import { http } from "../constants";
 import Repository from "../interfaces/Repository";
@@ -20,8 +21,17 @@ export default class Repo implements Repository {
             const newItem = await (prisma[this.tblName] as any).create({ data: data });
             return newItem;
         } catch (error) {
-            console.error(`Failed to create ${this.tblName}: `, error);
-            return {};
+            if (error instanceof Prisma.PrismaClientValidationError) {
+                console.error(`Validation error in ${this.tblName} table:`, error.message);
+                return {};
+            } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                console.error(`Known request error ${this.tblName} table:`, error.message);
+                return {};
+            } else {
+                console.error(`Failed to create ${this.tblName}: `, error);
+                return {};
+            }
+
         }
 
     }
@@ -51,11 +61,11 @@ export default class Repo implements Repository {
         }
     }
 
-    protected async getItemWithId(id: number) {
+    public async getItemWithId(id: number) {
         return await this.getItem({ id: id });
     }
 
-    protected async getItemWithEmail(email: string) {
+    public async getItemWithEmail(email: string) {
         return await this.getItem({ email: email });
     }
 
@@ -104,6 +114,10 @@ export default class Repo implements Repository {
         }
     }
 
+    public async deleteWithId(id: number) {
+        return this.delete({ id: id }, `${this.tblName} with id - ${id} does not exist.`);
+    }
+
 
     protected async updateWithIdOrEmail(idOrEmail: number | string, data: any) {
         const where = typeof idOrEmail == "number" ? { id: idOrEmail } : { email: idOrEmail };
@@ -141,7 +155,7 @@ export default class Repo implements Repository {
     }
 
 
-    protected async paginate(skip: number, take: number) {
+    public async paginate(skip: number, take: number) {
         try {
             const items = await (prisma[this.tblName] as any).findMany({
                 skip,   // Skips the first 'skip' records
@@ -164,7 +178,7 @@ export default class Repo implements Repository {
         }
     }
 
-    protected async getAll() {
+    public async getAll() {
         try {
             const items = await (prisma[this.tblName] as any).findMany();
             return {

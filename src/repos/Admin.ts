@@ -1,20 +1,9 @@
 import prisma from ".";
-import { AdminDto } from "../types/dtos";
 import Repo from "./Repo";
 export default class Admin extends Repo {
 
     public constructor() {
         super('admin');
-    }
-
-    async insert(adminData: AdminDto) {
-        try {
-            const newAdmin = await prisma.admin.create({ data: adminData as any });
-            return newAdmin;
-        } catch (error) {
-            console.error("Failed to create admin: ", error);
-            return {};
-        }
     }
 
     private async getAdminAndRole(idOrEmail: number | string) {

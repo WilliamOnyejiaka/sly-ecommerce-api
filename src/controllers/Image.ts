@@ -9,6 +9,8 @@ import { Request, Response } from "express";
 
 export default class ImageController {
 
+    private static readonly service: ImageService = new ImageService();
+
     private static getImage<T extends ImageRepository>(imageRepo: T) {
 
         return async (req: Request, res: Response) => {
@@ -18,7 +20,7 @@ export default class ImageController {
                 res.status(400).send("id must be an integer");
                 return;
             }
-            const serviceResult = await ImageService.getImage<T>(imageRepo, idResult.number)
+            const serviceResult = await ImageController.service.getImage<T>(imageRepo, idResult.number)
 
             if (serviceResult.json.error) {
                 res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));

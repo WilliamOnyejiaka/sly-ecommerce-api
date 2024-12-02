@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AdminPermission as AdminPermissionService } from "../services";
 import { AdminPermissionDto } from "../types/dtos";
 import { numberValidator } from "../validators";
+import Controller from "./Controller";
 
 export default class AdminPermission {
 
@@ -22,31 +23,8 @@ export default class AdminPermission {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
-
-    public static async paginatePermissions(req: Request, res: Response) {
-        const pageResult = numberValidator(req.query.page);
-        if (pageResult.error) {
-            res.status(400).json({
-                error: true,
-                message: "page must be an integer"
-            });
-            return;
-        }
-
-        const pageSizeResult = numberValidator(req.query.pageSize);
-        if (pageSizeResult.error) {
-            res.status(400).json({
-                error: true,
-                message: "pageSize must be an integer"
-            });
-            return;
-        }
-
-        const page = pageResult.number;
-        const pageSize = pageSizeResult.number;
-
-        const serviceResult = await AdminPermission.service.paginateAdminPermissions(page, pageSize);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+    public static paginatePermissions() {
+        return Controller.paginate<AdminPermissionService>(AdminPermission.service);
     }
 
     // public static async createPermission(req: Request, res: Response) {

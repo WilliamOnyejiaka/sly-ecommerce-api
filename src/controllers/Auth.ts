@@ -6,6 +6,7 @@ import constants from "../constants";
 class Auth {
 
     private static readonly vendorService: Vendor = new Vendor();
+    private static readonly authService: Authentication = new Authentication();
 
     public static async vendorSignUp(req: Request, res: Response) {
         const vendorDto: VendorDto = req.body;
@@ -42,13 +43,13 @@ class Auth {
             return;
         }
 
-        const serviceResult = await Authentication.vendorSignUp(vendorDto);
+        const serviceResult = await Auth.authService.vendorSignUp(vendorDto);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
     public static async vendorLogin(req: Request, res: Response) {
         const { email, password } = req.body;
-        const serviceResult = await Authentication.vendorLogin(
+        const serviceResult = await Auth.authService.vendorLogin(
             email as string,
             password as string
         );
@@ -58,7 +59,7 @@ class Auth {
 
     public static async adminLogin(req: Request, res: Response) {
         const { email, password } = req.body;
-        const serviceResult = await Authentication.adminLogin(
+        const serviceResult = await Auth.authService.adminLogin(
             email as string,
             password as string
         );
@@ -68,12 +69,12 @@ class Auth {
 
 
     public static async vendorEmailOTP(req: Request, res: Response) {
-        const serviceResult = await Authentication.vendorEmailOTP(req.params.email);
+        const serviceResult = await Auth.authService.vendorEmailOTP(req.params.email);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
     public static async vendorEmailVerification(req: Request, res: Response) {
-        const serviceResult = await Authentication.vendorEmailVerification(req.params.email, req.params.otpCode);
+        const serviceResult = await Auth.authService.vendorEmailVerification(req.params.email, req.params.otpCode);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -120,7 +121,7 @@ class Auth {
             phoneNumber: phoneNumber
         };
 
-        const serviceResult = await Authentication.vendorSignUp(vendorSignUpData);
+        const serviceResult = await Auth.authService.vendorSignUp(vendorSignUpData);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 }

@@ -9,7 +9,8 @@ import AdminVendor from "./AdminVendor";
 import Permission from "./Permission";
 import AdminPermission from "./AdminPermission";
 import AdminStore from "./AdminStore";
-
+import AdminCategory from "./AdminCategory";
+import Controller from "./Controller";
 
 export {
     Auth,
@@ -22,5 +23,7 @@ export {
     AdminVendor,
     Permission,
     AdminPermission,
-    AdminStore
+    AdminStore,
+    AdminCategory,
+    Controller
 };

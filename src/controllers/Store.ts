@@ -9,12 +9,13 @@ import { baseUrl } from "../utils";
 export default class Store {
     
     private static readonly service: StoreService = new StoreService();
+    public static readonly imageService: ImageService = new ImageService();
 
     public static async createAll(req: Request, res: Response) {
         const images = req.files!;
 
         if (!req.body.name || !req.body.address || !req.body.city || !req.body.description || !req.body.tagLine) {
-            ImageService.deleteImages(images as Express.Multer.File[]);
+            Store.imageService.deleteImages(images as Express.Multer.File[]);
             res.status(400).json({
                 'error': true,
                 'message': "All values are required",
@@ -115,68 +116,68 @@ export default class Store {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
-    public static async getStoreLogo(req: Request, res: Response) {
-        const idResult = numberValidator(req.params.id);
+    // public static async getStoreLogo(req: Request, res: Response) {
+    //     const idResult = numberValidator(req.params.id);
 
-        if (idResult.error) {
-            res.status(400).send("Id must be an integer");
-            return;
-        }
-        const serviceResult = await Store.service.getStoreLogo(idResult.number);
+    //     if (idResult.error) {
+    //         res.status(400).send("Id must be an integer");
+    //         return;
+    //     }
+    //     const serviceResult = await Store.service.getStoreLogo(idResult.number);
 
-        if (serviceResult.json.error) {
-            res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
-            return;
-        }
+    //     if (serviceResult.json.error) {
+    //         res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
+    //         return;
+    //     }
 
-        res.writeHead(serviceResult.statusCode, {
-            'Content-Type': serviceResult.json.data.mimeType,
-            'Content-Length': serviceResult.json.data.bufferLength
-        })
-            .end(serviceResult.json.data.imageBuffer);
-    }
+    //     res.writeHead(serviceResult.statusCode, {
+    //         'Content-Type': serviceResult.json.data.mimeType,
+    //         'Content-Length': serviceResult.json.data.bufferLength
+    //     })
+    //         .end(serviceResult.json.data.imageBuffer);
+    // }
 
-    public static async getFirstStoreBanner(req: Request, res: Response) {
-        const idResult = numberValidator(req.params.id);
+    // public static async getFirstStoreBanner(req: Request, res: Response) {
+    //     const idResult = numberValidator(req.params.id);
 
-        if (idResult.error) {
-            res.status(400).send("Id must be an integer");
-            return;
-        }
-        const serviceResult = await Store.service.getFirstStoreBanner(idResult.number);
+    //     if (idResult.error) {
+    //         res.status(400).send("Id must be an integer");
+    //         return;
+    //     }
+    //     const serviceResult = await Store.service.getFirstStoreBanner(idResult.number);
 
-        if (serviceResult.json.error) {
-            res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
-            return;
-        }
+    //     if (serviceResult.json.error) {
+    //         res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
+    //         return;
+    //     }
 
-        res.writeHead(serviceResult.statusCode, {
-            'Content-Type': serviceResult.json.data.mimeType,
-            'Content-Length': serviceResult.json.data.bufferLength
-        })
-            .end(serviceResult.json.data.imageBuffer);
-    }
+    //     res.writeHead(serviceResult.statusCode, {
+    //         'Content-Type': serviceResult.json.data.mimeType,
+    //         'Content-Length': serviceResult.json.data.bufferLength
+    //     })
+    //         .end(serviceResult.json.data.imageBuffer);
+    // }
 
-    public static async getSecondStoreBanner(req: Request, res: Response) {
-        const idResult = numberValidator(req.params.id);
+    // public static async getSecondStoreBanner(req: Request, res: Response) {
+    //     const idResult = numberValidator(req.params.id);
 
-        if (idResult.error) {
-            res.status(400).send("Id must be an integer");
-            return;
-        }
-        const serviceResult = await Store.service.getSecondStoreBanner(idResult.number);
+    //     if (idResult.error) {
+    //         res.status(400).send("Id must be an integer");
+    //         return;
+    //     }
+    //     const serviceResult = await Store.service.getSecondStoreBanner(idResult.number);
 
-        if (serviceResult.json.error) {
-            res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
-            return;
-        }
+    //     if (serviceResult.json.error) {
+    //         res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
+    //         return;
+    //     }
 
-        res.writeHead(serviceResult.statusCode, {
-            'Content-Type': serviceResult.json.data.mimeType,
-            'Content-Length': serviceResult.json.data.bufferLength
-        })
-            .end(serviceResult.json.data.imageBuffer);
-    }
+    //     res.writeHead(serviceResult.statusCode, {
+    //         'Content-Type': serviceResult.json.data.mimeType,
+    //         'Content-Length': serviceResult.json.data.bufferLength
+    //     })
+    //         .end(serviceResult.json.data.imageBuffer);
+    // }
 
     public static async getStoreAll(req: Request, res: Response) {
         const vendorId = Number(res.locals.data.id);
