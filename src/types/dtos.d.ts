@@ -71,3 +71,21 @@ export interface CategoryDto {
     adminId: number
 }
 
+export interface CustomerAddressDto {
+    id?: number,
+    street: string,
+    city: string,
+    state: string,
+    zip: string,
+    country: string
+}
+
+export interface CustomerDto {
+    id?: number,
+    firstName: string,
+    lastName: string,
+    email: string,
+    password?: string,
+    address?: CustomerAddressDto
+}
+

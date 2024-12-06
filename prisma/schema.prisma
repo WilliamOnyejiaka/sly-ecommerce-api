@@ -165,15 +165,16 @@ model AdminPermission {
 }
 
 model Customer {
-  id        Int               @id @default(autoincrement())
-  firstName String
-  lastName  String
-  email     String            @unique
-  password  String
-  active    Boolean           @default(false)
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  Address   CustomerAddress[]
+  id                 Int                  @id @default(autoincrement())
+  firstName          String
+  lastName           String
+  email              String               @unique
+  password           String
+  active             Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  Address            CustomerAddress[]
+  CustomerProfilePic CustomerProfilePic[]
 }
 
 model CustomerAddress {
@@ -189,16 +190,27 @@ model CustomerAddress {
   updatedAt  DateTime @updatedAt
 }
 
+model CustomerProfilePic {
+  id         Int      @id @default(autoincrement())
+  mimeType   String
+  picture    String   @db.LongText
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId Int      @unique
+}
+
 model Category {
-  id          Int           @id @default(autoincrement())
-  name        String        @unique
-  priority    Int
-  active      Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  adminId     Int
-  admin       Admin         @relation(fields: [adminId], references: [id])
-  SubCategory SubCategory[]
+  id            Int             @id @default(autoincrement())
+  name          String          @unique
+  priority      Int
+  active        Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  adminId       Int?
+  admin         Admin?          @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  SubCategory   SubCategory[]
+  CategoryImage CategoryImage[]
 }
 
 model SubCategory {
@@ -211,8 +223,6 @@ model SubCategory {
   category         Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   SubSubCategory   SubSubCategory[]
   SubCategoryImage SubCategoryImage[]
-
-  CategoryImage CategoryImage[]
 }
 
 model SubSubCategory {
@@ -247,11 +257,29 @@ model SubCategoryImage {
 }
 
 model CategoryImage {
-  id         Int         @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   mimeType   String
-  picture    String      @db.LongText
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  category   SubCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId Int         @unique
+  picture    String   @db.LongText
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId Int      @unique
+}
+
+model Brand {
+  id         Int          @id @default(autoincrement())
+  name       String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  BrandImage BrandImage[]
+}
+
+model BrandImage {
+  id        Int      @id @default(autoincrement())
+  mimeType  String
+  picture   String   @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  brandId   Int      @unique
 }

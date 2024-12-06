@@ -1,18 +1,29 @@
 import { Request, Response } from "express";
-import { Vendor as VendorService } from "../services";
+import { Authentication, ImageService, Vendor as VendorService } from "../services";
 import { numberValidator } from "../validators";
-import constants, { http } from "../constants";
+import constants, { http, urls } from "../constants";
 import { baseUrl } from "../utils";
+import { VendorProfilePicture } from "../repos";
 
 export default class Vendor {
 
     private static readonly service: VendorService = new VendorService();
+    public static readonly imageService: ImageService = new ImageService();
+    private static readonly authService: Authentication = new Authentication();
 
-    public static async addProfilePicture(req: Request, res: Response) {
+
+    public static async uploadProfilePicture(req: Request, res: Response) {
         const image = req.file!;
         const vendorId = Number(res.locals.data.id);
         const baseServerUrl = baseUrl(req);
-        const serviceResult = await Vendor.service.uploadProfilePicture(image, vendorId, baseServerUrl);
+
+        const serviceResult = await Vendor.imageService.uploadImage<VendorProfilePicture>(
+            image,
+            vendorId,
+            baseServerUrl,
+            urls("vendorPic")!,
+            new VendorProfilePicture()
+        );
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -20,28 +31,6 @@ export default class Vendor {
         const vendorEmail = res.locals.data.email;
         const serviceResult = await Vendor.service.getVendorWithEmail(vendorEmail);
         res.status(serviceResult.statusCode).json(serviceResult.json);
-    }
-
-    public static async getProfilePicture(req: Request, res: Response) {
-        const idResult = numberValidator(req.params.id);
-
-        if (idResult.error) {
-            res.status(400).send("id must be an integer");
-            return;
-        }
-        const serviceResult = await Vendor.service.getProfilePic(idResult.number);
-
-        if (serviceResult.json.error) {
-            res.status(serviceResult.statusCode).send(serviceResult.statusCode === 500 ? http("500") : constants("404Image"));
-            return;
-        }
-
-
-        res.writeHead(serviceResult.statusCode, {
-            'Content-Type': serviceResult.json.data.mimeType,
-            'Content-Length': serviceResult.json.data.bufferLength
-        })
-            .end(serviceResult.json.data.imageBuffer);
     }
 
     public static async updateFirstName(req: Request, res: Response) {
@@ -66,6 +55,12 @@ export default class Vendor {
     }
 
     public static async delete(req: Request, res: Response) {
+        const token = req.headers.authorization!.split(' ')[1];
+        const hasLoggedOut = await Vendor.authService.logoOut(token);
+        if(hasLoggedOut.json.error){
+            res.status(hasLoggedOut.statusCode).json(hasLoggedOut.json);
+            return;
+        }
         const vendorId = res.locals.data.id;
         const serviceResult = await Vendor.service.delete(vendorId);
         res.status(serviceResult.statusCode).json(serviceResult.json);

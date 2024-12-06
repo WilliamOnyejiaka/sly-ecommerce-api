@@ -19,21 +19,15 @@ export default class Repo implements Repository {
     public async insert(data: any) {
         try {
             const newItem = await (prisma[this.tblName] as any).create({ data: data });
-            return newItem;
+            return {
+                error: false,
+                data: newItem,
+                type: 201,
+                message: null
+            };
         } catch (error) {
-            if (error instanceof Prisma.PrismaClientValidationError) {
-                console.error(`Validation error in ${this.tblName} table:`, error.message);
-                return {};
-            } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                console.error(`Known request error ${this.tblName} table:`, error.message);
-                return {};
-            } else {
-                console.error(`Failed to create ${this.tblName}: `, error);
-                return {};
-            }
-
+            return this.handleDatabaseError(error);
         }
-
     }
 
     public async insertMany(data: any[]) {
@@ -65,8 +59,31 @@ export default class Repo implements Repository {
         return await this.getItem({ id: id });
     }
 
+    public async getItemWithName(name: string) {
+        return await this.getItem({ name: name });
+    }
+
+
     public async getItemWithEmail(email: string) {
         return await this.getItem({ email: email });
+    }
+
+    protected async getItemWithRelation(where: any) {
+        try {
+            const item = await (prisma[this.tblName] as any).findFirst({
+                where: where
+            });
+            return {
+                error: false,
+                data: item
+            };
+        } catch (error) {
+            console.error(`Failed to get item from the ${this.tblName} table: `, error);
+            return {
+                error: true,
+                data: {}
+            };
+        }
     }
 
     protected async getItem(where: any) {
@@ -194,4 +211,75 @@ export default class Repo implements Repository {
             }
         }
     }
+
+    protected handleDatabaseError(error: any) {
+
+        if (error.code === "P2002") {
+            // Unique constraint violation
+            console.error(`Unique constraint violation error for ${this.tblName} table`);
+            return {
+                error: true,
+                message: "A record with this data already exists.",
+                type: 400,
+                data: {}
+            }
+        } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // Handle known Prisma errors
+            switch (error.code) {
+                case "P2003":
+                    // Foreign key constraint violation
+                    console.error(`Foreign key constraint violation error for ${this.tblName} table`);
+                    return {
+                        error: true,
+                        message: `Invalid foreign key reference. Please check related fields.`,
+                        type: 400,
+                        data: {}
+                    }
+                case "P2001":
+                    // Record not found
+                    console.error(`Record not foundfor ${this.tblName} table`);
+                    return {
+                        error: true,
+                        message: "The requested record could not be found.",
+                        type: 400,
+                        data: {}
+                    };
+                case "P2000":
+                    // Value too long for a column
+                    console.error(`Value too long for a column for ${this.tblName} table`);
+                    return {
+                        error: true,
+                        message: "A value provided is too long for one of the fields.",
+                        type: 400,
+                        data: {}
+                    };
+                default:
+                    console.error(`An unexpected database error occurred for ${this.tblName} table`,error.message);
+                    return {
+                        error: true,
+                        message: "An unexpected database error occurred.",
+                        type: 400,
+                        data: {}
+                    };;
+            }
+        } else if (error instanceof Prisma.PrismaClientValidationError) {
+            console.error(`Validation error in ${this.tblName} table`);
+            return {
+                error: true,
+                message: 'Invalid data provided. Please check that all fields are correctly formatted.',
+                type: 400,
+                data: {}
+            }
+        }
+
+        // Fallback for unexpected errors
+        console.error(http("500"), error);
+        return {
+            error: true,
+            message: http("500"),
+            type: 500,
+            data: {}
+        };
+    }
+
 }

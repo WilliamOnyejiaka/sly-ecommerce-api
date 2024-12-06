@@ -2,8 +2,9 @@ import mime from "mime";
 import Service from "./Service";
 import { http, urls } from "../constants";
 import Repository, { ImageRepository } from "../interfaces/Repository";
-import { processImage, baseUrl } from "../utils";
+import { processImage } from "../utils";
 import * as fs from "fs";
+import ImageRepo from "../repos/ImageRepo";
 
 export default class ImageService extends Service {
 
@@ -11,7 +12,7 @@ export default class ImageService extends Service {
         super();
     }
 
-    public async getImage<T extends ImageRepository>(repo: T, id: number) {        
+    public async getImage<T extends ImageRepository>(repo: T, id: number) {
         const repoResult = await repo.getImage(id);
         if (repoResult.error) {
             return super.responseData(500, true, http("500") as string);
@@ -33,13 +34,30 @@ export default class ImageService extends Service {
         return super.responseData(statusCode, error, null, repoResult.data);
     }
 
-    public async deleteImages(images: Express.Multer.File[]) {
+    public unSyncDeleteImages(images: Express.Multer.File[]) {
         for (const image of images) {
             fs.unlinkSync(image.path);
         }
     }
 
-    public async uploadImage<T extends Repository>(image: Express.Multer.File, data: any,repo: T,id: number,imageRoute: string){
+    public async deleteImages(images: Express.Multer.File[]): Promise<boolean> {
+        const deletionPromises = images.map (image =>
+            fs.promises.unlink(image.path).then(() => ({ success: true, path: image.path, fieldname: image.fieldname }))
+                .catch(error => ({ success: false, file: image.path, fieldname: image.fieldname, error }))
+        );
+
+        const results = await Promise.all(deletionPromises);
+
+        const errors = results.filter(result => !result.success);
+        if (errors.length > 0) {
+            console.error("Failed to delete some files:", errors);
+            return true; // Indicate that there were errors
+        }
+        return false; // All deletions succeeded
+    }
+
+
+    public async uploadImage<T extends ImageRepo>(image: Express.Multer.File, parentId: number, baseUrl: string, partImageUrl: string, repo: T) { // TODO: make this function general
         const result = await processImage(image);
 
         if (result.error) {
@@ -51,11 +69,14 @@ export default class ImageService extends Service {
             );
         }
 
-        data.mimeType = mime.lookup(image.path);
-        data.picture = result.data;
-        const repoResult = await repo.insert(data);
+        const mimeType = mime.lookup(image.path); // TODO: get this from processImage
+        const repoResult = await repo.insertImage({
+            mimeType: mimeType,
+            picture: result.data,
+            parentId: parentId
+        });
 
-        const imageUrl = baseUrl + urls("baseImageUrl")! + imageRoute.split(":")[0] + id;
+        const imageUrl = baseUrl + urls("baseImageUrl")! + partImageUrl.split(":")[0] + parentId;
 
         return repoResult ?
             super.responseData(
@@ -70,4 +91,5 @@ export default class ImageService extends Service {
                 http("500")!,
             );
     }
+
 }

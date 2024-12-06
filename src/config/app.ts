@@ -1,7 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { corsConfig, env } from ".";
-import { auth, vendor, store, image, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory } from "./../routes";
+import { auth, vendor, store, image, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory, customer } from "./../routes";
 import { Email } from "../services";
 import path from "path";
 import ejs from "ejs";
@@ -45,8 +45,12 @@ function createApp() {
     app.use("/api/v1/admin/admin-permission", validateJWT(["admin"], env("tokenSecret")!), adminPermission);
     app.use("/api/v1/admin/store", validateJWT(["admin"], env("tokenSecret")!), adminStore);
     app.use("/api/v1/admin/category", validateJWT(["admin"], env("tokenSecret")!), adminCategory);
-
-
+    app.use(
+        "/api/v1/customer",
+        validateJWT(["customer"], env("tokenSecret")!),
+        // validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
+        customer
+    );
 
     app.post("/test2", async (req: Request, res: Response) => {
         // const result = await Email();
@@ -70,6 +74,13 @@ function createApp() {
     });
 
     app.use(handleMulterErrors);
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        console.warn(`Unmatched route: ${req.method} ${req.path}`);
+        res.status(404).json({
+            error: true,
+            message: "Route not found. Please check the URL or refer to the API documentation.",
+        })
+    });
     return app;
 }
 

@@ -1,6 +1,6 @@
 import constants, { http } from "../constants";
 import { ImageRepository } from "../interfaces/Repository";
-import { AdminProfilePicture, StoreLogo, VendorProfilePicture } from "../repos";
+import { AdminProfilePicture, CustomerProfilePic, StoreLogo, VendorProfilePicture } from "../repos";
 import FirstBanner from "../repos/FirstBanner";
 import SecondBanner from "../repos/SecondBanner";
 import { ImageService } from "../services";
@@ -53,5 +53,9 @@ export default class ImageController {
 
     public static getAdminProfilePic() {
         return ImageController.getImage<AdminProfilePicture>(new AdminProfilePicture());
+    }
+
+    public static getCustomerProfilePic() {
+        return ImageController.getImage<CustomerProfilePic>(new CustomerProfilePic());
     }
 }

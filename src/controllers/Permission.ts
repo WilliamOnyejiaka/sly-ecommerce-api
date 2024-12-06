@@ -9,7 +9,7 @@ export default class Permission {
     private static readonly service: PermissionService = new PermissionService();
 
     public static async getPermissionWithId(req: Request, res: Response) {
-        const idResult = numberValidator(req.params.roleId);
+        const idResult = numberValidator(req.params.permissionId);
 
         if (idResult.error) {
             res.status(400).json({
@@ -19,13 +19,13 @@ export default class Permission {
             return;
         }
 
-        const serviceResult = await Permission.service.getPermissionWithId(idResult.number);
+        const serviceResult = await Permission.service.getItemWithId(idResult.number);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
     public static async getPermissionWithName(req: Request, res: Response) {
-        const roleName = req.params.roleName;
-        const serviceResult = await Permission.service.getPermissionWithName(roleName);
+        const roleName = req.params.permissionName;
+        const serviceResult = await Permission.service.getItemWithName(roleName);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -36,7 +36,7 @@ export default class Permission {
     public static async createPermission(req: Request, res: Response) {
         const permissionData: PermissionDto = req.body;
         permissionData.name = permissionData.name.toLowerCase();
-        const permissionExistsResult = await Permission.service.getPermissionWithName(permissionData.name);
+        const permissionExistsResult = await Permission.service.getItemWithName(permissionData.name);
 
         if (permissionExistsResult.json.error && permissionExistsResult.statusCode == 500) {
             res.status(permissionExistsResult.statusCode).json(permissionExistsResult.json);

@@ -8,7 +8,7 @@ const vendor: Router = Router();
 vendor.post(
     "/upload-profile-pic",
     uploads.single("image"),
-    asyncHandler(Vendor.addProfilePicture)
+    asyncHandler(Vendor.uploadProfilePicture)
 );
 
 vendor.patch(

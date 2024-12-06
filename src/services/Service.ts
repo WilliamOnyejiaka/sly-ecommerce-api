@@ -23,9 +23,10 @@ export default class Service<T extends Repo = Repo> {
 
     protected async create<U>(createData: U, itemName: string) {
         const repoResult = await this.repo!.insert(createData);
-        return repoResult ?
-            this.responseData(200, false, `${itemName} was created successfully`, repoResult) :
-            this.responseData(500, true, http('500')!);
+        const error = repoResult.error;
+        const statusCode = repoResult.type;
+        const message = !error ? `${itemName} was created successfully` : repoResult.message!;
+        return this.responseData(statusCode, error, message, repoResult.data);
     }
 
     protected async getAllItems(message200: string) {
@@ -38,18 +39,30 @@ export default class Service<T extends Repo = Repo> {
         return this.responseData(200, false, message200, repoResult.data);
     }
 
-    protected async getItemWithId(id: number, message200: string, message404: string = "Item was not found") {
-        const repoResult = await this.repo!.getItemWithId(id);
+    private async getItem(nameOrId: string | number, message200: string | undefined) {
+        const repoResult = typeof nameOrId == "number" ? await this.repo!.getItemWithId(nameOrId) :
+            await this.repo!.getItemWithName(nameOrId);
+
         if (repoResult.error) {
             return this.responseData(500, true, http("500") as string);
         }
 
+        
         const data = repoResult.data;
         const statusCode = data ? 200 : 404;
         const error: boolean = !data;
-        const message = error ? message404 : message200;
+        const message = error ? "Item was not found" : message200 ?? "Item was retrieved successfully";
 
         return this.responseData(statusCode, error, message, data);
+    }
+
+
+    public async getItemWithId(id: number, message200?: string) {
+        return await this.getItem(id,message200);
+    }
+
+    public async getItemWithName(name: string, message200?: string) {
+        return await this.getItem(name,message200);
     }
 
     public async emailExists(email: string) {
@@ -94,5 +107,7 @@ export default class Service<T extends Repo = Repo> {
 
         return this.responseData(200, false, "Item was deleted successfully");
     }
+
+    public getRepo() { return this.repo! }
 
 }

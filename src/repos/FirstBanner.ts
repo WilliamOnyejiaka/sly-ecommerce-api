@@ -1,9 +1,13 @@
-import { Banner } from ".";
 import { ImageRepository } from "../interfaces/Repository";
+import ImageRepo from "./ImageRepo";
 
-export default class FirstBanner extends Banner implements ImageRepository {
+export default class FirstBanner extends ImageRepo {
 
-    public async getImage(storeId: number){
-        return await this.getFirstStoreBanner(storeId);
+    public constructor() {
+        super('firstStoreBanner', 'storeId');
     }
+
+    // public async getImage(storeId: number){
+    //     return await this.getFirstStoreBanner(storeId);
+    // }
 }

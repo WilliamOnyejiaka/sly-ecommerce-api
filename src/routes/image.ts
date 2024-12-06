@@ -10,5 +10,6 @@ image.get(urls("adminPic")!, asyncHandler(ImageController.getAdminProfilePic()))
 image.get(urls("storeLogo")!, asyncHandler(ImageController.getStoreLogo()));
 image.get(urls("firstBanner")!, asyncHandler(ImageController.getFirstStoreBanner()));
 image.get(urls("secondBanner")!, asyncHandler(ImageController.getSecondStoreBanner()));
+image.get(urls("customerPic")!, asyncHandler(ImageController.getCustomerProfilePic()));
 
 export default image;

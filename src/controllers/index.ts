@@ -11,6 +11,7 @@ import AdminPermission from "./AdminPermission";
 import AdminStore from "./AdminStore";
 import AdminCategory from "./AdminCategory";
 import Controller from "./Controller";
+import Customer from "./Customer";
 
 export {
     Auth,
@@ -25,5 +26,6 @@ export {
     AdminPermission,
     AdminStore,
     AdminCategory,
-    Controller
+    Controller,
+    Customer
 };

@@ -9,7 +9,7 @@ export default class Token {
             result = jsonwebtoken.verify(token, tokenSecret);
 
         } catch (err: any) {
-            console.error("\nError: ",err.message,"\n");
+            console.error("\nError: ", err.message, "\n");
 
             const message = err.message[0].toUpperCase() + err.message.slice(1);
             return {
@@ -20,13 +20,21 @@ export default class Token {
         }
 
         let validTypes = true;
-
-        for (const type of result.types) {
-            if (!types.includes(type)) {
-                validTypes = false;
-                break;
+        if (types.includes("any")) {
+            return {
+                error: false,
+                message: null,
+                data: result
+            };
+        } else {
+            for (const type of result.types) {
+                if (!types.includes(type)) {
+                    validTypes = false;
+                    break;
+                }
             }
         }
+
 
         return validTypes ? {
             error: false,
@@ -45,5 +53,17 @@ export default class Token {
             secretKey,
             { expiresIn: "30d" }
         );
+    }
+
+    public static decodeToken(token: string): { expiresAt: number, data: any, types: string[], issuedAt: number } {
+        const decoded: any = jsonwebtoken.decode(token);
+        const expiresAt = decoded.exp - Math.floor(Date.now() / 1000); // Token's remaining time-to-live
+
+        return {
+            expiresAt: expiresAt,
+            data: decoded.data,
+            types: decoded.types,
+            issuedAt: decoded.iat
+        };
     }
 }

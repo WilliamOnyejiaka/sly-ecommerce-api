@@ -1,24 +1,35 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import { Permission } from "../controllers";
 import { adminAuthorization, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
+import { validateQueryParams } from "../validators";
 
 const permission: Router = Router();
 
 permission.get(
     "/paginate-permissions",
     adminAuthorization(['any']),
+    validateQueryParams([
+        {
+            name: "page",
+            type: "number"
+        },
+        {
+            name: "pageSize",
+            type: "number"
+        }
+    ]),
     asyncHandler(Permission.paginatePermissions())
 );
 
 permission.get(
-    "/get-permission-with-id/:roleId",
+    "/get-permission-with-id/:permissionId",
     adminAuthorization(['any']),
     asyncHandler(Permission.getPermissionWithId)
 );
 
 permission.get(
-    "/get-permission-with-name/:roleName",
+    "/get-permission-with-name/:permissionName",
     adminAuthorization(['any']),
     asyncHandler(Permission.getPermissionWithName)
 );

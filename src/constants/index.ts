@@ -3,7 +3,9 @@ import http from "./http";
 import authorizationTypes from "./authorizationTypes";
 import urls from "./urls";
 
-export default function constants(key: string) {
+export default function     constants(key: string) {
+    const message404 = " was not found";
+    const message200 = " has been retrieved successfully";
 
     return {
         'failedCache': "Failed to cache data",
@@ -28,6 +30,8 @@ export default function constants(key: string) {
         '200Stores': "Stores were retrieved successfully",
         '200Category': "Category has been retrieved successfully",
         '200Categories': "Categories were retrieved successfully",
+        '404Customer': "Customer"+message404,
+        '200Customer': "Customer"+message200
     }[key];
 }
 

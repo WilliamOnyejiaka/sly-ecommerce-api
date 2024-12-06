@@ -32,7 +32,7 @@ export default class Role extends Service<RoleRepo> {
     }
 
     public async getRoleWithId(roleId: number) {
-        return await super.getItemWithId(roleId, "Role was not found", constants('200Role')!);
+        return await super.getItemWithId(roleId);
     }
 
     public async getAllRoles() {

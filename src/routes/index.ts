@@ -10,6 +10,7 @@ import permission from "./permission";
 import adminPermission from "./adminPermission";
 import adminStore from "./adminStore";
 import adminCategory from "./adminCategory";
+import customer from "./customer";
 
 export {
     auth,
@@ -23,5 +24,6 @@ export {
     permission,
     adminPermission,
     adminStore,
-    adminCategory
+    adminCategory,
+    customer
 };

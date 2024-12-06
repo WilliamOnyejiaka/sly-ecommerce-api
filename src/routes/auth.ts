@@ -17,6 +17,21 @@ auth.post("/admin-login", validateBody(['email', 'password']), asyncHandler(Auth
 auth.post("/vendor-login",validateBody(['email','password']), asyncHandler(Auth.vendorLogin));
 auth.get("/vendor-email-otp/:email", asyncHandler(Auth.vendorEmailOTP));
 auth.get("/confirm-vendor-email/:email/:otpCode",asyncHandler(Auth.vendorEmailVerification));
+
+auth.post("/customer/sign-up", validateBody([
+    'firstName',
+    'lastName',
+    'password',
+    'email',
+    'street',
+    'city',
+    'state',
+    'country',
+    'zip'
+]), asyncHandler(Auth.customerSignUp));
+
+auth.post("/customer/login", validateBody(['email', 'password']), asyncHandler(Auth.customerLogin));
+auth.get("/logout",asyncHandler(Auth.logOut));
 // auth.get("/google", Auth.oauthRedirect);
 // auth.get("/google/callback", Auth.oauthCallback);
 

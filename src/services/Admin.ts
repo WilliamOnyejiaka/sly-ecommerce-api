@@ -43,10 +43,11 @@ export default class Admin extends Service<AdminRepo> {
             const passwordHash = Password.hashPassword(defaultAminData.password, env("storedSalt")!);
             defaultAminData.password = passwordHash;
 
-            const result = await this.repo!.insert(defaultAminData);
-            const error: boolean = !result;
-            const statusCode = error ? 500 : 201;
+            const repoResult = await this.repo!.insert(defaultAminData);
+            const error: boolean = repoResult.error;
+            const statusCode = repoResult.type;
             const message: string = !error ? "Admin has been created successfully" : http("500")!;
+            const result = repoResult.data;
 
             if (!error) {
                 return super.responseData(statusCode, error, message);
@@ -122,7 +123,7 @@ export default class Admin extends Service<AdminRepo> {
         const message = error ? http("404")! : "Admin has been retrieved";
 
         if (!error) {
-            delete (repoResult.data as any).password;
+            delete repoResult.data.password;
         }
 
         return super.responseData(statusCode, error, message, admin);
@@ -140,13 +141,14 @@ export default class Admin extends Service<AdminRepo> {
             createData.password = passwordHash;
             createData.createdBy = adminName;
 
-            const result = await this.repo!.insert(createData);
-            const error: boolean = !result
-            const statusCode = error ? 500 : 201;
-            const message: string = !error ? "Admin has been created successfully" : http("500")!;
+            const repoResult = await this.repo!.insert(createData);
+            const error: boolean = repoResult.error
+            const statusCode = repoResult.type;
+            const message: string = !error ? "Admin has been created successfully" : repoResult.message!;
+            const result = repoResult.data
 
             if (!error) {
-                delete (result as any).password;
+                delete result.password;
                 return super.responseData(statusCode, error, message, result);
             }
             return super.responseData(statusCode, error, message, result);

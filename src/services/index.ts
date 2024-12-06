@@ -11,6 +11,7 @@ import Role from "./Role";
 import Permission from "./Permission";
 import AdminPermission from "./AdminPermission";
 import Category from "./Category";
+import Customer from "./Customer";
 
 export {
     Token,
@@ -25,5 +26,6 @@ export {
     Role,
     Permission,
     AdminPermission,
-    Category
+    Category,
+    Customer
 };

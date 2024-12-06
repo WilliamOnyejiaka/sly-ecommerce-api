@@ -1,8 +1,7 @@
-import mime from "mime";
 import Service from "./Service";
 import constants, { http, urls } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
-import { getPagination, processImage } from "../utils";
+import { getPagination } from "../utils";
 import { VendorCache } from "../cache";
 import ImageService from "./Image";
 
@@ -53,52 +52,6 @@ export default class Vendor extends Service<VendorRepo> {
         }
 
         return super.responseData(statusCode, error, "Vendor was not found", repoResult.data);
-    }
-
-    // public async uploadProfilePicture(image: Express.Multer.File, vendorId: number, baseUrl: string) {
-    //     return await (new ImageService()).uploadImage<VendorProfilePicture>(
-    //         image,
-    //         {vendorId: vendorId},
-    //         this.repo,
-    //         vendorId,
-    //         baseUrl
-    //     );
-    // }
-
-
-    public async uploadProfilePicture(image: Express.Multer.File, vendorId: number, baseUrl: string) { // TODO: make this function general
-        const result = await processImage(image);
-
-        if (result.error) {
-            console.error(result.message);
-            return super.responseData(
-                500,
-                true,
-                http("500")!,
-            );
-        }
-
-        const mimeType = mime.lookup(image.path);
-        const repoResult = await this.profilePicRepo.insert({
-            mimeType: mimeType,
-            picture: result.data,
-            vendorId: vendorId
-        });
-
-        const imageUrl = baseUrl + urls("baseImageUrl")! + urls("vendorPic")!.split(":")[0] + vendorId;
-
-        return repoResult ?
-            super.responseData(
-                201,
-                false,
-                "Profile picture was created successfully",
-                { imageUrl: imageUrl }
-            ) :
-            super.responseData(
-                500,
-                true,
-                http("500")!,
-            );
     }
 
     public async updateFirstName(id: number, firstName: string) {
@@ -159,28 +112,6 @@ export default class Vendor extends Service<VendorRepo> {
             super.responseData(500, true, http('500')!);
     }
 
-    public async getProfilePic(id: any) {
-        const repoResult = await this.profilePicRepo.getImage(id);
-        if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
-        }
-
-        const statusCode = repoResult.data ? 200 : 404;
-        const error: boolean = repoResult.data ? false : true;
-
-        if (repoResult.data) {
-            const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
-
-            return super.responseData(statusCode, error, null, {
-                imageBuffer: imageBuffer,
-                bufferLength: imageBuffer.length,
-                mimeType: (repoResult.data as any).mimeType
-            });
-        }
-
-        return super.responseData(statusCode, error, null, repoResult.data);
-    }
-
     public async paginateVendors(page: number, pageSize: number) {
         const skip = (page - 1) * pageSize;  // Calculate the offset
         const take = pageSize;  // Limit the number of records
@@ -201,7 +132,7 @@ export default class Vendor extends Service<VendorRepo> {
             pagination
         });
     }
-    
+
     public async getAllVendors() {
         const repoResult = await this.repo!.getAllVendors();
 

@@ -10,16 +10,6 @@ export default class StoreDetails extends Repo {
         super('storeDetails');
     }
 
-    public async insert(storeDetailsDto: StoreDetailsDto) {
-        try {
-            const newStore = await prisma.storeDetails.create({ data: storeDetailsDto as any });
-            return newStore;
-        } catch (error) {
-            console.error("Failed to create store: ", error);
-            return {};
-        }
-    }
-
     public async insertWithRelations(
         storeDetailsDto: StoreDetailsDto,
         storeLogo: PictureData | null,
@@ -39,10 +29,14 @@ export default class StoreDetails extends Repo {
                 data: data
             });
 
-            return newStore;
+            return {
+                error: false,
+                data: newStore,
+                type: 201,
+                message: null
+            };
         } catch (error) {
-            console.error("Failed to create store: ", error);
-            return {};
+            return super.handleDatabaseError(error);
         }
     }
 
