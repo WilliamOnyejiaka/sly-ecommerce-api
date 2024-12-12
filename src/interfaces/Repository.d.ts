@@ -6,6 +6,15 @@ export default interface Repository {
 
 
 export interface ImageRepository {
-    getImage: (id: number) => Promise<{ error: boolean; data?: any }>
-
+    getImage: (id: number) => Promise<{
+        error: boolean;
+        message: string | null;
+        type: number;
+        data: any;
+    } | {
+        error: boolean;
+        message: string | undefined;
+        type: number;
+        data: {};
+    }>
 }

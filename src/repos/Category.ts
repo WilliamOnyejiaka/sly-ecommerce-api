@@ -21,7 +21,7 @@ export default class Category extends Repo {
         return await super.getItem({ name: name });
     }
 
-    public async deleteCategory(id: number) {
-        return super.delete({ id: id }, `${this.tblName} with id - ${id} does not exist.`);
+    public async updateCategory(id: number, updateData: any) {
+        return await super.update({ id: id }, updateData);
     }
 }

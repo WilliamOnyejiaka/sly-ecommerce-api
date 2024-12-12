@@ -3,11 +3,6 @@ import prisma from ".";
 import { http } from "../constants";
 import Repository from "../interfaces/Repository";
 
-interface IRepoDelete {
-    columnName: string,
-    where: any
-}
-
 export default class Repo implements Repository {
 
     protected tblName: any;
@@ -19,12 +14,7 @@ export default class Repo implements Repository {
     public async insert(data: any) {
         try {
             const newItem = await (prisma[this.tblName] as any).create({ data: data });
-            return {
-                error: false,
-                data: newItem,
-                type: 201,
-                message: null
-            };
+            return this.repoResponse(false, 201, null, newItem);
         } catch (error) {
             return this.handleDatabaseError(error);
         }
@@ -33,26 +23,15 @@ export default class Repo implements Repository {
     public async insertMany(data: any[]) {
         try {
             const newItems = (prisma[this.tblName] as any).createMany({ data: data, skipDuplicates: true });
-            return newItems;
+            return this.repoResponse(false, 201, null, newItems);
         } catch (error) {
-            console.error("Failed to insert many items: ", error);
-            return {};
+            return this.handleDatabaseError(error);
         }
     }
 
     public async checkIfTblHasData() {
-        try {
-            const count = await (prisma[this.tblName] as any).count();
-            return {
-                error: false,
-                hasData: count > 0
-            };
-        } catch (error) {
-            console.error('Error checking the table:', error);
-            return {
-                error: true
-            };
-        }
+        const result = await this.countTblRecords();
+        return result.error ? result : this.repoResponse(false, 200, null, result.data > 0);
     }
 
     public async getItemWithId(id: number) {
@@ -68,21 +47,15 @@ export default class Repo implements Repository {
         return await this.getItem({ email: email });
     }
 
-    protected async getItemWithRelation(where: any) {
+    protected async getItemWithRelation(where: any, include: any) {
         try {
-            const item = await (prisma[this.tblName] as any).findFirst({
-                where: where
+            const item = await (prisma[this.tblName] as any).findUnique({
+                where: where,
+                include: include
             });
-            return {
-                error: false,
-                data: item
-            };
+            return this.repoResponse(false, 200, null, item);
         } catch (error) {
-            console.error(`Failed to get item from the ${this.tblName} table: `, error);
-            return {
-                error: true,
-                data: {}
-            };
+            return this.handleDatabaseError(error);
         }
     }
 
@@ -91,48 +64,25 @@ export default class Repo implements Repository {
             const item = await (prisma[this.tblName] as any).findFirst({
                 where: where
             });
-            return {
-                error: false,
-                data: item
-            };
+            return this.repoResponse(false, 200, null, item);
         } catch (error) {
-            console.error(`Failed to get item from the ${this.tblName} table: `, error);
-            return {
-                error: true,
-                data: {}
-            };
+            return this.handleDatabaseError(error);
         }
     }
 
-    protected async delete(where: any, message404: string) {
+    public async delete(where: any) {
         try {
             await (prisma[this.tblName] as any).delete({
                 where: where,
             });
-            return {
-                error: false
-            }
+            return this.repoResponse(false, 200);
         } catch (error: any) {
-            if (error.code === 'P2025') {
-                console.error(message404);
-                return {
-                    error: true,
-                    message: message404,
-                    type: 404
-                };
-            } else {
-                console.error(`Error deleting ${this.tblName}:`, error);
-                return {
-                    error: true,
-                    message: http('500')!,
-                    type: 500
-                };
-            }
+            return this.handleDatabaseError(error);
         }
     }
 
     public async deleteWithId(id: number) {
-        return this.delete({ id: id }, `${this.tblName} with id - ${id} does not exist.`);
+        return this.delete({ id: id });
     }
 
 
@@ -143,34 +93,25 @@ export default class Repo implements Repository {
 
     protected async update(where: any, data: any) {
         try {
-            await (prisma[this.tblName] as any).update({
+            const updatedItem = await (prisma[this.tblName] as any).update({
                 where: where,
                 data: data
             });
 
-            return {
-                error: false
-            };
+            return this.repoResponse(false, 200, null, updatedItem);
         } catch (error: any) {
-            if (error.code === 'P2025') {
-                const message404 = `Record not found for update operation for the ${this.tblName} table`;
-                console.error(message404);
-                return {
-                    error: true,
-                    message: message404,
-                    type: 404
-                };
-            } else {
-                console.error(`Failed to update the ${this.tblName} table: `, error);
-                return {
-                    error: true,
-                    message: http('500')!,
-                    type: 500
-                };
-            }
+            return this.handleDatabaseError(error);
         }
     }
 
+    public async countTblRecords() {
+        try {
+            const count = await (prisma[this.tblName] as any).count();
+            return this.repoResponse(false, 200, null, count);
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
+    }
 
     public async paginate(skip: number, take: number) {
         try {
@@ -179,56 +120,58 @@ export default class Repo implements Repository {
                 take,   // Fetches 'take' records
             });
             const totalItems = await (prisma[this.tblName] as any).count();
-
-            return {
-                error: false,
-                data: items,
+            return this.repoResponse(false, 200, null, {
+                items: items,
                 totalItems: totalItems
-            };
-
+            })
         } catch (error) {
-            console.error(`Failed to paginate ${this.tblName} items: `, error);
-            return {
-                error: true,
-                data: {}
-            }
+            return this.handleDatabaseError(error);
         }
     }
 
     public async getAll() {
         try {
             const items = await (prisma[this.tblName] as any).findMany();
-            return {
-                error: false,
-                data: items
-            };
-
+            return this.repoResponse(false, 200, null, items);
         } catch (error) {
-            console.error(`Failed to get all ${this.tblName} items: `, error);
-            return {
-                error: true,
-                data: {}
-            }
+            return this.handleDatabaseError(error);
         }
+    }
+
+    protected repoResponse(error: boolean, type: number, message: string | null = null, data: any = {}) {
+        return {
+            error: error,
+            message: message,
+            type: type,
+            data: data
+        };
     }
 
     protected handleDatabaseError(error: any) {
 
         if (error.code === "P2002") {
             // Unique constraint violation
-            console.error(`Unique constraint violation error for ${this.tblName} table`);
+            console.error(`Unique constraint violation error for the ${this.tblName} table`);
             return {
                 error: true,
                 message: "A record with this data already exists.",
                 type: 400,
                 data: {}
-            }
+            };
+        } else if (error.code === "P2025") {
+            console.error(`Item was not found for the ${this.tblName} table`);
+            return {
+                error: true,
+                message: "Item was not found.",
+                type: 404,
+                data: {}
+            };
         } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
             // Handle known Prisma errors
             switch (error.code) {
                 case "P2003":
                     // Foreign key constraint violation
-                    console.error(`Foreign key constraint violation error for ${this.tblName} table`);
+                    console.error(`Foreign key constraint violation error for the ${this.tblName} table`);
                     return {
                         error: true,
                         message: `Invalid foreign key reference. Please check related fields.`,
@@ -237,7 +180,7 @@ export default class Repo implements Repository {
                     }
                 case "P2001":
                     // Record not found
-                    console.error(`Record not foundfor ${this.tblName} table`);
+                    console.error(`Record not found for the ${this.tblName} table`);
                     return {
                         error: true,
                         message: "The requested record could not be found.",
@@ -246,7 +189,7 @@ export default class Repo implements Repository {
                     };
                 case "P2000":
                     // Value too long for a column
-                    console.error(`Value too long for a column for ${this.tblName} table`);
+                    console.error(`Value too long for a column for the ${this.tblName} table`);
                     return {
                         error: true,
                         message: "A value provided is too long for one of the fields.",
@@ -254,7 +197,7 @@ export default class Repo implements Repository {
                         data: {}
                     };
                 default:
-                    console.error(`An unexpected database error occurred for ${this.tblName} table`,error.message);
+                    console.error(`An unexpected database error occurred for the ${this.tblName} table`, error.message);
                     return {
                         error: true,
                         message: "An unexpected database error occurred.",
@@ -263,7 +206,7 @@ export default class Repo implements Repository {
                     };;
             }
         } else if (error instanceof Prisma.PrismaClientValidationError) {
-            console.error(`Validation error in ${this.tblName} table`);
+            console.error(`Validation error in the ${this.tblName} table`);
             return {
                 error: true,
                 message: 'Invalid data provided. Please check that all fields are correctly formatted.',
@@ -281,5 +224,4 @@ export default class Repo implements Repository {
             data: {}
         };
     }
-
 }

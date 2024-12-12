@@ -31,17 +31,9 @@ export default class Admin extends Repo {
                     }
                 },
             });
-            return {
-                error: false,
-                data: admin
-            };
-
+            return super.repoResponse(false, 200, null, admin);
         } catch (error) {
-            console.error("Failed to get admin with id: ", error);
-            return {
-                error: true,
-                data: {}
-            }
+            return super.handleDatabaseError(error);
         }
     }
 
@@ -75,26 +67,18 @@ export default class Admin extends Repo {
                     roleId: null,
                 },
             });
-            return {
-                error: false,
-                updated: true
-            };
-
+            return super.repoResponse(false, 200);
         } catch (error) {
-            console.error("Failed to unassign roles: ", error);
-            return {
-                error: true,
-                updated: true
-            }
+            return super.handleDatabaseError(error);
         }
-    }
-
-    public async deleteAdmin(id: number) {
-        return await super.delete({ id: id }, `${this.tblName} with id - ${id} does not exist.`)
     }
 
     public async updateActiveStatus(id: number, activeStatus: boolean) {
         return await super.updateWithIdOrEmail(id, { active: activeStatus })
+    }
+
+    public async deleteAdmin(adminId: number){
+        return await super.delete({id: adminId});
     }
 
 }

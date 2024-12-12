@@ -1,7 +1,6 @@
 import Service from "./Service";
 import Repo from "../repos/Repo";
 import { http } from "../constants";
-import { loadJsonFile } from "../utils";
 import jsonRoles from "./../seeds/roles.json";
 import jsonPermissions from "./../seeds/permissions.json";
 
@@ -17,19 +16,19 @@ export default class Seed extends Service {
         const hasDataResult = await repo.checkIfTblHasData();
 
         if (hasDataResult.error) {
-            return super.responseData(500, true, http('500')!);
+            super.responseData(hasDataResult.type, true, hasDataResult.message!);
         }
 
-        if (!hasDataResult.hasData) {
-            const newRoles = await repo.insertMany(data);
-            return newRoles ? super.responseData(200, false, "Seeding was successful") : super.responseData(500, true, http('500')!);
+        if (!hasDataResult.data) {
+            const repoResult = await repo.insertMany(data);
+            return repoResult.error ? super.responseData(200, false, "Seeding was successful") : super.responseData(repoResult.type, true, repoResult.message as string);
         }
 
         return super.responseData(400, true, "Table has already been seeded");
     }
 
     public async defaultRoles() {
-        return await this.defaultData('role',jsonRoles);
+        return await this.defaultData('role', jsonRoles);
     }
 
     public async defaultPermissions() {

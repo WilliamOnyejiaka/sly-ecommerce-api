@@ -45,7 +45,7 @@ admin.patch(
 admin.patch(
     "/assign-role",
     adminAuthorization(['manage_all']),
-    validateBody(['adminId','roleId']),
+    validateBody(['adminId', 'roleId']),
     asyncHandler(Admin.assignRole)
 );
 
@@ -57,7 +57,7 @@ admin.get(
 admin.delete(
     "/:adminId",
     adminAuthorization(['manage_all']),
-    asyncHandler(Admin.delete)
+    asyncHandler(Admin.deleteAdmin)
 );
 
 

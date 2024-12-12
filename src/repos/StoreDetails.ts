@@ -1,7 +1,6 @@
 import prisma from ".";
 import { PictureData } from "../interfaces/PictureData";
 import { StoreDetailsDto } from "../types/dtos";
-import { http } from "../constants";
 import Repo from "./Repo";
 
 export default class StoreDetails extends Repo {
@@ -40,64 +39,8 @@ export default class StoreDetails extends Repo {
         }
     }
 
-    public async getStoreWithName(name: string) {
-        try {
-            const store = await prisma.storeDetails.findUnique({
-                where: {
-                    name
-                }
-            });
-            return {
-                error: false,
-                data: store
-            };
-        } catch (error) {
-            console.error("Failed to find store with name: ", error);
-            return {
-                error: true,
-                data: {}
-            };
-        }
-    }
-
     public async getStoreWithVendorId(vendorId: number) {
-        try {
-            const store = await prisma.storeDetails.findFirst({
-                where: {
-                    vendorId: vendorId
-                }
-            });
-            return {
-                error: false,
-                data: store as StoreDetailsDto
-            };
-        } catch (error) {
-            console.error("Failed to find store with vendor id: ", error);
-            return {
-                error: true,
-                data: {}
-            };
-        }
-    }
-
-    public async getStoreWithId(id: number) {
-        try {
-            const store = await prisma.storeDetails.findUnique({
-                where: {
-                    id: id
-                }
-            });
-            return {
-                error: false,
-                data: store as StoreDetailsDto
-            };
-        } catch (error) {
-            console.error("Failed to find store with id: ", error);
-            return {
-                error: true,
-                data: {}
-            };
-        }
+        return await super.getItem({ vendorId: vendorId });
     }
 
     public async getStoreAndRelationsWithVendorId(vendorId: number) {
@@ -122,55 +65,17 @@ export default class StoreDetails extends Repo {
                     }
                 }
             });
-            return {
-                error: false,
-                data: store
-            };
+            return super.repoResponse(false, 200, null, store);
         } catch (error) {
-            console.error("Failed to find store with id: ", error);
-            return {
-                error: true,
-                data: {}
-            };
+            return super.handleDatabaseError(error);
         }
     }
 
-    public async delete(vendorId: number) {
-        try {
-            const store = await prisma.storeDetails.delete({
-                where: {
-                    vendorId: vendorId,
-                }
-            });
-            return {
-                error: false,
-            };
-        } catch (error: any) {
-
-            if (error.code === 'P2025') {
-                const message = `Store with vendor id ${vendorId} does not exist.`;
-                console.error(message);
-                return {
-                    error: true,
-                    message: message,
-                    type: 404
-                };
-            } else {
-                console.error('Error deleting store:', error);
-                return {
-                    error: true,
-                    message: http('500')!,
-                    type: 500
-                };
-            }
-        }
+    public override async delete(vendorId: number) {
+        return await super.delete({ vendorId: vendorId });
     }
 
-    public async getAllStores() {
-        return await this.getAll();
-    }
-
-    public async getAll() {
+    public async getAllStoresAndRelations() {
         try {
             const items = await prisma.storeDetails.findMany({
                 include: {
@@ -191,17 +96,9 @@ export default class StoreDetails extends Repo {
                     }
                 }
             });
-            return {
-                error: false,
-                data: items
-            };
-
+            return super.repoResponse(false, 200, null, items);
         } catch (error) {
-            console.error(`Failed to get all ${this.tblName} items: `, error);
-            return {
-                error: true,
-                data: {}
-            }
+            return super.handleDatabaseError(error);
         }
     }
 
@@ -230,18 +127,13 @@ export default class StoreDetails extends Repo {
             });
             const totalItems = await prisma.storeDetails.count();
 
-            return {
-                error: false,
-                data: items,
+            return super.repoResponse(false, 200, null, {
+                items: items,
                 totalItems: totalItems
-            };
+            });
 
         } catch (error) {
-            console.error(`Failed to paginate ${this.tblName} items: `, error);
-            return {
-                error: true,
-                data: {}
-            }
+            return super.handleDatabaseError(error);
         }
     }
 }

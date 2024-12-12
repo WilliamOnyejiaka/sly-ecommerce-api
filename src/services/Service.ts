@@ -1,4 +1,4 @@
-import constants, { http } from "../constants";
+import constants from "../constants";
 import Repo from "../repos/Repo";
 import { getPagination } from "../utils";
 
@@ -33,7 +33,7 @@ export default class Service<T extends Repo = Repo> {
         const repoResult = await this.repo!.getAll();
 
         if (repoResult.error) {
-            return this.responseData(500, true, http('500')!);
+            return this.responseData(repoResult.type, true, repoResult.message!);
         }
 
         return this.responseData(200, false, message200, repoResult.data);
@@ -44,10 +44,10 @@ export default class Service<T extends Repo = Repo> {
             await this.repo!.getItemWithName(nameOrId);
 
         if (repoResult.error) {
-            return this.responseData(500, true, http("500") as string);
+            return this.responseData(repoResult.type, true, repoResult.message!);
         }
 
-        
+
         const data = repoResult.data;
         const statusCode = data ? 200 : 404;
         const error: boolean = !data;
@@ -58,18 +58,18 @@ export default class Service<T extends Repo = Repo> {
 
 
     public async getItemWithId(id: number, message200?: string) {
-        return await this.getItem(id,message200);
+        return await this.getItem(id, message200);
     }
 
     public async getItemWithName(name: string, message200?: string) {
-        return await this.getItem(name,message200);
+        return await this.getItem(name, message200);
     }
 
     public async emailExists(email: string) {
         const emailExists = await this.repo!.getItemWithEmail(email);
 
         if (emailExists.error) {
-            return this.responseData(500, true, http("500") as string);
+            return this.responseData(emailExists.type, true, emailExists.message!);
         }
 
         const statusCode = emailExists.data ? 400 : 200;
@@ -81,31 +81,41 @@ export default class Service<T extends Repo = Repo> {
     public async paginate(page: number, pageSize: number) {
         const skip = (page - 1) * pageSize;
         const take = pageSize;
-        const repoResult = await this.repo!.paginate(skip, take);
+
+        const repoResult = await this.repo!.paginate(Number(skip), take);
+
+        console.log(repoResult);
 
         if (repoResult.error) {
-            return this.responseData(500, true, http('500')!);
+            return this.responseData(repoResult.type, true, repoResult.message!);
         }
 
-        const totalRecords = repoResult.totalItems;
+        const totalRecords = repoResult.data.totalItems;
 
         const pagination = getPagination(page, pageSize, totalRecords);
 
-        repoResult.data.forEach((item: any) => delete item.password);
-
         return this.responseData(200, false, `Items were retrieved successfully`, { // TODO: make this more specific
-            data: repoResult.data,
+            data: repoResult.data.items,
             pagination
         });
     }
 
-    protected async deleteWithId(vendorId: number) {
-        const repoResult = await this.repo!.deleteWithId(vendorId);
+    protected async deleteWithId(id: number) {
+        const repoResult = await this.repo!.deleteWithId(id);
         if (repoResult.error) {
-            return this.responseData(repoResult.type!, true, repoResult.message!);
+            return this.responseData(repoResult.type, true, repoResult.message!);
         }
 
         return this.responseData(200, false, "Item was deleted successfully");
+    }
+
+    public async totalRecords() {
+        const repoResult = await this.repo!.countTblRecords();
+        if (repoResult.error) {
+            return this.responseData(repoResult.type, true, repoResult.message!);
+        }
+
+        return this.responseData(200, false, "Total records were counted successfully", { totalRecords: repoResult.data });
     }
 
     public getRepo() { return this.repo! }

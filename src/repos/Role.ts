@@ -7,27 +7,4 @@ export default class Role extends Repo {
     public constructor() {
         super('role');
     }
-
-    public async insert(data: RoleDto) {
-        return await super.insert(data)
-    }
-    public async getRoleWithId(id: number) {
-        return await super.getItemWithId(id);
-    }
-
-    public async getRoleWithName(name: string) {
-        return await super.getItem({ name: name });
-    }
-
-    public async deleteRole(id: number) {
-        return super.delete({ id: id }, `${this.tblName} with id - ${id} does not exist.`)
-    }
-
-    // public async getAll() {
-    //     return await super.getAll();
-    // }
-
-    public async paginateRoles(skip: number, take: number) {
-        return super.paginate(skip, take);
-    }
 }

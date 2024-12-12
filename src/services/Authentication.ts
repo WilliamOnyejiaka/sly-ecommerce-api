@@ -65,7 +65,7 @@ export default class Authentication extends Service {
                 );
 
                 return cacheSuccessful ? super.responseData(200, false, "Login successful", {
-                    token: Token.createToken(env('tokenSecret')!, vendor, ["vendor"]),
+                    token: Token.createToken(env('tokenSecret')!, { id: vendor.id }, ["vendor"]), // TODO: testing here
                     vendor: vendor
                 }) : super.responseData(500, true, http('500')!);
             }

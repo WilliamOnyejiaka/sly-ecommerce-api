@@ -16,15 +16,14 @@ export default class ImageRepo extends Repo implements ImageRepository {
         delete data.parentId;
 
         try {
-            const newBrandImage = await (prisma[this.tblName] as any).upsert({
+            const newImage = await (prisma[this.tblName] as any).upsert({
                 where: where,
                 update: data,
                 create: { ...data, ...where },
             });
-            return newBrandImage;
+            return super.repoResponse(false, 201, null, newImage);
         } catch (error) {
-            console.error(`Failed to insert ${this.tblName}: `, error);
-            return {};
+            return super.handleDatabaseError(error);
         }
     }
 
@@ -35,16 +34,9 @@ export default class ImageRepo extends Repo implements ImageRepository {
                     [this.parentIdName]: id
                 }
             });
-            return {
-                error: false,
-                data: image
-            };
+            return super.repoResponse(false, 200, null, image);
         } catch (error) {
-            console.error(`Failed to get ${this.tblName} id: `, error);
-            return {
-                error: true,
-                data: {}
-            };
+            return super.handleDatabaseError(error);
         }
     }
 }

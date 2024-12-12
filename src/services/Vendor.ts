@@ -3,7 +3,6 @@ import constants, { http, urls } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
 import { getPagination } from "../utils";
 import { VendorCache } from "../cache";
-import ImageService from "./Image";
 
 export default class Vendor extends Service<VendorRepo> {
 
@@ -17,29 +16,29 @@ export default class Vendor extends Service<VendorRepo> {
     public async getVendorWithEmail(email: string) {
         const repoResult = await this.repo!.getVendorWithEmail(email);
         if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
+            return super.responseData(repoResult.type, true, repoResult.message as string);
         }
 
         const vendor = repoResult.data;
         const statusCode = vendor ? 200 : 404;
-        const error: boolean = vendor ? false : true;
+        const error: boolean = repoResult.error;
         const message = error ? http("404")! : "Vendor has been retrieved";
 
         if (!error) {
-            delete (repoResult.data as any).password;
+            delete repoResult.data.password;
         }
 
         return super.responseData(statusCode, error, message, vendor);
     }
 
     public async getVendorAll(vendorId: number, baseUrl: string) {
-        const repoResult = await this.repo!.getVendorAndRelationsWithId(vendorId) as any;
+        const repoResult = await this.repo!.getVendorAndRelationsWithId(vendorId);
         if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
+            return super.responseData(repoResult.type, true, repoResult.message as string);
         }
 
         const statusCode = repoResult.data ? 200 : 404;
-        const error: boolean = repoResult.data ? false : true;
+        const error: boolean = repoResult.error;
 
         if (repoResult.data) {
             const baseImageUrl: string = urls("baseImageUrl")!;
@@ -57,25 +56,25 @@ export default class Vendor extends Service<VendorRepo> {
     public async updateFirstName(id: number, firstName: string) {
         const repoResult = await this.repo!.updateFirstName(id, firstName);
         if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
+            return super.responseData(repoResult.type, true,repoResult.message as string);
         }
 
-        const statusCode = repoResult.updated ? 200 : 500;
-        const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
+        const statusCode = !repoResult.error ? 200 : 500;
+        const message = repoResult.error ? http("500")! : constants('updatedVendor')!;
 
-        return super.responseData(statusCode, !repoResult.updated, message);
+        return super.responseData(statusCode, repoResult.error, message);
     }
 
     public async updateLastName(id: number, lastName: string) {
         const repoResult = await this.repo!.updateLastName(id, lastName);
         if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
+            return super.responseData(repoResult.type, true,repoResult.message as string);
         }
 
-        const statusCode = repoResult.updated ? 200 : 500;
-        const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
+        const statusCode = !repoResult.error ? 200 : 500;
+        const message = repoResult.error ? http("500")! : constants('updatedVendor')!;
 
-        return super.responseData(statusCode, !repoResult.updated, message);
+        return super.responseData(statusCode, repoResult.error, message);
     }
 
     public async updateEmail(id: number, email: string) {
@@ -90,19 +89,19 @@ export default class Vendor extends Service<VendorRepo> {
 
         const repoResult = await this.repo!.updateEmail(id, email);
         if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
+            return super.responseData(repoResult.type, true,repoResult.message as string);
         }
 
-        const statusCode = repoResult.updated ? 200 : 500;
-        const message = !repoResult.updated ? http("500")! : constants('updatedVendor')!;
+        const statusCode = !repoResult.error ? 200 : 500;
+        const message = repoResult.error ? http("500")! : constants('updatedVendor')!;
 
-        return super.responseData(statusCode, !repoResult.updated, message);
+        return super.responseData(statusCode, repoResult.error, message);
     }
 
     public async delete(vendorId: number) {
-        const repoResult = await this.repo!.delete(vendorId);
+        const repoResult = await this.repo!.deleteWithId(vendorId);
         if (repoResult.error) {
-            return super.responseData(repoResult.type!, true, repoResult.message!);
+            return super.responseData(repoResult.type, true, repoResult.message!);
         }
 
         const deleted = await this.cache.delete(String(vendorId));
@@ -115,17 +114,17 @@ export default class Vendor extends Service<VendorRepo> {
     public async paginateVendors(page: number, pageSize: number) {
         const skip = (page - 1) * pageSize;  // Calculate the offset
         const take = pageSize;  // Limit the number of records
-        const repoResult = await this.repo!.paginateVendors(skip, take);
+        const repoResult = await this.repo!.paginate(skip, take);
 
         if (repoResult.error) {
-            return super.responseData(500, true, http('500')!);
+            return super.responseData(repoResult.type, true,repoResult.message!);
         }
 
-        const totalRecords = repoResult.totalItems;
+        const totalRecords = repoResult.data.totalItems;
 
         const pagination = getPagination(page, pageSize, totalRecords);
 
-        repoResult.data.forEach((item: any) => delete item.password);
+        repoResult.data.items.forEach((item: any) => delete item.password);
 
         return super.responseData(200, false, constants('200Vendors')!, {
             data: repoResult.data,
@@ -134,13 +133,32 @@ export default class Vendor extends Service<VendorRepo> {
     }
 
     public async getAllVendors() {
-        const repoResult = await this.repo!.getAllVendors();
+        const repoResult = await this.repo!.getAll();
 
         if (repoResult.error) {
-            return super.responseData(500, true, http('500')!);
+            return super.responseData(repoResult.type, true,repoResult.message!);
         }
 
         repoResult.data.forEach((item: any) => delete item.password);
         return super.responseData(200, false, constants('200Vendors')!, repoResult.data);
     }
+
+    private async toggleActiveStatus(id: number, activate: boolean = true) {
+        const repoResult = activate ? await this.repo!.updateActiveStatus(id, true) : await this.repo!.updateActiveStatus(id, false);
+        if (repoResult.error) {
+            return super.responseData(repoResult.type, true, repoResult.message!);
+        }
+        //Cache here
+        const message = activate ? "Vendor was activated successfully" : "Vendor was deactivated successfully";
+        return super.responseData(200, false, message,repoResult.data);
+    }
+
+    public async activateVendor(id: number){
+        return await this.toggleActiveStatus(id);
+    }
+
+    public async deActivateVendor(id: number) {
+        return await this.toggleActiveStatus(id, false);
+    }
 }
+

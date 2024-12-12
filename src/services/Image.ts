@@ -15,7 +15,7 @@ export default class ImageService extends Service {
     public async getImage<T extends ImageRepository>(repo: T, id: number) {
         const repoResult = await repo.getImage(id);
         if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
+            return super.responseData(repoResult.type, true, repoResult.message as string);
         }
 
         const statusCode = repoResult.data ? 200 : 404;
@@ -41,7 +41,7 @@ export default class ImageService extends Service {
     }
 
     public async deleteImages(images: Express.Multer.File[]): Promise<boolean> {
-        const deletionPromises = images.map (image =>
+        const deletionPromises = images.map(image =>
             fs.promises.unlink(image.path).then(() => ({ success: true, path: image.path, fieldname: image.fieldname }))
                 .catch(error => ({ success: false, file: image.path, fieldname: image.fieldname, error }))
         );
@@ -57,7 +57,7 @@ export default class ImageService extends Service {
     }
 
 
-    public async uploadImage<T extends ImageRepo>(image: Express.Multer.File, parentId: number, baseUrl: string, partImageUrl: string, repo: T) { // TODO: make this function general
+    public async uploadImage<T extends ImageRepo>(image: Express.Multer.File, parentId: number, baseUrl: string, partImageUrl: string, repo: T) {
         const result = await processImage(image);
 
         if (result.error) {
@@ -76,20 +76,17 @@ export default class ImageService extends Service {
             parentId: parentId
         });
 
-        const imageUrl = baseUrl + urls("baseImageUrl")! + partImageUrl.split(":")[0] + parentId;
+        const imageUrl = baseUrl + urls("baseImageUrl")! + partImageUrl.split(":")[0] + parentId;        
 
-        return repoResult ?
+        return !repoResult.error ?
             super.responseData(
                 201,
                 false,
                 "Image was uploaded successfully",
                 { imageUrl: imageUrl }
             ) :
-            super.responseData(
-                500,
-                true,
-                http("500")!,
-            );
+            super.responseData(repoResult.type, true, repoResult.message as string);
+
     }
 
 }

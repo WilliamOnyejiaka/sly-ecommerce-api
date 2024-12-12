@@ -30,12 +30,7 @@ export default class Customer extends Repo {
                     }
                 }
             });
-            return {
-                error: false,
-                data: customer,
-                type: 201,
-                message: null
-            };
+            return super.repoResponse(false, 200, null, customer);
         } catch (error) {
             super.handleDatabaseError(error);
         }

@@ -55,7 +55,7 @@ export default class Store extends Service {
             base64Images.storeLogo as PictureData,
             base64Images.firstBanner as PictureData,
             base64Images.secondBanner as PictureData
-        );        
+        );
 
         if (!repoResult.error) {
             const result = repoResult.data as any;
@@ -89,10 +89,10 @@ export default class Store extends Service {
     }
 
     public async storeNameExists(name: string) {
-        const nameExists = await this.storeRepo.getStoreWithName(name);
+        const nameExists = await this.storeRepo.getItemWithName(name);
 
         if (nameExists.error) {
-            return super.responseData(500, true, http("500") as string);
+            return super.responseData(nameExists.type, true, nameExists.message as string);
         }
 
         const statusCode = nameExists.data ? 400 : 200;
@@ -105,7 +105,7 @@ export default class Store extends Service {
         const storeExists = await this.storeRepo.getStoreWithVendorId(vendorId);
 
         if (storeExists.error) {
-            return super.responseData(500, true, http("500") as string);
+            super.responseData(storeExists.type, true, storeExists.message!);
         }
 
         const statusCode = storeExists.data ? 400 : 200;
@@ -115,10 +115,10 @@ export default class Store extends Service {
     }
 
     public async getStoreWithId(id: number) {
-        const repoResult = await this.storeRepo.getStoreWithId(id);
+        const repoResult = await this.storeRepo.getItemWithId(id);
 
         if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
+            super.responseData(repoResult.type, true, repoResult.message!);
         }
 
         const statusCode = repoResult.data ? 200 : 404;
@@ -186,9 +186,9 @@ export default class Store extends Service {
     }
 
     public async getStoreAll(vendorId: number, baseUrl: string) {
-        const repoResult = await this.storeRepo.getStoreAndRelationsWithVendorId(vendorId) as any;
+        const repoResult = await this.storeRepo.getStoreAndRelationsWithVendorId(vendorId);
         if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
+            super.responseData(repoResult.type, true, repoResult.message!);
         }
 
         const statusCode = repoResult.data ? 200 : 404;
@@ -237,28 +237,29 @@ export default class Store extends Service {
         const take = pageSize;
         const repoResult = await this.storeRepo.paginateStore(skip, take);
 
-        Store.setUrls(repoResult.data, baseUrl);
+        Store.setUrls(repoResult.data.items, baseUrl);
 
         if (repoResult.error) {
-            return super.responseData(500, true, http('500')!);
+            return super.responseData(repoResult.type, true, repoResult.message as string);
         }
 
-        const totalRecords = repoResult.totalItems!;
+        const totalRecords = repoResult.data.totalItems!;
 
         const pagination = getPagination(page, pageSize, totalRecords);
 
         return super.responseData(200, false, constants('200Stores')!, {
-            data: repoResult.data,
+            data: repoResult.data.items,
             pagination
         });
     }
 
     public async getAllStores(baseUrl: string) {
-        const repoResult = await this.storeRepo.getAllStores();
+        const repoResult = await this.storeRepo.getAllStoresAndRelations();
 
         if (repoResult.error) {
-            return super.responseData(500, true, http('500')!);
+            return super.responseData(repoResult.type, true, repoResult.message as string);
         }
+                
         Store.setUrls(repoResult.data, baseUrl);
 
         return super.responseData(200, false, constants('200Stores')!, repoResult.data);

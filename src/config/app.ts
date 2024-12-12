@@ -5,7 +5,7 @@ import { auth, vendor, store, image, seed, admin, role, adminVendor, permission,
 import { Email } from "../services";
 import path from "path";
 import ejs from "ejs";
-import { validateJWT, validateUser, handleMulterErrors, secureApi, redisClientMiddleware } from "./../middlewares";
+import { validateJWT, validateUser, handleMulterErrors, secureApi, redisClientMiddleware, vendorIsActive } from "./../middlewares";
 import Redis from "ioredis";
 import asyncHandler from "express-async-handler";
 import { Admin } from "../controllers";
@@ -37,7 +37,7 @@ function createApp() {
         validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
         vendor
     );
-    app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), store);
+    app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), vendorIsActive, store);
     app.use("/api/v1/admin", validateJWT(["admin"], env("tokenSecret")!), admin);
     app.use("/api/v1/admin/role", validateJWT(["admin"], env("tokenSecret")!), role);
     app.use("/api/v1/admin/vendor", validateJWT(["admin"], env("tokenSecret")!), adminVendor);

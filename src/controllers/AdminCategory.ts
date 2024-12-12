@@ -51,7 +51,42 @@ export default class AdminCategory {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
-    public static paginateCategories(){
+    public static paginateCategories() {
         return Controller.paginate<Category>(AdminCategory.service);
     }
+
+    public static async getAllCategories(req: Request, res: Response) {
+        const serviceResult = await AdminCategory.service.getAllCategories();
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
+    public static async getCategoryWithName(req: Request, res: Response) {
+        const serviceResult = await AdminCategory.service.getCategoryWithName(req.params.categoryName);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
+    public static async getCategoryWithId(req: Request, res: Response) {
+        const idResult = numberValidator(req.params.categoryId);
+
+        if (idResult.error) {
+            res.status(400).send("Category id must be an integer");
+            return;
+        }
+
+        const serviceResult = await AdminCategory.service.getCategoryWithId(idResult.number);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
+    public static async delete(req: Request, res: Response) {
+        const idResult = numberValidator(req.params.id);
+
+        if (idResult.error) {
+            res.status(400).send("Category id must be an integer");
+            return;
+        }
+
+        const serviceResult = await AdminCategory.service.delete(idResult.number);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
 }

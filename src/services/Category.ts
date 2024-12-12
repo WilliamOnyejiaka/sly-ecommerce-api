@@ -9,35 +9,51 @@ export default class Category extends Service<CategoryRepo> {
         super(new CategoryRepo());
     }
 
-    public async createCategory(categoryData: CategoryDto){
-        return await super.create<CategoryDto>(categoryData,"Category");
+    public async createCategory(categoryData: CategoryDto) {
+        return await super.create<CategoryDto>(categoryData, "Category");
     }
 
+    // public async getCategoryWithName(categoryName: string) {
+    //     const repoResult = await this.repo!.getCategoryWithName(categoryName);
+
+    //     if (repoResult.error) {
+    //         return super.responseData(500, true, http("500") as string);
+    //     }
+
+    //     const category = repoResult.data;
+    //     const statusCode = category ? 200 : 404;
+    //     const error: boolean = !category;
+    //     const message = error ? "Category was not found" : constants('200Category')!;
+
+    //     return super.responseData(statusCode, error, message, category);
+    // }
+
     public async getCategoryWithName(categoryName: string) {
-        const repoResult = await this.repo!.getCategoryWithName(categoryName);
-
-        if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
-        }
-
-        const category = repoResult.data;
-        const statusCode = category ? 200 : 404;
-        const error: boolean = !category;
-        const message = error ? "Category was not found" : constants('200Category')!;
-
-        return super.responseData(statusCode, error, message, category);
+        return await super.getItemWithName(categoryName);
     }
 
     public async getCategoryWithId(categoryId: number) {
-        return await super.getItemWithId(categoryId,constants('200Category')!);
+        return await super.getItemWithId(categoryId, constants('200Category'));
     }
 
-    public async delete(id: number) {
-        const repoResult = await this.repo!.deleteCategory(id);
-        if (repoResult.error) {
-            return super.responseData(repoResult.type!, true, repoResult.message!);
-        }
+    public async getAllCategories() {
+        return await super.getAllItems(constants('200Categories')!);
+    }
 
-        return super.responseData(200, !repoResult.error, "Category was deleted successfully");
+    // public async delete(id: number) {
+    //     const repoResult = await this.repo!.deleteCategory(id);
+    //     if (repoResult.error) {
+    //         return super.responseData(repoResult.type!, true, repoResult.message!);
+    //     }
+
+    //     return super.responseData(200, !repoResult.error, "Category was deleted successfully");
+    // }
+
+    public async delete(id: number) {
+        return await super.deleteWithId(id);
+    }
+
+    public async update(categoryId: number,updateData: any){
+        
     }
 }

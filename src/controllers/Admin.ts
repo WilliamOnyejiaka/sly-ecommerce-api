@@ -76,7 +76,7 @@ export default class Admin {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
-    public static async delete(req: Request, res: Response) {
+    public static async deleteAdmin(req: Request, res: Response) {
         const idResult = numberValidator(req.params.adminId);
 
         if (idResult.error) {
@@ -84,7 +84,7 @@ export default class Admin {
             return;
         }
 
-        const serviceResult = await Admin.service.delete(idResult.number);
+        const serviceResult = await Admin.service.deleteAdmin(idResult.number);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

@@ -2,8 +2,9 @@ import { NextFunction, Response, Request } from "express";
 import constants, { http } from "../constants";
 import Repository from "../interfaces/Repository";
 import Cache from "../interfaces/Cache";
+import BaseCache from "../cache/BaseCache";
 
-const validateUser = <T extends Cache, U extends Repository>(cache: T, repo: U) => async (req: Request, res: Response, next: NextFunction) => {
+const validateUser = <T extends BaseCache, U extends Repository>(cache: T, repo: U) => async (req: Request, res: Response, next: NextFunction) => {
     const id = res.locals.data.id;
     const cacheResult = await cache.get(String(id));
 

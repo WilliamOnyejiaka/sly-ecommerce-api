@@ -1,6 +1,5 @@
 import prisma from ".";
 import { http } from "../constants";
-import Repository from "../interfaces/Repository";
 import VendorDto from "../types/dtos";
 import Repo from "./Repo";
 
@@ -30,37 +29,14 @@ export default class Vendor extends Repo {
                     }
                 }
             });
-            return {
-                error: false,
-                data: vendor
-            };
+            return super.repoResponse(false, 200, null, vendor);
         } catch (error) {
-            console.error("Failed to find vendor with id: ", error);
-            return {
-                error: true,
-                data: {}
-            };
+            return super.handleDatabaseError(error);
         }
     }
 
     public async getVendorWithEmail(email: string) {
-        try {
-            const vendor = await prisma.vendor.findUnique({
-                where: {
-                    email
-                }
-            });
-            return {
-                error: false,
-                data: vendor as VendorDto
-            };
-        } catch (error) {
-            console.error("Failed to find vendor with email: ", error);
-            return {
-                error: true,
-                data: {}
-            };
-        }
+        return await super.getItem({ email: email });
     }
 
     public async getUserWithId(id: number) {
@@ -71,77 +47,27 @@ export default class Vendor extends Repo {
         return await this.getVendorWithEmail(email);
     }
 
-    public async update(idOrEmail: number | string, data: UpdateData) {
-        const where = typeof idOrEmail == "number" ? { id: idOrEmail } : { email: idOrEmail };
-        try {
-            const vendor = await prisma.vendor.update({
-                where: where,
-                data: data
-            });
-
-            return {
-                error: false,
-                updated: true
-            };
-        } catch (error) {
-            console.error("Failed to update vendor: ", error);
-            return {
-                error: true,
-                updated: false
-            };
-        }
+    public async updateVendor(id: number, data: any) {
+        return await super.update({ id: id }, data);
     }
 
     public async updateFirstName(id: number, firstName: string) {
-        return await this.update(id, { firstName: firstName });
+        return await this.updateVendor(id, { firstName: firstName });
     }
 
     public async updateLastName(id: number, lastName: string) {
-        return await this.update(id, { lastName: lastName });
+        return await this.updateVendor(id, { lastName: lastName });
     }
 
     public async updateEmail(id: number, email: string) {
-        return await this.update(id, { email: email, verified: false });
+        return await this.updateVendor(id, { email: email, verified: false });
     }
 
     public async updateVerifiedStatus(email: string) {
-        return await this.update(email, { verified: true });
+        return await super.update({ email: email }, { verified: true });
     }
 
-    public async delete(id: number) {
-        try {
-            const vendor = await prisma.vendor.delete({
-                where: { id: id }
-            });
-            return {
-                error: false,
-            };
-        } catch (error: any) {
-
-            if (error.code === 'P2025') {
-                const message = `Vendor with id ${id} does not exist.`;
-                console.error(message);
-                return {
-                    error: true,
-                    message: message,
-                    type: 404
-                };
-            } else {
-                console.error('Error deleting vendor:', error);
-                return {
-                    error: true,
-                    message: http('500')!,
-                    type: 500
-                };
-            }
-        }
-    }
-
-    public async paginateVendors(skip: number, take: number) {
-        return await super.paginate(skip, take);
-    }
-
-    public async getAllVendors() {
-        return await super.getAll();
+    public async updateActiveStatus(id: number, activate: boolean = true) {
+        return await super.update({ id: id }, { active: activate });
     }
 }

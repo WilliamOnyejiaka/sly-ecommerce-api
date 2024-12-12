@@ -57,7 +57,7 @@ export default class Vendor {
     public static async delete(req: Request, res: Response) {
         const token = req.headers.authorization!.split(' ')[1];
         const hasLoggedOut = await Vendor.authService.logoOut(token);
-        if(hasLoggedOut.json.error){
+        if (hasLoggedOut.json.error) {
             res.status(hasLoggedOut.statusCode).json(hasLoggedOut.json);
             return;
         }

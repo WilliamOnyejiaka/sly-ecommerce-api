@@ -70,4 +70,31 @@ export default class AdminVendor {
         const serviceResult = await AdminVendor.service.getAllVendors();
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
+
+    public static async totalRecords(req: Request, res: Response) {
+        const serviceResult = await AdminVendor.service.totalRecords();
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
+    public static toggleActivate(activate: boolean = true) {
+        return async (req: Request, res: Response) => {
+            const idResult = numberValidator(req.body.vendorId);
+
+            if (idResult.error) {
+                res.status(400).send("Vendor id must be an integer");
+                return;
+            }
+
+            const serviceResult = activate ? await AdminVendor.service.activateVendor(idResult.number) : await AdminVendor.service.deActivateVendor(idResult.number);
+            res.status(serviceResult.statusCode).json(serviceResult.json);
+        }
+    }
+
+    public static deactivateVendor() {
+        return AdminVendor.toggleActivate(false);
+    }
+
+    public static activateVendor() {
+        return AdminVendor.toggleActivate();
+    }
 }

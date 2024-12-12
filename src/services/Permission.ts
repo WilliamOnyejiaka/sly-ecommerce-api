@@ -44,12 +44,12 @@ export default class Permission extends Service<PermissionRepo> {
     }
 
     public async delete(id: number) {
-        const repoResult = await this.repo!.deletePermission(id);
+        const repoResult = await this.repo!.delete(id);
         if (repoResult.error) {
-            return super.responseData(repoResult.type!, true, repoResult.message!);
+            return super.responseData(repoResult.type, true, repoResult.message!);
         }
 
-        return super.responseData(200, !repoResult.error, "Permission was deleted successfully");
+        return super.responseData(200, repoResult.error, "Permission was deleted successfully");
     }
 
 }

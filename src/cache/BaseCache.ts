@@ -12,6 +12,14 @@ export default class BaseCache {
         this.expirationTime = expirationTime;
     }
 
+    protected cacheResponse(error: boolean, message: string | null = null, data: any = {}) {
+        return {
+            error: error,
+            message: message,
+            data: data
+        }
+    }
+
     public async set(key: string, data: any, expirationTime?: number) {
         try {
             const success = await redisClient.set(
@@ -40,6 +48,16 @@ export default class BaseCache {
                 error: true,
                 data: null
             };
+        }
+    }
+
+    public async delete(key: string) {
+        try {
+            const result = await redisClient.del(`${this.preKey}-${key}`);
+            return result === 1;
+        } catch (error) {
+            console.error("Failed to delete cached item: ", error);
+            return true;
         }
     }
 }

@@ -21,7 +21,7 @@ export default class Admin extends Service<AdminRepo> {
         const emailExistsResult = await this.emailExists(email);
 
         if (emailExistsResult.json.error) {
-            return super.responseData(400, true, "This admin already exists");
+            return emailExistsResult;
         }
 
         const roleExistsResult = await this.roleService.getRoleWithId(roleId);
@@ -152,24 +152,24 @@ export default class Admin extends Service<AdminRepo> {
                 return super.responseData(statusCode, error, message, result);
             }
             return super.responseData(statusCode, error, message, result);
-        }
+        }   
 
         return roleExistsResult;
     }
 
-    public async delete(id: number) {
-        const repoResult = await this.repo!.deleteAdmin(id);
+    public async deleteAdmin(adminId: number) {
+        const repoResult = await this.repo!.deleteAdmin(adminId);
         if (repoResult.error) {
-            return super.responseData(repoResult.type!, true, repoResult.message!);
+            return super.responseData(repoResult.type, true, repoResult.message!);
         }
 
-        return super.responseData(200, !repoResult.error, "Admin was deleted successfully");
+        return super.responseData(200, repoResult.error, "Admin was deleted successfully");
     }
 
     private async toggleActiveStatus(id: number, activate: boolean = true) {
         const repoResult = activate ? await this.repo!.updateActiveStatus(id, true) : await this.repo!.updateActiveStatus(id, false);
         if (repoResult.error) {
-            const message = repoResult.type == 404 ? constants('404Admin')! : http('500')!;
+            const message = repoResult.type == 404 ? constants('404Admin')! : http('500')!; // TODO: remove this line
             return super.responseData(repoResult.type!, true, message);
         }
         const message = activate ? "Admin was activated successfully" : "Admin was deactivated successfully";
@@ -191,7 +191,7 @@ export default class Admin extends Service<AdminRepo> {
     public async massUnassignRole(roleId: number) {
         const repoResult = await this.repo!.massUnassignRole(roleId);
         if (repoResult.error) {
-            return super.responseData(500, true, http('500')!);
+            return super.responseData(repoResult.type, true, repoResult.message!);
         }
 
         return super.responseData(200, false, "Mass UnAssignment was successfully");
@@ -200,8 +200,7 @@ export default class Admin extends Service<AdminRepo> {
     public async assignRole(adminId: number, roleId: number) {
         const repoResult = await this.repo!.assignRole(adminId, roleId);
         if (repoResult.error) {
-            const message = repoResult.type == 404 ? "Admin was not found" : http('500')!;
-            return super.responseData(repoResult.type!, true, message);
+            return super.responseData(repoResult.type, true, repoResult.message!);
         }
 
         return super.responseData(200, false, "Role was assigned successfully");
@@ -210,8 +209,7 @@ export default class Admin extends Service<AdminRepo> {
     public async assignPermission(adminId: number, permissionId: number) {
         const repoResult = await this.repo!.assignRole(adminId, permissionId);
         if (repoResult.error) {
-            const message = repoResult.type == 404 ? "Admin was not found" : http('500')!;
-            return super.responseData(repoResult.type!, true, message);
+            return super.responseData(repoResult.type, true, repoResult.message!);
         }
 
         return super.responseData(200, false, "Permission was assigned successfully");

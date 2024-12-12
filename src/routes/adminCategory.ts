@@ -11,13 +11,6 @@ adminCategory.get(
     asyncHandler(AdminCategory.paginateCategories())
 );
 
-
-// permission.get(
-//     "/get-permission-with-name/:roleName",
-//     adminAuthorization(['any']),
-//     asyncHandler(Permission.getPermissionWithName)
-// );
-
 adminCategory.post(
     "/create-category",
     adminAuthorization(['manage_all']),
@@ -29,16 +22,23 @@ adminCategory.post(
     asyncHandler(AdminCategory.createCategory)
 );
 
-// permission.get(
-//     "/get-all-permissions",
-//     adminAuthorization(['any']),
-//     asyncHandler(Permission.getAllPermissions)
-// );
+adminCategory.get(
+    "/get-category-with-name/:categoryName",
+    adminAuthorization(['any']),
+    asyncHandler(AdminCategory.getCategoryWithName)
+);
 
-// // role.delete(
-// //     "/:roleId",
-// //     adminAuthorization(['manage_all']),
-// //     asyncHandler(Permission.delete)
-// // );
+adminCategory.get(
+    "/get-category-with-id/:id",
+    adminAuthorization(['any']),
+    asyncHandler(AdminCategory.getCategoryWithName)
+);
+
+
+adminCategory.delete(
+    "/:id",
+    adminAuthorization(['manage_all']),
+    asyncHandler(AdminCategory.delete)
+);
 
 export default adminCategory;

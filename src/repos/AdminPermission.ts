@@ -23,17 +23,10 @@ export default class AdminPermission extends Repo {
                     permission: true
                 }
             })
-            return {
-                error: false,
-                data: adminPermission
-            };
+            return super.repoResponse(false, 200, null, adminPermission);
 
         } catch (error) {
-            console.error("Failed to get adminPermission with id: ", error);
-            return {
-                error: true,
-                data: {}
-            }
+            return super.handleDatabaseError(error);
         }
     }
 
@@ -50,7 +43,7 @@ export default class AdminPermission extends Repo {
     }
 
     public async deleteAdminPermission(adminId: number, roleId: number) {
-        return super.delete({ adminId: adminId, roleId: roleId }, `${this.tblName} with role id - ${roleId} or admin id - ${adminId} does not exist.`)
+        return super.delete({ adminId: adminId, roleId: roleId })
     }
 
     public async getAllAdminPermission() {
