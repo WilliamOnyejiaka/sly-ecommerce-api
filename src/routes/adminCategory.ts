@@ -2,12 +2,23 @@ import { Router, Request, Response } from "express";
 import { AdminCategory } from "../controllers";
 import { adminAuthorization, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
+import { validateQueryParams } from "../validators";
 
 const adminCategory: Router = Router();
 
 adminCategory.get(
     "/paginate-categories",
     adminAuthorization(['any']),
+    validateQueryParams([
+        {
+            name: "page",
+            type: "number"
+        },
+        {
+            name: "pageSize",
+            type: "number"
+        }
+    ]),
     asyncHandler(AdminCategory.paginateCategories())
 );
 

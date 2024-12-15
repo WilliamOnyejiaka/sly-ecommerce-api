@@ -4,14 +4,16 @@ import { Password } from "../utils";
 import { env } from "../config";
 import VendorDto, { AdminDto, CustomerAddressDto, CustomerDto } from "../types/dtos";
 import constants, { http } from "../constants";
-import { TokenBlackList, VendorCache } from "../cache";
+import { CustomerCache, TokenBlackList, VendorCache } from "../cache";
 import Service from "./Service";
+
 export default class Authentication extends Service {
 
     private readonly storedSalt: string = env("storedSalt")!;
     private readonly tokenSecret: string = env('tokenSecret')!;
     private readonly vendorRepo: Vendor = new Vendor();
     private readonly vendorCache: VendorCache = new VendorCache();
+    private readonly customerCache: CustomerCache = new CustomerCache();
     private readonly adminRepo: Admin = new Admin();
     private readonly customerRepo: Customer = new Customer();
     private readonly tokenBlackListCache: TokenBlackList = new TokenBlackList();
@@ -37,7 +39,7 @@ export default class Authentication extends Service {
                 result as VendorDto
             );
             return cacheSuccessful ? super.responseData(statusCode, error, message, {
-                token: Token.createToken(env('tokenSecret')!, result, ["vendor"]),
+                token: Token.createToken(env('tokenSecret')!, {id: result.id}, ["vendor"]),
                 vendor: result
             }) : super.responseData(statusCode, error, message);
         }
@@ -95,18 +97,15 @@ export default class Authentication extends Service {
 
         if (!error) {
             delete result.password;
-            // const cacheSuccessful = await this.vendorCache.set(
-            //     String((result as VendorDto).id),
-            //     result as VendorDto
-            // );
-            // return cacheSuccessful ? super.responseData(statusCode, error, message, {
-            //     token: Token.createToken(env('tokenSecret')!, result, ["vendor"]),
-            //     vendor: result
-            // }) : super.responseData(statusCode, error, message);
-            return super.responseData(statusCode, error, message, {
+            const cacheSuccessful = await this.customerCache.set(
+                String(result.id),
+                result
+            );
+
+            return cacheSuccessful ? super.responseData(statusCode, error, message, {
                 token: Token.createToken(env('tokenSecret')!, { id: result.id }, ["customer"]),
                 customer: result
-            });
+            }) : super.responseData(statusCode, error, message);
         }
         return super.responseData(statusCode, error, message, result);
     }
@@ -126,15 +125,15 @@ export default class Authentication extends Service {
 
             if (validPassword) {
                 delete customer.password;
-                // const cacheSuccessful = await this.vendorCache.set(
-                //     String(vendor.id),
-                //     vendor
-                // );
+                const cacheSuccessful = await this.vendorCache.set(
+                    String(customer.id),
+                    customer
+                );
 
-                return super.responseData(200, false, "Login successful", {
+                return cacheSuccessful ? super.responseData(200, false, "Login successful", {
                     token: Token.createToken(env('tokenSecret')!, { id: customer.id }, ["customer"]),
                     customer: customer
-                });
+                }) : super.responseData(500,true,http('500')!);
             }
             return super.responseData(400, true, "Invalid password");
         }

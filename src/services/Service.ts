@@ -84,8 +84,6 @@ export default class Service<T extends Repo = Repo> {
 
         const repoResult = await this.repo!.paginate(Number(skip), take);
 
-        console.log(repoResult);
-
         if (repoResult.error) {
             return this.responseData(repoResult.type, true, repoResult.message!);
         }
