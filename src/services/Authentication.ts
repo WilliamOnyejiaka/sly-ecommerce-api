@@ -79,7 +79,8 @@ export default class Authentication extends Service {
             firstName: string,
             lastName: string,
             password: string,
-            email: string
+            email: string,
+            phoneNumber: string
         }, addressData: CustomerAddressDto) {
 
         const passwordHash: string = Password.hashPassword(customerData.password, this.storedSalt);
@@ -103,7 +104,7 @@ export default class Authentication extends Service {
             //     vendor: result
             // }) : super.responseData(statusCode, error, message);
             return super.responseData(statusCode, error, message, {
-                token: Token.createToken(env('tokenSecret')!, result, ["customer"]),
+                token: Token.createToken(env('tokenSecret')!, { id: result.id }, ["customer"]),
                 customer: result
             });
         }
@@ -131,7 +132,7 @@ export default class Authentication extends Service {
                 // );
 
                 return super.responseData(200, false, "Login successful", {
-                    token: Token.createToken(env('tokenSecret')!, customer, ["customer"]),
+                    token: Token.createToken(env('tokenSecret')!, { id: customer.id }, ["customer"]),
                     customer: customer
                 });
             }

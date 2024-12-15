@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { Auth } from "../controllers";
-import { getBasicAuthHeader, validateBody } from "../middlewares";
+import { validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
 
 const auth: Router = Router();
@@ -25,8 +25,7 @@ auth.post("/customer/sign-up", validateBody([
     'email',
     'street',
     'city',
-    'state',
-    'country',
+    'phoneNumber',
     'zip'
 ]), asyncHandler(Auth.customerSignUp));
 

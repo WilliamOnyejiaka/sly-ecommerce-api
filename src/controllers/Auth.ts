@@ -130,16 +130,7 @@ class Auth {
 
     public static async customerSignUp(req: Request, res: Response) {
 
-        let { country, zip, password, email } = req.body;
-
-        country = Country.validateCountry(country);
-        if (!country) {
-            res.status(400).json({
-                error: true,
-                message: "Invalid country"
-            });
-            return;
-        }
+        let { zip, password, email, phoneNumber } = req.body;
 
         const isValidZipCode = zipCodeValidator(zip);
 
@@ -151,6 +142,15 @@ class Auth {
             return;
         }
 
+        const phoneNumberIsValid = phoneNumberValidator(phoneNumber);
+
+        if (phoneNumberIsValid !== null) {
+            res.status(400).json({
+                error: true,
+                message: phoneNumberIsValid
+            });
+            return;
+        }
 
 
         if (password.length < 5) {
@@ -177,10 +177,8 @@ class Auth {
         }
 
         const addressDto: CustomerAddressDto = {
-            country: country as string,
             zip: zip as string,
             street: req.body.street,
-            state: req.body.state,
             city: req.body.city
         }
 
@@ -188,7 +186,8 @@ class Auth {
             firstName: req.body.firstName,
             lastName: req.body.lastName,
             password,
-            email
+            email,
+            phoneNumber
         }, addressDto);
         res.status(serviceResult.statusCode).json(serviceResult.json);
         // res.status(200).json("Ok");

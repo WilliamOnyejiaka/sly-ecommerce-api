@@ -75,9 +75,7 @@ export interface CustomerAddressDto {
     id?: number,
     street: string,
     city: string,
-    state: string,
-    zip: string,
-    country: string
+    zip: string
 }
 
 export interface CustomerDto {
@@ -86,6 +84,7 @@ export interface CustomerDto {
     lastName: string,
     email: string,
     password?: string,
+    phoneNumber: string,
     address?: CustomerAddressDto
 }
 
