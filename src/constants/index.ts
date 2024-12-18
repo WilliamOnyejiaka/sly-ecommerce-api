@@ -2,6 +2,7 @@ import validations from "./validations";
 import http from "./http";
 import authorizationTypes from "./authorizationTypes";
 import urls from "./urls";
+import imageFolders from "./imageFolders";
 
 export default function     constants(key: string) {
     const message404 = " was not found";
@@ -35,4 +36,4 @@ export default function     constants(key: string) {
     }[key];
 }
 
-export { validations, http, authorizationTypes, urls };
+export { validations, http, authorizationTypes, urls, imageFolders };

@@ -35,4 +35,29 @@ export default class Customer extends Repo {
             super.handleDatabaseError(error);
         }
     }
+
+    public async getAllCustomersAndProfilePictures() {
+        try {
+            const customers = await prisma.customer.findMany({
+                include: {
+                    CustomerProfilePic: {
+                        select: {
+                            mimeType: true
+                        }
+                    }
+                }
+            });
+            return super.repoResponse(false, 200, null, customers);
+        } catch (error) {
+            super.handleDatabaseError(error);
+        }
+    }
+
+    // public async updateVerifiedStatus(email: string) {
+    //     return await super.update({ email: email }, { verified: true });
+    // }
+
+    public async updateActiveStatus(id: number, activate: boolean = true) {
+        return await super.update({ id: id }, { active: activate });
+    }
 }

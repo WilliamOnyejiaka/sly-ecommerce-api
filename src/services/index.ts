@@ -12,6 +12,7 @@ import Permission from "./Permission";
 import AdminPermission from "./AdminPermission";
 import Category from "./Category";
 import Customer from "./Customer";
+import Cloudinary from "./Cloudinary";
 
 export {
     Token,
@@ -27,5 +28,6 @@ export {
     Permission,
     AdminPermission,
     Category,
-    Customer
+    Customer,
+    Cloudinary
 };

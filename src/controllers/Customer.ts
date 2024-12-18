@@ -1,10 +1,8 @@
 import { urls } from "../constants";
 import { CustomerProfilePic } from "../repos";
 import { baseUrl } from "../utils";
-import { numberValidator } from "../validators";
 import { Customer as CustomerService, ImageService } from "./../services";
 import { Request, Response } from "express";
-
 
 
 export default class Customer {
@@ -29,12 +27,9 @@ export default class Customer {
 
     public static async getCustomerAll(req: Request, res: Response) {
         const customerId = Number(res.locals.data.id);
-        
-
         const baseServerUrl = baseUrl(req);
         const serviceResult = await Customer.service.getCustomerAll(customerId, baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
-        // res.send("customerId");
     }
 
 }

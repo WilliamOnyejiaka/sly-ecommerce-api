@@ -12,6 +12,7 @@
     "change": "npx prisma generate && npx prisma migrate dev --name init --create-only",
     "migrate": "npx prisma migrate deploy",
     "format": "npx prisma format",
+    "cli": "ts-node src/console/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -19,6 +20,8 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.0.1",
+    "cloudinary": "^2.5.1",
+    "commander": "^12.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
@@ -35,9 +38,12 @@
     "mysql2": "^3.11.3",
     "nodemailer": "^6.9.15",
     "redis": "^4.7.0",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
+    "@types/commander": "^2.12.5",
     "@types/cors": "^2.8.17",
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.0",
@@ -51,6 +57,7 @@
     "@types/nodemailer": "^6.4.16",
     "@types/redis": "^4.0.11",
     "@types/sharp": "^0.32.0",
+    "@types/winston": "^2.4.4",
     "nodemon": "^3.1.7",
     "prisma": "^6.0.1",
     "ts-node": "^10.9.2",

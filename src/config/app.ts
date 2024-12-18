@@ -1,11 +1,11 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
-import { corsConfig, env } from ".";
+import { cloudinary, corsConfig, env, logger } from ".";
 import { auth, vendor, store, image, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory, customer } from "./../routes";
-import { Email } from "../services";
+import { Cloudinary, Email } from "../services";
 import path from "path";
 import ejs from "ejs";
-import { validateJWT, validateUser, handleMulterErrors, secureApi, redisClientMiddleware, vendorIsActive } from "./../middlewares";
+import { validateJWT, validateUser, handleMulterErrors, secureApi, redisClientMiddleware, vendorIsActive, uploads } from "./../middlewares";
 import Redis from "ioredis";
 import asyncHandler from "express-async-handler";
 import { Admin } from "../controllers";
@@ -21,10 +21,14 @@ function createApp() {
     const vendorRepo: VendorRepo = new VendorRepo();
     const vendorCache: VendorCache = new VendorCache();
 
+    const stream = {
+        write: (message: string) => logger.http(message.trim()),
+    };
+
     app.use(express.urlencoded({ extended: true }));
     app.use(cors());
     app.use(express.json());
-    app.use(morgan("combined"));
+    app.use(morgan("combined", { stream }));
     app.use(urls("baseImageUrl")!, image);
     app.use("/api/v1/seed", seed);
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
@@ -69,8 +73,31 @@ function createApp() {
     });
 
     app.get("/test1", async (req: Request, res: Response) => {
-        const image = "/vendor/profile-pic/:vendorId".split(":");
-        res.json(image);
+        logger.error("Hello World");
+        res.status(200).json("testing")
+    });
+
+    app.post("/cloudinary", uploads.single("image"), async (req: Request, res: Response) => {
+
+        const image = req.file;
+        if (!image) {
+            res.status(400).json({
+                error: true,
+                message: "image file missing"
+            });
+        }
+        const filePath = image!.path;
+        const service = new Cloudinary();
+        const result = await service.uploadImage(filePath, "storeLogo");
+        // const url = cloudinary.url('ecommerce-cdn/store-logo/ldmm9oj81qrkggevfsfu',{
+        //     transformation:[
+        //         {fetch_format: 'auto'},
+        //         {quality: 'auto'}
+        //     ]
+        // })
+        res.status(200).json(result);
+        // res.status(200).json(url);
+
     });
 
     app.use(handleMulterErrors);
