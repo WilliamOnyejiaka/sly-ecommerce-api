@@ -21,6 +21,15 @@ export default class Service<T extends Repo = Repo> {
         };
     }
 
+    protected sanitizeUserImageItems(items: any[], imageName: string) {
+        items.forEach((item: any) => {
+            item.profilePictureUrl = item[imageName].length != 0 ? item[imageName][0].imageUrl : null;
+            delete item[imageName];
+            delete item.password;
+        });
+    }
+
+
     protected async create<U>(createData: U, itemName: string) {
         const repoResult = await this.repo!.insert(createData);
         const error = repoResult.error;

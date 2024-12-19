@@ -2,7 +2,6 @@ import auth from "./auth";
 import vendor from "./vendor";
 import store from "./store";
 import admin from "./admin";
-import image from "./image";
 import seed from "./seed";
 import role from "./role";
 import adminVendor from "./adminVendor";
@@ -17,7 +16,6 @@ export {
     vendor,
     store,
     admin,
-    image,
     seed,
     role,
     adminVendor,

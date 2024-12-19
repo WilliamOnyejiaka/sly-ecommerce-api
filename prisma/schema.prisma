@@ -27,7 +27,9 @@ model Vendor {
 model VendorProfilePicture {
   id        Int      @id @default(autoincrement())
   mimeType  String
-  picture   String   @db.LongText
+  imageUrl  String
+  publicId  String
+  size      Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
@@ -53,7 +55,9 @@ model StoreDetails {
 model StoreLogo {
   id        Int          @id @default(autoincrement())
   mimeType  String
-  picture   String       @db.LongText
+  imageUrl  String
+  publicId  String
+  size      Int
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   store     StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -63,7 +67,9 @@ model StoreLogo {
 model FirstStoreBanner {
   id        Int          @id @default(autoincrement())
   mimeType  String
-  picture   String       @db.LongText
+  imageUrl  String
+  publicId  String
+  size      Int
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   store     StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -72,8 +78,10 @@ model FirstStoreBanner {
 
 model SecondStoreBanner {
   id        Int          @id @default(autoincrement())
-  mimeType  String?
-  picture   String?      @db.LongText
+  mimeType  String
+  imageUrl  String
+  publicId  String
+  size      Int
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   store     StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -147,7 +155,9 @@ model Admin {
 model AdminProfilePicture {
   id        Int      @id @default(autoincrement())
   mimeType  String
-  picture   String   @db.LongText
+  imageUrl  String
+  publicId  String
+  size      Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
@@ -193,7 +203,9 @@ model CustomerAddress {
 model CustomerProfilePic {
   id         Int      @id @default(autoincrement())
   mimeType   String
-  picture    String   @db.LongText
+  imageUrl   String
+  publicId   String
+  size       Int
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -239,7 +251,9 @@ model SubSubCategory {
 model SubSubCategoryImage {
   id               Int            @id @default(autoincrement())
   mimeType         String
-  picture          String         @db.LongText
+  imageUrl         String
+  publicId         String
+  size             Int
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   subSubCategory   SubSubCategory @relation(fields: [subSubCategoryId], references: [id], onDelete: Cascade)
@@ -249,7 +263,9 @@ model SubSubCategoryImage {
 model SubCategoryImage {
   id            Int         @id @default(autoincrement())
   mimeType      String
-  picture       String      @db.LongText
+  imageUrl      String
+  publicId      String
+  size          Int
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   subCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
@@ -259,7 +275,9 @@ model SubCategoryImage {
 model CategoryImage {
   id         Int      @id @default(autoincrement())
   mimeType   String
-  picture    String   @db.LongText
+  imageUrl   String
+  publicId   String
+  size       Int
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -277,7 +295,9 @@ model Brand {
 model BrandImage {
   id        Int      @id @default(autoincrement())
   mimeType  String
-  picture   String   @db.LongText
+  imageUrl  String
+  publicId  String
+  size      Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   brand     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)

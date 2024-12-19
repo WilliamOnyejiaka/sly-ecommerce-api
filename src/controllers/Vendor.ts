@@ -15,14 +15,12 @@ export default class Vendor {
     public static async uploadProfilePicture(req: Request, res: Response) {
         const image = req.file!;
         const vendorId = Number(res.locals.data.id);
-        const baseServerUrl = baseUrl(req);
 
         const serviceResult = await Vendor.imageService.uploadImage<VendorProfilePicture>(
             image,
             vendorId,
-            baseServerUrl,
-            urls("vendorPic")!,
-            new VendorProfilePicture()
+            new VendorProfilePicture(),
+            'vendorProfilePic'
         );
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
@@ -68,9 +66,7 @@ export default class Vendor {
 
     public static async getVendorAll(req: Request, res: Response) {
         const vendorId = Number(res.locals.data.id);
-
-        const baseServerUrl = baseUrl(req);
-        const serviceResult = await Vendor.service.getVendorAll(vendorId, baseServerUrl);
+        const serviceResult = await Vendor.service.getVendorAll(vendorId);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 }

@@ -10,22 +10,36 @@ export default class ImageRepo extends Repo implements ImageRepository {
         super(tblName);
         this.parentIdName = parentIdName;
     }
-
+    
     public async insertImage(data: any) {
-        const where = { [this.parentIdName]: data.parentId };
+        const parentColumn = {[this.parentIdName]: data.parentId };
         delete data.parentId;
 
         try {
-            const newImage = await (prisma[this.tblName] as any).upsert({
-                where: where,
-                update: data,
-                create: { ...data, ...where },
+            const newImage = await (prisma[this.tblName] as any).create({
+                data: { ...data,...parentColumn },
             });
             return super.repoResponse(false, 201, null, newImage);
         } catch (error) {
             return super.handleDatabaseError(error);
         }
     }
+
+    // public async insertImage(data: any) {
+    //     const where = { [this.parentIdName]: data.parentId };
+    //     delete data.parentId;        
+
+    //     try {
+    //         const newImage = await (prisma[this.tblName] as any).upsert({
+    //             where: where,
+    //             update: data,
+    //             create: { ...data, ...where },
+    //         });
+    //         return super.repoResponse(false, 201, null, newImage);
+    //     } catch (error) {
+    //         return super.handleDatabaseError(error);
+    //     }
+    // }
 
     public async getImage(id: number) {
         try {

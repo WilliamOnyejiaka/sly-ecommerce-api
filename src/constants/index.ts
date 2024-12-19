@@ -32,7 +32,8 @@ export default function     constants(key: string) {
         '200Category': "Category has been retrieved successfully",
         '200Categories': "Categories were retrieved successfully",
         '404Customer': "Customer"+message404,
-        '200Customer': "Customer"+message200
+        '200Customer': "Customer"+message200,
+        '200Customers': "Customers" + message200
     }[key];
 }
 

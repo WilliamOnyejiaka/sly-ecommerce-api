@@ -22,7 +22,7 @@ export default class Repo implements Repository {
 
     public async insertMany(data: any[]) {
         try {
-            const newItems = (prisma[this.tblName] as any).createMany({ data: data, skipDuplicates: true });
+            const newItems = await (prisma[this.tblName] as any).createMany({ data: data, skipDuplicates: true });
             return this.repoResponse(false, 201, null, newItems);
         } catch (error) {
             return this.handleDatabaseError(error);
@@ -113,11 +113,12 @@ export default class Repo implements Repository {
         }
     }
 
-    public async paginate(skip: number, take: number) {
+    public async paginate(skip: number, take: number, filter: any = {}) {
         try {
             const items = await (prisma[this.tblName] as any).findMany({
                 skip,   // Skips the first 'skip' records
                 take,   // Fetches 'take' records
+                ...filter
             });
             const totalItems = await (prisma[this.tblName] as any).count();
             return this.repoResponse(false, 200, null, {
@@ -129,9 +130,9 @@ export default class Repo implements Repository {
         }
     }
 
-    public async getAll() {
+    public async getAll(filter: any = {}) {
         try {
-            const items = await (prisma[this.tblName] as any).findMany();
+            const items = await (prisma[this.tblName] as any).findMany(filter);
             return this.repoResponse(false, 200, null, items);
         } catch (error) {
             return this.handleDatabaseError(error);

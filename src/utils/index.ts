@@ -6,5 +6,6 @@ import CustomError from "./CustomError";
 import baseUrl from "./baseUrl";
 import loadJsonFile from "./loadJsonFile";
 import getPagination from "./getPagination";
+import compressImage from "./compressImage";
 
-export { Password, randomInt, convertImage, processImage, CustomError, baseUrl, loadJsonFile, getPagination };
+export { Password, randomInt, convertImage, processImage, CustomError, baseUrl, loadJsonFile, getPagination,compressImage };

@@ -24,7 +24,7 @@ export default class Vendor extends Repo {
                 include: {
                     profilePicture: {
                         select: {
-                            mimeType: true
+                            imageUrl: true
                         }
                     }
                 }
@@ -69,5 +69,29 @@ export default class Vendor extends Repo {
 
     public async updateActiveStatus(id: number, activate: boolean = true) {
         return await super.update({ id: id }, { active: activate });
+    }
+
+    public async paginate(skip: number, take: number, filter?: any): Promise<{ error: boolean; message: string | null; type: number; data: any; } | { error: boolean; message: string | undefined; type: number; data: {}; }> {
+        return await super.paginate(skip, take, {
+            include: {
+                profilePicture: {
+                    select: {
+                        imageUrl: true
+                    }
+                }
+            }
+        });
+    }
+
+    public async getAll(filter?: any): Promise<{ error: boolean; message: string | null; type: number; data: any; } | { error: boolean; message: string | undefined; type: number; data: {}; }> {
+        return await super.getAll({
+            include: {
+                profilePicture: {
+                    select: {
+                        imageUrl: true
+                    }
+                }
+            }
+        });
     }
 }

@@ -12,23 +12,20 @@ export default class Customer {
 
     public static async uploadProfilePic(req: Request, res: Response) {
         const image = req.file!;
-        const customerId = Number(res.locals.data.id);  
-        const baseServerUrl = baseUrl(req);
-        
+        const customerId = Number(res.locals.data.id);
+
         const serviceResult = await Customer.imageService.uploadImage<CustomerProfilePic>(
             image,
             customerId,
-            baseServerUrl,
-            urls("customerPic")!,
-            new CustomerProfilePic()
+            new CustomerProfilePic(),
+            'customerProfilePic'
         );
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
     public static async getCustomerAll(req: Request, res: Response) {
         const customerId = Number(res.locals.data.id);
-        const baseServerUrl = baseUrl(req);
-        const serviceResult = await Customer.service.getCustomerAll(customerId, baseServerUrl);
+        const serviceResult = await Customer.service.getCustomerAll(customerId);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

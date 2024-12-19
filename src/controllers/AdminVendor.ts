@@ -19,8 +19,7 @@ export default class AdminVendor {
             return;
         }
 
-        const baseServerUrl = baseUrl(req);
-        const serviceResult = await AdminVendor.service.getVendorAll(idResult.number, baseServerUrl);
+        const serviceResult = await AdminVendor.service.getVendorAll(idResult.number);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

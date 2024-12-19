@@ -31,7 +31,7 @@ export default class Vendor extends Service<VendorRepo> {
         return super.responseData(statusCode, error, message, vendor);
     }
 
-    public async getVendorAll(vendorId: number, baseUrl: string) {
+    public async getVendorAll(vendorId: number) {
         const repoResult = await this.repo!.getVendorAndRelationsWithId(vendorId);
         if (repoResult.error) {
             return super.responseData(repoResult.type, true, repoResult.message as string);
@@ -41,12 +41,7 @@ export default class Vendor extends Service<VendorRepo> {
         const error: boolean = repoResult.error;
 
         if (repoResult.data) {
-            const baseImageUrl: string = urls("baseImageUrl")!;
-
-            repoResult.data.profilePictureUrl = repoResult.data.profilePicture.length != 0 ? baseUrl + baseImageUrl + urls("vendorPic")!.split(":")[0] + vendorId : null;
-            delete repoResult.data.profilePicture;
-            delete repoResult.data.password;
-
+            this.sanitizeUserImageItems([repoResult.data], 'profilePicture');
             return super.responseData(statusCode, error, "Vendor was retrieved successfully", repoResult.data);
         }
 
@@ -56,7 +51,7 @@ export default class Vendor extends Service<VendorRepo> {
     public async updateFirstName(id: number, firstName: string) {
         const repoResult = await this.repo!.updateFirstName(id, firstName);
         if (repoResult.error) {
-            return super.responseData(repoResult.type, true,repoResult.message as string);
+            return super.responseData(repoResult.type, true, repoResult.message as string);
         }
 
         const statusCode = !repoResult.error ? 200 : 500;
@@ -68,7 +63,7 @@ export default class Vendor extends Service<VendorRepo> {
     public async updateLastName(id: number, lastName: string) {
         const repoResult = await this.repo!.updateLastName(id, lastName);
         if (repoResult.error) {
-            return super.responseData(repoResult.type, true,repoResult.message as string);
+            return super.responseData(repoResult.type, true, repoResult.message as string);
         }
 
         const statusCode = !repoResult.error ? 200 : 500;
@@ -89,7 +84,7 @@ export default class Vendor extends Service<VendorRepo> {
 
         const repoResult = await this.repo!.updateEmail(id, email);
         if (repoResult.error) {
-            return super.responseData(repoResult.type, true,repoResult.message as string);
+            return super.responseData(repoResult.type, true, repoResult.message as string);
         }
 
         const statusCode = !repoResult.error ? 200 : 500;
@@ -99,7 +94,7 @@ export default class Vendor extends Service<VendorRepo> {
     }
 
     public async delete(vendorId: number) {
-        const repoResult = await this.repo!.deleteWithId(vendorId);
+        const repoResult = await this.repo!.deleteWithId(vendorId); // ! TODO: add cloudinary image delete
         if (repoResult.error) {
             return super.responseData(repoResult.type, true, repoResult.message!);
         }
@@ -117,14 +112,14 @@ export default class Vendor extends Service<VendorRepo> {
         const repoResult = await this.repo!.paginate(skip, take);
 
         if (repoResult.error) {
-            return super.responseData(repoResult.type, true,repoResult.message!);
+            return super.responseData(repoResult.type, true, repoResult.message!);
         }
 
         const totalRecords = repoResult.data.totalItems;
 
         const pagination = getPagination(page, pageSize, totalRecords);
 
-        repoResult.data.items.forEach((item: any) => delete item.password);
+        this.sanitizeUserImageItems(repoResult.data.items, 'profilePicture');
 
         return super.responseData(200, false, constants('200Vendors')!, {
             data: repoResult.data,
@@ -136,10 +131,11 @@ export default class Vendor extends Service<VendorRepo> {
         const repoResult = await this.repo!.getAll();
 
         if (repoResult.error) {
-            return super.responseData(repoResult.type, true,repoResult.message!);
+            return super.responseData(repoResult.type, true, repoResult.message!);
         }
 
-        repoResult.data.forEach((item: any) => delete item.password);
+        this.sanitizeUserImageItems(repoResult.data, 'profilePicture');
+
         return super.responseData(200, false, constants('200Vendors')!, repoResult.data);
     }
 
@@ -150,10 +146,10 @@ export default class Vendor extends Service<VendorRepo> {
         }
         //Cache here
         const message = activate ? "Vendor was activated successfully" : "Vendor was deactivated successfully";
-        return super.responseData(200, false, message,repoResult.data);
+        return super.responseData(200, false, message, repoResult.data);
     }
 
-    public async activateVendor(id: number){
+    public async activateVendor(id: number) {
         return await this.toggleActiveStatus(id);
     }
 

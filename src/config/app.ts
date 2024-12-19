@@ -1,7 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { cloudinary, corsConfig, env, logger } from ".";
-import { auth, vendor, store, image, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory, customer } from "./../routes";
+import { auth, vendor, store, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory, customer } from "./../routes";
 import { Cloudinary, Email } from "../services";
 import path from "path";
 import ejs from "ejs";
@@ -29,7 +29,6 @@ function createApp() {
     app.use(cors());
     app.use(express.json());
     app.use(morgan("combined", { stream }));
-    app.use(urls("baseImageUrl")!, image);
     app.use("/api/v1/seed", seed);
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
 

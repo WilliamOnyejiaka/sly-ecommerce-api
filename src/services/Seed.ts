@@ -21,7 +21,7 @@ export default class Seed extends Service {
 
         if (!hasDataResult.data) {
             const repoResult = await repo.insertMany(data);
-            return repoResult.error ? super.responseData(200, false, "Seeding was successful") : super.responseData(repoResult.type, true, repoResult.message as string);
+            return !repoResult.error ? super.responseData(201, false, "Seeding was successful") : super.responseData(repoResult.type, true, repoResult.message as string);
         }
 
         return super.responseData(400, true, "Table has already been seeded");

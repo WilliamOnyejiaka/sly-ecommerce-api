@@ -84,14 +84,11 @@ export default class Store {
             return;
         }
 
-        const baseServerUrl = baseUrl(req);
-
         const serviceResult = await Store.imageService.uploadImage<StoreLogo>(
             image,
             storeId,
-            baseServerUrl,
-            urls("storeLogo")!,
-            new StoreLogo()
+            new StoreLogo(),
+            'storeLogo'
         );
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
@@ -100,7 +97,7 @@ export default class Store {
         const images = req.files! as Express.Multer.File[];
         const firstBannerExists = images.some((image) => image.fieldname === "firstBanner");
 
-        if (!firstBannerExists){
+        if (!firstBannerExists) {
             await Store.imageService.deleteImages(images);
             res.status(400).json({
                 error: true,
@@ -129,9 +126,8 @@ export default class Store {
         const serviceResult = images.length == 1 ? await Store.imageService.uploadImage<FirstBanner>(
             images[0],
             storeId,
-            baseServerUrl,
-            urls("firstBanner")!,
-            new FirstBanner()
+            new FirstBanner(),
+            'firstStoreBanner'
         ) : await Store.service.uploadBanners(images, storeId, baseServerUrl);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }

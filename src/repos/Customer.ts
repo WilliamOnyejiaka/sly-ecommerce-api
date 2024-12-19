@@ -25,7 +25,7 @@ export default class Customer extends Repo {
                 include: {
                     CustomerProfilePic: {
                         select: {
-                            mimeType: true
+                            imageUrl: true
                         }
                     }
                 }
@@ -36,21 +36,16 @@ export default class Customer extends Repo {
         }
     }
 
-    public async getAllCustomersAndProfilePictures() {
-        try {
-            const customers = await prisma.customer.findMany({
-                include: {
-                    CustomerProfilePic: {
-                        select: {
-                            mimeType: true
-                        }
+    public async getAll(filter?: any): Promise<{ error: boolean; message: string | null; type: number; data: any; } | { error: boolean; message: string | undefined; type: number; data: {}; }> {
+        return await super.getAll({
+            include: {
+                CustomerProfilePic: {
+                    select: {
+                        imageUrl: true
                     }
                 }
-            });
-            return super.repoResponse(false, 200, null, customers);
-        } catch (error) {
-            super.handleDatabaseError(error);
-        }
+            }
+        });
     }
 
     // public async updateVerifiedStatus(email: string) {

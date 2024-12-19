@@ -43,6 +43,29 @@ export default class StoreDetails extends Repo {
         return await super.getItem({ vendorId: vendorId });
     }
 
+    public async sd(vendorId: number, filter?: any) {
+        return await super.getAll({
+            where: { vendorId: vendorId },
+            include: {
+                storeLogo: {
+                    select: {
+                        imageUrl: true
+                    }
+                },
+                firstStoreBanner: {
+                    select: {
+                        imageUrl: true
+                    }
+                },
+                secondStoreBanner: {
+                    select: {
+                        imageUrl: true
+                    }
+                }
+            }
+        });
+    }
+
     public async getStoreAndRelationsWithVendorId(vendorId: number) {
         try {
             const store = await prisma.storeDetails.findUnique({

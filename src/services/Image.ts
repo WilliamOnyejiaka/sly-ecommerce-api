@@ -1,60 +1,18 @@
-import mime from "mime";
 import Service from "./Service";
-import { http, urls } from "../constants";
-import Repository, { ImageRepository } from "../interfaces/Repository";
-import { processImage } from "../utils";
+import { http } from "../constants";
+import { compressImage } from "../utils";
 import * as fs from "fs";
 import ImageRepo from "../repos/ImageRepo";
-import sharp from "sharp";
 import { logger } from "../config";
 import { Cloudinary } from ".";
 
-async function compressImage(image: Express.Multer.File) {
-    try {
-        const outputPath = `compressed/${image.filename}`;
-        const result = await sharp(image.path)
-            .webp({ lossless: true })
-            .toFile(outputPath);
-
-        return {
-            error: false,
-            outputPath: outputPath
-        }
-    } catch (error) {
-        logger.error(`Error processing the image: ${error}`);
-        return {
-            error: true,
-            outputPath: null
-        }
-    }
-}
+const bytesToKB = (bytes: number) => (bytes / 1024).toFixed(2); // Converts bytes to KB
+const bytesToMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2); // Converts bytes to MB
 
 export default class ImageService extends Service {
 
     public constructor() {
         super();
-    }
-
-    public async getImage<T extends ImageRepository>(repo: T, id: number) {
-        const repoResult = await repo.getImage(id);
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message as string);
-        }
-
-        const statusCode = repoResult.data ? 200 : 404;
-        const error: boolean = repoResult.data ? false : true;
-
-        if (repoResult.data) {
-            const imageBuffer = Buffer.from((repoResult.data as any).picture, 'base64');
-
-            return super.responseData(statusCode, error, null, {
-                imageBuffer: imageBuffer,
-                bufferLength: imageBuffer.length,
-                mimeType: (repoResult.data as any).mimeType
-            });
-        }
-
-        return super.responseData(statusCode, error, null, repoResult.data);
     }
 
     public unSyncDeleteImages(images: Express.Multer.File[]) {
@@ -79,42 +37,7 @@ export default class ImageService extends Service {
         return false; // All deletions succeeded
     }
 
-
-
-
-    public async uploadImage<T extends ImageRepo>(image: Express.Multer.File, parentId: number, baseUrl: string, partImageUrl: string, repo: T) {
-        const result = await processImage(image);
-
-        if (result.error) {
-            console.error(result.message);
-            return super.responseData(
-                500,
-                true,
-                http("500")!,
-            );
-        }
-
-        const mimeType = mime.lookup(image.path); // TODO: get this from processImage
-        const repoResult = await repo.insertImage({
-            mimeType: mimeType,
-            picture: result.data,
-            parentId: parentId
-        });
-
-        const imageUrl = baseUrl + urls("baseImageUrl")! + partImageUrl.split(":")[0] + parentId;
-
-        return !repoResult.error ?
-            super.responseData(
-                201,
-                false,
-                "Image was uploaded successfully",
-                { imageUrl: imageUrl }
-            ) :
-            super.responseData(repoResult.type, true, repoResult.message as string);
-
-    }
-
-    public async uploadImageV2<T extends ImageRepo>(image: Express.Multer.File, parentId: number, repo: T, imageFolder: string) {
+    private async processAndUpload(image: Express.Multer.File, imageFolder: string) {
         const result = await compressImage(image);
 
         if (result.error) {
@@ -125,27 +48,37 @@ export default class ImageService extends Service {
             );
         }
 
-        const cloudinary = new Cloudinary();
-        const uploadResult = await cloudinary.uploadImage(result.outputPath!, imageFolder);
         const deleted = await this.deleteImages([image]);
-
         if (deleted) {
             return super.responseData(500, true, http('500')!);
         }
 
-        if (uploadResult.json.error) {
-            return uploadResult;
+        const cloudinary = new Cloudinary();
+        const uploadResult = await cloudinary.uploadImage(result.outputPath!, imageFolder);
+        return uploadResult;
+    }
+
+    public async uploadImage<T extends ImageRepo>(image: Express.Multer.File, parentId: number, repo: T, imageFolder: string) {
+        const imageExists = await repo.getImage(parentId);
+        if (imageExists.error) {
+            await this.deleteImages([image]);
+            return super.responseData(imageExists.type, true, imageExists.message!);
         }
+
+        if (imageExists.data) {
+            await this.deleteImages([image]);
+            return super.responseData(400, true, "A record with this data already exists.");
+        }
+
+        const uploadResult = await this.processAndUpload(image, imageFolder);
 
         const repoResult = await repo.insertImage({
             mimeType: uploadResult.json.data.imageData.format,
             imageUrl: uploadResult.json.data.url,
             publicId: uploadResult.json.data.imageData.public_id,
-            folder: uploadResult.json.data.imageData.folder,
             size: uploadResult.json.data.imageData.bytes,
             parentId: parentId
         });
-
 
         return !repoResult.error ?
             super.responseData(
@@ -155,7 +88,6 @@ export default class ImageService extends Service {
                 { imageUrl: uploadResult.json.data.url }
             ) :
             super.responseData(repoResult.type, true, repoResult.message as string);
-
     }
 
 }
