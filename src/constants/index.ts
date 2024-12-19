@@ -3,8 +3,9 @@ import http from "./http";
 import authorizationTypes from "./authorizationTypes";
 import urls from "./urls";
 import imageFolders from "./imageFolders";
+import HttpStatus from "./HttpStatus";
 
-export default function     constants(key: string) {
+export default function constants(key: string) {
     const message404 = " was not found";
     const message200 = " has been retrieved successfully";
 
@@ -31,10 +32,12 @@ export default function     constants(key: string) {
         '200Stores': "Stores were retrieved successfully",
         '200Category': "Category has been retrieved successfully",
         '200Categories': "Categories were retrieved successfully",
-        '404Customer': "Customer"+message404,
-        '200Customer': "Customer"+message200,
-        '200Customers': "Customers" + message200
+        '404Customer': "Customer" + message404,
+        '200Customer': "Customer" + message200,
+        '200Customers': "Customers" + message200,
+        '200Users': "Users were retrieved successfully",
+        '200User': "User has been retrieved successfully"
     }[key];
 }
 
-export { validations, http, authorizationTypes, urls, imageFolders };
+export { validations, http, authorizationTypes, urls, imageFolders, HttpStatus };

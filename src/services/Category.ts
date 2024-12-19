@@ -1,9 +1,9 @@
-import Service from "./Service";
+import BaseService from "./BaseService";
 import constants, { http } from "../constants";
 import { Category as CategoryRepo } from "../repos";
 import { CategoryDto } from "../types/dtos";
 
-export default class Category extends Service<CategoryRepo> {
+export default class Category extends BaseService<CategoryRepo> {
 
     public constructor() {
         super(new CategoryRepo());
@@ -29,7 +29,7 @@ export default class Category extends Service<CategoryRepo> {
         return await super.deleteWithId(id);
     }
 
-    public async update(categoryId: number,updateData: any){
-        
+    public async update(categoryId: number, updateData: any) {
+
     }
 }

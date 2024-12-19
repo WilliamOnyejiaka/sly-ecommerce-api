@@ -5,9 +5,9 @@ import { env } from "../config";
 import VendorDto, { AdminDto, CustomerAddressDto, CustomerDto } from "../types/dtos";
 import constants, { http } from "../constants";
 import { CustomerCache, TokenBlackList, VendorCache } from "../cache";
-import Service from "./Service";
+import BaseService from "./BaseService";
 
-export default class Authentication extends Service {
+export default class Authentication extends BaseService {
 
     private readonly storedSalt: string = env("storedSalt")!;
     private readonly tokenSecret: string = env('tokenSecret')!;
@@ -39,7 +39,7 @@ export default class Authentication extends Service {
                 result as VendorDto
             );
             return cacheSuccessful ? super.responseData(statusCode, error, message, {
-                token: Token.createToken(env('tokenSecret')!, {id: result.id}, ["vendor"]),
+                token: Token.createToken(env('tokenSecret')!, { id: result.id }, ["vendor"]),
                 vendor: result
             }) : super.responseData(statusCode, error, message);
         }
@@ -47,7 +47,7 @@ export default class Authentication extends Service {
     }
 
     public async vendorLogin(email: string, password: string) { // TODO: create a general login method
-        const repoResult = await this.vendorRepo.getVendorWithEmail(email);
+        const repoResult = await this.vendorRepo.getUserProfileWithEmail(email);
 
         if (repoResult.error) {
             return super.responseData(500, true, http("500")!);
@@ -111,7 +111,7 @@ export default class Authentication extends Service {
     }
 
     public async customerLogin(email: string, password: string) {
-        const repoResult = await this.customerRepo.getItemWithEmail(email);
+        const repoResult = await this.customerRepo.getUserProfileWithEmail(email);
 
         if (repoResult.error) {
             return super.responseData(500, true, http("500")!);
@@ -133,7 +133,7 @@ export default class Authentication extends Service {
                 return cacheSuccessful ? super.responseData(200, false, "Login successful", {
                     token: Token.createToken(env('tokenSecret')!, { id: customer.id }, ["customer"]),
                     customer: customer
-                }) : super.responseData(500,true,http('500')!);
+                }) : super.responseData(500, true, http('500')!);
             }
             return super.responseData(400, true, "Invalid password");
         }
@@ -181,7 +181,7 @@ export default class Authentication extends Service {
 
 
     public async vendorEmailOTP(email: string) {
-        const repoResult = await this.vendorRepo.getVendorWithEmail(email);
+        const repoResult = await this.vendorRepo.getUserProfileWithEmail(email);
 
         if (repoResult.error) {
             return super.responseData(500, true, http("500")!);
@@ -224,7 +224,7 @@ export default class Authentication extends Service {
             return otpServiceResult;
         }
 
-        const repoResult = await this.vendorRepo.getVendorWithEmail(vendorEmail);
+        const repoResult = await this.vendorRepo.getUserProfileWithEmail(vendorEmail);
 
         if (repoResult.error) {
             return super.responseData(500, true, http("500")!);

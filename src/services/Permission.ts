@@ -2,10 +2,10 @@ import { Admin } from ".";
 import constants, { http } from "../constants";
 import { Permission as PermissionRepo } from "../repos";
 import { PermissionDto } from "../types/dtos";
-import Service from "./Service";
+import BaseService from "./BaseService";
 
 
-export default class Permission extends Service<PermissionRepo> {
+export default class Permission extends BaseService<PermissionRepo> {
 
     public constructor() {
         super(new PermissionRepo());

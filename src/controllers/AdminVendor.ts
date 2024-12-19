@@ -19,7 +19,7 @@ export default class AdminVendor {
             return;
         }
 
-        const serviceResult = await AdminVendor.service.getVendorAll(idResult.number);
+        const serviceResult = await AdminVendor.service.getUserProfileWithId(idResult.number);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -61,12 +61,12 @@ export default class AdminVendor {
         const page = pageResult.number;
         const pageSize = pageSizeResult.number;
 
-        const serviceResult = await AdminVendor.service.paginateVendors(page, pageSize);
+        const serviceResult = await AdminVendor.service.paginateUsers(page, pageSize);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
     public static async getAllVendors(req: Request, res: Response) {
-        const serviceResult = await AdminVendor.service.getAllVendors();
+        const serviceResult = await AdminVendor.service.getAllUsers();
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

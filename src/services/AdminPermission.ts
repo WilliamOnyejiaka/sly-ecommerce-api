@@ -2,16 +2,16 @@ import { Admin } from ".";
 import constants, { http } from "../constants";
 import { AdminPermission as AdminPermissionRepo } from "../repos";
 import { AdminPermissionDto } from "../types/dtos";
-import Service from "./Service";
+import BaseService from "./BaseService";
 
-export default class AdminPermission extends Service<AdminPermissionRepo> {
+export default class AdminPermission extends BaseService<AdminPermissionRepo> {
 
-    public constructor(){
+    public constructor() {
         super(new AdminPermissionRepo());
     }
 
     public async getAdminPermissionAndPermissionWithAdminId(adminId: number) {
-        const repoResult =  await this.repo!.getAdminPermissionAndPermissionWithAdminId(adminId);
+        const repoResult = await this.repo!.getAdminPermissionAndPermissionWithAdminId(adminId);
 
         if (repoResult.error) {
             return super.responseData(500, true, http("500") as string);
@@ -54,7 +54,7 @@ export default class AdminPermission extends Service<AdminPermissionRepo> {
     }
 
     public async createAdminPermission(adminPermissionData: AdminPermissionDto) {
-        return await super.create<AdminPermissionDto>(adminPermissionData,"AdminPermission");
+        return await super.create<AdminPermissionDto>(adminPermissionData, "AdminPermission");
     }
 
     public async delete(id: number) {

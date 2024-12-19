@@ -1,11 +1,11 @@
-import Service from "./Service";
+import BaseService from "./BaseService";
 import Repo from "../repos/Repo";
 import { http } from "../constants";
 import jsonRoles from "./../seeds/roles.json";
 import jsonPermissions from "./../seeds/permissions.json";
 
 
-export default class Seed extends Service {
+export default class Seed extends BaseService {
 
     public constructor() {
         super();

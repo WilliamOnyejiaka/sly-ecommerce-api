@@ -5,20 +5,22 @@ import { Admin as AdminRepo, AdminProfilePicture } from "../repos";
 import { Password, processImage } from "../utils";
 import { env } from "../config";
 import { AdminDto } from "../types/dtos";
-import Service from "./Service";
+import BaseService from "./BaseService";
+import UserService from "./UserService";
+import { CustomerCache } from "../cache";
 
-export default class Admin extends Service<AdminRepo> {
+export default class Admin extends UserService<AdminRepo, CustomerCache> { // ! TODO: change cache to AdminCache
 
-    private readonly profilePicRepo: AdminProfilePicture = new AdminProfilePicture();
     private readonly roleService: Role = new Role();
+    private readonly profilePicRepo: AdminProfilePicture = new AdminProfilePicture();
 
     public constructor() {
-        super(new AdminRepo());
+        super(new AdminRepo(), new CustomerCache());
     }
 
     public async defaultAdmin(roleId: number) {
         const email = env('defaultAdminEmail')!
-        const emailExistsResult = await this.emailExists(email);
+        const emailExistsResult = await super.emailExists(email);
 
         if (emailExistsResult.json.error) {
             return emailExistsResult;
@@ -94,7 +96,7 @@ export default class Admin extends Service<AdminRepo> {
 
 
     public async getAdminWithEmail(email: string) {
-        const repoResult = await this.repo!.getAdminWithEmail(email);
+        const repoResult = await this.repo!.getUserProfileWithEmail(email);
         if (repoResult.error) {
             return super.responseData(500, true, http("500") as string);
         }
@@ -152,7 +154,7 @@ export default class Admin extends Service<AdminRepo> {
                 return super.responseData(statusCode, error, message, result);
             }
             return super.responseData(statusCode, error, message, result);
-        }   
+        }
 
         return roleExistsResult;
     }

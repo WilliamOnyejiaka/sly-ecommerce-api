@@ -1,12 +1,12 @@
 import mime from "mime";
-import Service from "./Service";
+import BaseService from "./BaseService";
 import constants, { http, urls } from "../constants";
 import { getPagination, processImage } from "../utils";
 import { FirstBanner, SecondBanner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
 import { PictureData } from "../interfaces/PictureData";
 
-export default class Store extends Service {
+export default class Store extends BaseService {
 
     private readonly storeLogoRepo: StoreLogo = new StoreLogo();
     private readonly storeRepo: StoreDetails = new StoreDetails();
@@ -259,7 +259,7 @@ export default class Store extends Service {
         if (repoResult.error) {
             return super.responseData(repoResult.type, true, repoResult.message as string);
         }
-                
+
         Store.setUrls(repoResult.data, baseUrl);
 
         return super.responseData(200, false, constants('200Stores')!, repoResult.data);

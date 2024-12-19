@@ -1,4 +1,4 @@
-import Service from "./Service";
+import BaseService from "./BaseService";
 import { http } from "../constants";
 import { compressImage } from "../utils";
 import * as fs from "fs";
@@ -9,7 +9,7 @@ import { Cloudinary } from ".";
 const bytesToKB = (bytes: number) => (bytes / 1024).toFixed(2); // Converts bytes to KB
 const bytesToMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2); // Converts bytes to MB
 
-export default class ImageService extends Service {
+export default class ImageService extends BaseService {
 
     public constructor() {
         super();

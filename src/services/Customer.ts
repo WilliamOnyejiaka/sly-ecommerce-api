@@ -1,37 +1,12 @@
-import Service from "./Service";
 import constants, { http, urls } from "../constants";
-import { Customer as CustomerRepo, CustomerProfilePic } from "../repos";
+import { Customer as CustomerRepo } from "../repos";
 import { CustomerCache } from "../cache";
+import UserService from "./UserService";
 
-export default class Customer extends Service<CustomerRepo> {
-
-    private readonly profilePicRepo = new CustomerProfilePic();
-    private readonly cache: CustomerCache = new CustomerCache();
+export default class Customer extends UserService<CustomerRepo, CustomerCache> {
 
     public constructor() {
-        super(new CustomerRepo());
-    }
-
-    public async getCustomerWithId(customerId: number) {
-        return await super.getItemWithId(customerId, constants('200Customer'));
-    }
-
-    public async getCustomerAll(customerId: number) {
-        const repoResult = await this.repo!.getCustomerAndProfilePictureWithId(customerId) as any;
-        if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
-        }
-
-        const statusCode = repoResult.data ? 200 : 404;
-        const error: boolean = repoResult.data ? false : true;
-
-        if (repoResult.data) {
-
-            super.sanitizeUserImageItems([repoResult.data], 'CustomerProfilePic');
-            return super.responseData(statusCode, error, "Customer was retrieved successfully", repoResult.data);
-        }
-
-        return super.responseData(statusCode, error, "Customer was not found", repoResult.data);
+        super(new CustomerRepo(), new CustomerCache());
     }
 
     private async toggleActiveStatus(id: number, activate: boolean = true) {
@@ -72,7 +47,7 @@ export default class Customer extends Service<CustomerRepo> {
             return super.responseData(repoResult.type, true, repoResult.message!);
         }
 
-        super.sanitizeUserImageItems(repoResult.data, 'CustomerProfilePic');
+        super.sanitizeUserImageItems(repoResult.data);
         return super.responseData(200, false, constants('200Customers')!, repoResult.data);
     }
 }

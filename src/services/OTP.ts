@@ -2,12 +2,12 @@ import { randomInt } from "../utils";
 import { Email } from ".";
 import { OTPCache } from "../cache";
 import constants, { http } from "../constants";
-import Service from "./Service";
+import BaseService from "./BaseService";
 
 
 // TODO: Refractor this Service
 
-export default class OTP extends Service {
+export default class OTP extends BaseService {
 
     private readonly email: string;
     private readonly templateData: any;

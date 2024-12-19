@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import prisma from ".";
 import { http } from "../constants";
 import Repository from "../interfaces/Repository";
+import { logger } from "../config";
 
 export default class Repo implements Repository {
 
@@ -42,11 +43,6 @@ export default class Repo implements Repository {
         return await this.getItem({ name: name });
     }
 
-
-    public async getItemWithEmail(email: string) {
-        return await this.getItem({ email: email });
-    }
-
     protected async getItemWithRelation(where: any, include: any) {
         try {
             const item = await (prisma[this.tblName] as any).findUnique({
@@ -59,10 +55,11 @@ export default class Repo implements Repository {
         }
     }
 
-    protected async getItem(where: any) {
+    protected async getItem(where: any,others: any = {}) {
         try {
             const item = await (prisma[this.tblName] as any).findFirst({
-                where: where
+                where: where,
+                ...others
             });
             return this.repoResponse(false, 200, null, item);
         } catch (error) {
@@ -83,12 +80,6 @@ export default class Repo implements Repository {
 
     public async deleteWithId(id: number) {
         return this.delete({ id: id });
-    }
-
-
-    protected async updateWithIdOrEmail(idOrEmail: number | string, data: any) {
-        const where = typeof idOrEmail == "number" ? { id: idOrEmail } : { email: idOrEmail };
-        return await this.update(where, data);
     }
 
     protected async update(where: any, data: any) {
@@ -152,7 +143,7 @@ export default class Repo implements Repository {
 
         if (error.code === "P2002") {
             // Unique constraint violation
-            console.error(`Unique constraint violation error for the ${this.tblName} table`);
+            logger.error(`Unique constraint violation error for the ${this.tblName} table`);
             return {
                 error: true,
                 message: "A record with this data already exists.",
@@ -160,7 +151,7 @@ export default class Repo implements Repository {
                 data: {}
             };
         } else if (error.code === "P2025") {
-            console.error(`Item was not found for the ${this.tblName} table`);
+            logger.error(`Item was not found for the ${this.tblName} table`);
             return {
                 error: true,
                 message: "Item was not found.",
@@ -172,7 +163,7 @@ export default class Repo implements Repository {
             switch (error.code) {
                 case "P2003":
                     // Foreign key constraint violation
-                    console.error(`Foreign key constraint violation error for the ${this.tblName} table`);
+                    logger.error(`Foreign key constraint violation error for the ${this.tblName} table`);
                     return {
                         error: true,
                         message: `Invalid foreign key reference. Please check related fields.`,
@@ -181,7 +172,7 @@ export default class Repo implements Repository {
                     }
                 case "P2001":
                     // Record not found
-                    console.error(`Record not found for the ${this.tblName} table`);
+                    logger.error(`Record not found for the ${this.tblName} table`);
                     return {
                         error: true,
                         message: "The requested record could not be found.",
@@ -190,7 +181,7 @@ export default class Repo implements Repository {
                     };
                 case "P2000":
                     // Value too long for a column
-                    console.error(`Value too long for a column for the ${this.tblName} table`);
+                    logger.error(`Value too long for a column for the ${this.tblName} table`);
                     return {
                         error: true,
                         message: "A value provided is too long for one of the fields.",
@@ -198,7 +189,7 @@ export default class Repo implements Repository {
                         data: {}
                     };
                 default:
-                    console.error(`An unexpected database error occurred for the ${this.tblName} table`, error.message);
+                    logger.error(`An unexpected database error occurred for the ${this.tblName} table`, error.message);
                     return {
                         error: true,
                         message: "An unexpected database error occurred.",
@@ -207,7 +198,7 @@ export default class Repo implements Repository {
                     };;
             }
         } else if (error instanceof Prisma.PrismaClientValidationError) {
-            console.error(`Validation error in the ${this.tblName} table`);
+            logger.error(`Validation error in the ${this.tblName} table`);
             return {
                 error: true,
                 message: 'Invalid data provided. Please check that all fields are correctly formatted.',
@@ -217,7 +208,7 @@ export default class Repo implements Repository {
         }
 
         // Fallback for unexpected errors
-        console.error(http("500"), error);
+        logger.error(error);
         return {
             error: true,
             message: http("500"),

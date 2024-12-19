@@ -2,7 +2,7 @@ import constants from "../constants";
 import Repo from "../repos/Repo";
 import { getPagination } from "../utils";
 
-export default class Service<T extends Repo = Repo> {
+export default class BaseService<T extends Repo = Repo> {
 
     protected readonly repo?: T;
 
@@ -20,15 +20,6 @@ export default class Service<T extends Repo = Repo> {
             }
         };
     }
-
-    protected sanitizeUserImageItems(items: any[], imageName: string) {
-        items.forEach((item: any) => {
-            item.profilePictureUrl = item[imageName].length != 0 ? item[imageName][0].imageUrl : null;
-            delete item[imageName];
-            delete item.password;
-        });
-    }
-
 
     protected async create<U>(createData: U, itemName: string) {
         const repoResult = await this.repo!.insert(createData);
@@ -72,19 +63,6 @@ export default class Service<T extends Repo = Repo> {
 
     public async getItemWithName(name: string, message200?: string) {
         return await this.getItem(name, message200);
-    }
-
-    public async emailExists(email: string) {
-        const emailExists = await this.repo!.getItemWithEmail(email);
-
-        if (emailExists.error) {
-            return this.responseData(emailExists.type, true, emailExists.message!);
-        }
-
-        const statusCode = emailExists.data ? 400 : 200;
-        const error: boolean = !!emailExists.data;
-
-        return this.responseData(statusCode, error, error ? constants("service400Email")! : null);
     }
 
     public async paginate(page: number, pageSize: number) {

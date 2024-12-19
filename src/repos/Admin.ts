@@ -1,16 +1,16 @@
 import prisma from ".";
-import Repo from "./Repo";
-export default class Admin extends Repo {
+import UserRepo from "./UserRepo";
+export default class Admin extends UserRepo {
 
     public constructor() {
-        super('admin');
+        super('admin', 'profilePicture');
     }
 
     private async getAdminAndRole(idOrEmail: number | string) {
         const where = typeof idOrEmail == "number" ? { id: idOrEmail } : { email: idOrEmail };
 
         try {
-            const admin = await (prisma['admin'] as any).findUnique({
+            const admin = await (prisma['admin'] as any).findUnique({ // TODO: change this, use getAllRelations (not the name of the class but you get the point) in the Repo class
                 where: where,
                 include: {
                     role: {
@@ -49,10 +49,6 @@ export default class Admin extends Repo {
         return await super.getItemWithId(id);
     }
 
-    public async getAdminWithEmail(email: string) {
-        return await super.getItemWithEmail(email);
-    }
-
     public async assignRole(adminId: number, roleId: number) {
         return await super.update({ id: adminId }, { roleId: roleId });
     }
@@ -73,12 +69,8 @@ export default class Admin extends Repo {
         }
     }
 
-    public async updateActiveStatus(id: number, activeStatus: boolean) {
-        return await super.updateWithIdOrEmail(id, { active: activeStatus })
-    }
-
-    public async deleteAdmin(adminId: number){
-        return await super.delete({id: adminId});
+    public async deleteAdmin(adminId: number) {
+        return await super.delete({ id: adminId });
     }
 
 }

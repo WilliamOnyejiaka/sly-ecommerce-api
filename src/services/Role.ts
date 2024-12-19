@@ -2,9 +2,9 @@ import { Admin } from ".";
 import constants, { http } from "../constants";
 import { Role as RoleRepo } from "../repos";
 import { RoleDto } from "../types/dtos";
-import Service from "./Service";
+import BaseService from "./BaseService";
 
-export default class Role extends Service<RoleRepo> {
+export default class Role extends BaseService<RoleRepo> {
 
     public constructor() {
         super(new RoleRepo());

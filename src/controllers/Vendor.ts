@@ -27,7 +27,7 @@ export default class Vendor {
 
     public static async getVendor(req: Request, res: Response) {
         const vendorEmail = res.locals.data.email;
-        const serviceResult = await Vendor.service.getVendorWithEmail(vendorEmail);
+        const serviceResult = await Vendor.service.getUserProfileWithEmail(vendorEmail);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -66,7 +66,7 @@ export default class Vendor {
 
     public static async getVendorAll(req: Request, res: Response) {
         const vendorId = Number(res.locals.data.id);
-        const serviceResult = await Vendor.service.getVendorAll(vendorId);
+        const serviceResult = await Vendor.service.getUserProfileWithId(vendorId);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 }

@@ -1,51 +1,14 @@
-import Service from "./Service";
+import BaseService from "./BaseService";
 import constants, { http, urls } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
 import { getPagination } from "../utils";
 import { VendorCache } from "../cache";
+import UserService from "./UserService";
 
-export default class Vendor extends Service<VendorRepo> {
-
-    private readonly profilePicRepo = new VendorProfilePicture();
-    private readonly cache = new VendorCache();
+export default class Vendor extends UserService<VendorRepo, VendorCache> {
 
     public constructor() {
-        super(new VendorRepo());
-    }
-
-    public async getVendorWithEmail(email: string) {
-        const repoResult = await this.repo!.getVendorWithEmail(email);
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message as string);
-        }
-
-        const vendor = repoResult.data;
-        const statusCode = vendor ? 200 : 404;
-        const error: boolean = repoResult.error;
-        const message = error ? http("404")! : "Vendor has been retrieved";
-
-        if (!error) {
-            delete repoResult.data.password;
-        }
-
-        return super.responseData(statusCode, error, message, vendor);
-    }
-
-    public async getVendorAll(vendorId: number) {
-        const repoResult = await this.repo!.getVendorAndRelationsWithId(vendorId);
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message as string);
-        }
-
-        const statusCode = repoResult.data ? 200 : 404;
-        const error: boolean = repoResult.error;
-
-        if (repoResult.data) {
-            this.sanitizeUserImageItems([repoResult.data], 'profilePicture');
-            return super.responseData(statusCode, error, "Vendor was retrieved successfully", repoResult.data);
-        }
-
-        return super.responseData(statusCode, error, "Vendor was not found", repoResult.data);
+        super(new VendorRepo(), new VendorCache());
     }
 
     public async updateFirstName(id: number, firstName: string) {
@@ -73,7 +36,7 @@ export default class Vendor extends Service<VendorRepo> {
     }
 
     public async updateEmail(id: number, email: string) {
-        const emailExists = await this.repo!.getVendorWithEmail(email);
+        const emailExists = await this.repo!.getUserProfileWithEmail(email);
         if (emailExists.error) {
             return super.responseData(500, true, http("500") as string);
         }
@@ -95,9 +58,8 @@ export default class Vendor extends Service<VendorRepo> {
 
     public async delete(vendorId: number) {
         const repoResult = await this.repo!.deleteWithId(vendorId); // ! TODO: add cloudinary image delete
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message!);
-        }
+        const errorResponse = this.handleRepoError(repoResult);
+        if (errorResponse) return errorResponse;
 
         const deleted = await this.cache.delete(String(vendorId));
 
@@ -106,44 +68,10 @@ export default class Vendor extends Service<VendorRepo> {
             super.responseData(500, true, http('500')!);
     }
 
-    public async paginateVendors(page: number, pageSize: number) {
-        const skip = (page - 1) * pageSize;  // Calculate the offset
-        const take = pageSize;  // Limit the number of records
-        const repoResult = await this.repo!.paginate(skip, take);
-
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message!);
-        }
-
-        const totalRecords = repoResult.data.totalItems;
-
-        const pagination = getPagination(page, pageSize, totalRecords);
-
-        this.sanitizeUserImageItems(repoResult.data.items, 'profilePicture');
-
-        return super.responseData(200, false, constants('200Vendors')!, {
-            data: repoResult.data,
-            pagination
-        });
-    }
-
-    public async getAllVendors() {
-        const repoResult = await this.repo!.getAll();
-
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message!);
-        }
-
-        this.sanitizeUserImageItems(repoResult.data, 'profilePicture');
-
-        return super.responseData(200, false, constants('200Vendors')!, repoResult.data);
-    }
-
     private async toggleActiveStatus(id: number, activate: boolean = true) {
         const repoResult = activate ? await this.repo!.updateActiveStatus(id, true) : await this.repo!.updateActiveStatus(id, false);
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message!);
-        }
+        const errorResponse = this.handleRepoError(repoResult);
+        if (errorResponse) return errorResponse;
         //Cache here
         const message = activate ? "Vendor was activated successfully" : "Vendor was deactivated successfully";
         return super.responseData(200, false, message, repoResult.data);

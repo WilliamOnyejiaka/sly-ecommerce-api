@@ -25,7 +25,7 @@ export default class Customer {
 
     public static async getCustomerAll(req: Request, res: Response) {
         const customerId = Number(res.locals.data.id);
-        const serviceResult = await Customer.service.getCustomerAll(customerId);
+        const serviceResult = await Customer.service.getUserProfileWithId(customerId);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

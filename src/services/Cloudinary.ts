@@ -1,9 +1,9 @@
 import * as fs from "fs";
 import { cloudinary, logger } from "../config";
-import Service from "./Service";
+import BaseService from "./BaseService";
 import { http, imageFolders } from "../constants";
 
-export default class Cloudinary extends Service {
+export default class Cloudinary extends BaseService {
 
     public constructor() {
         super();
