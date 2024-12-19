@@ -18,7 +18,9 @@ export default function env(key: string) {
         'smtpPassword': process.env.SMTP_PASSWORD!,
         'apiKey': process.env.API_KEY!,
         'defaultAdminPassword': process.env.DEFAULT_ADMIN_PASSWORD!,
-        'defaultAdminEmail': process.env.DEFAULT_ADMIN_EMAIL!
-
+        'defaultAdminEmail': process.env.DEFAULT_ADMIN_EMAIL!,
+        'cloudinaryCloudName': process.env.CLOUDINARY_CLOUD_NAME!,
+        'cloudinaryApiKey': process.env.CLOUDINARY_API_KEY!,
+        'cloudinaryApiSecret': process.env.CLOUDINARY_API_SECRET!
     }[key];
 }

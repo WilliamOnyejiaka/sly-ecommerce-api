@@ -1,14 +1,14 @@
 import mime from "mime";
 import { Role } from ".";
-import constants, { http, urls } from "../constants";
+import constants, { http, HttpStatus, urls } from "../constants";
 import { Admin as AdminRepo, AdminProfilePicture } from "../repos";
-import { Password, processImage } from "../utils";
+import { CipherUtility, Password, processImage } from "../utils";
 import { env } from "../config";
 import { AdminDto } from "../types/dtos";
 import BaseService from "./BaseService";
 import UserService from "./UserService";
 import { CustomerCache } from "../cache";
-
+import BaseCache from "../cache/BaseCache";
 export default class Admin extends UserService<AdminRepo, CustomerCache> { // ! TODO: change cache to AdminCache
 
     private readonly roleService: Role = new Role();
@@ -157,6 +157,18 @@ export default class Admin extends UserService<AdminRepo, CustomerCache> { // ! 
         }
 
         return roleExistsResult;
+    }
+
+    public async generateAdminSignUpKey(roleId: number, adminName: string) {
+        const keyCache = new BaseCache("adminKey", 900);
+        const secretKey = 'your-secret-key';
+        const key = CipherUtility.encrypt(JSON.stringify({ roleId, adminName }),secretKey);
+
+        const cached = await keyCache.set(key, "adminKey");
+        if (!cached) {
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+        return super.responseData(HttpStatus.OK, false, "Key has been generated successfully", { key});
     }
 
     public async deleteAdmin(adminId: number) {

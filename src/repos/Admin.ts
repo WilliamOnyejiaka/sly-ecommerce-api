@@ -6,7 +6,7 @@ export default class Admin extends UserRepo {
         super('admin', 'profilePicture');
     }
 
-    private async getAdminAndRole(idOrEmail: number | string) {
+    private async getAdminAndRole(idOrEmail: number | string) { // TODO: Rename this method
         const where = typeof idOrEmail == "number" ? { id: idOrEmail } : { email: idOrEmail };
 
         try {
@@ -27,6 +27,11 @@ export default class Admin extends UserRepo {
                     directPermissions: {
                         select: {
                             permission: true
+                        }
+                    },
+                    profilePicture: {
+                        select: {
+                            imageUrl: true
                         }
                     }
                 },

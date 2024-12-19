@@ -71,8 +71,28 @@ export default class Admin {
             res.status(emailExistsResult.statusCode).json(emailExistsResult.json);
             return;
         }
-        const adminName = res.locals.data.firstName + " " + res.locals.data.lastName;
+        const adminName = res.locals.data.firstName + " " + res.locals.data.lastName; // ! TODO: get from cache
         const serviceResult = await Admin.service.createAdmin(createData, adminName);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
+    public static async generateSignUpKey(req: Request, res: Response) {
+        const id = Number(res.locals.data.id);
+        const adminName = res.locals.data.firstName + " " + res.locals.data.lastName;
+
+        const idResult = numberValidator(req.params.roleId);
+        if (idResult.error) {
+            res.status(400).json({
+                error: true,
+                message: "Id must be an integer"
+            });
+            return;
+        }
+        // res.status(400).json({
+        //     error: true,
+        //     message: "Id must be an integer"
+        // });
+        const serviceResult = await Admin.service.generateAdminSignUpKey(idResult.number,adminName);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -80,7 +100,10 @@ export default class Admin {
         const idResult = numberValidator(req.params.adminId);
 
         if (idResult.error) {
-            res.status(400).send("Id must be an integer");
+            res.status(400).json({
+                error: true,
+                message: "Id must be an integer"
+            });
             return;
         }
 
@@ -93,7 +116,10 @@ export default class Admin {
             const idResult = numberValidator(req.body.adminId);
 
             if (idResult.error) {
-                res.status(400).send("Admin id must be an integer");
+                res.status(400).json({
+                    error: true,
+                    message: "Admin id must be an integer"
+                });
                 return;
             }
 
@@ -114,14 +140,20 @@ export default class Admin {
         const idResult = numberValidator(req.body.adminId);
 
         if (idResult.error) {
-            res.status(400).send("Admin id must be an integer");
+            res.status(400).json({
+                error: true,
+                message: "Admin id must be an integer"
+            });
             return;
         }
 
         const roleIdResult = numberValidator(req.body.roleId);
 
         if (roleIdResult.error) {
-            res.status(400).send("Role id must be an integer");
+            res.status(400).json({
+                error: true,
+                message: "Role id must be an integer"
+            });
             return;
         }
         const roleExistsResult = await Admin.service.getRoleWithId(roleIdResult.number);

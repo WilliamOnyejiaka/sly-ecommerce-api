@@ -1,11 +1,15 @@
 import { OTP, Token } from ".";
 import { Admin, Vendor, Customer } from "../repos";
-import { Password } from "../utils";
+import { CipherUtility, Password } from "../utils";
 import { env } from "../config";
 import VendorDto, { AdminDto, CustomerAddressDto, CustomerDto } from "../types/dtos";
-import constants, { http } from "../constants";
-import { CustomerCache, TokenBlackList, VendorCache } from "../cache";
+import constants, { http, HttpStatus } from "../constants";
+import { AdminCache, CustomerCache, TokenBlackList, VendorCache } from "../cache";
 import BaseService from "./BaseService";
+import UserRepo from "../repos/UserRepo";
+import BaseCache from "../cache/BaseCache";
+import { Admin as AdminService } from ".";
+
 
 export default class Authentication extends BaseService {
 
@@ -17,9 +21,22 @@ export default class Authentication extends BaseService {
     private readonly adminRepo: Admin = new Admin();
     private readonly customerRepo: Customer = new Customer();
     private readonly tokenBlackListCache: TokenBlackList = new TokenBlackList();
+    private readonly adminCache: AdminCache = new AdminCache();
 
     public constructor() {
         super();
+    }
+
+    private generateToken(data: any, role: string) {
+        return Token.createToken(this.tokenSecret, data, [role]);
+    }
+
+    private generateUserToken(userId: number, role: string) {
+        return this.generateToken({ id: userId }, role);
+    }
+
+    private generateAdminToken(admin: any) {
+        return this.generateToken(admin, "admin");
     }
 
     public async vendorSignUp(vendorDto: VendorDto) {
@@ -46,34 +63,44 @@ export default class Authentication extends BaseService {
         return super.responseData(statusCode, error, message);
     }
 
-    public async vendorLogin(email: string, password: string) { // TODO: create a general login method
-        const repoResult = await this.vendorRepo.getUserProfileWithEmail(email);
+    public async login<T extends UserRepo, U extends BaseCache>(
+        repo: T,
+        logInDetails: {
+            email: string,
+            password: string
+        },
+        cache: U,
+        role: string
+    ) {
+        const repoResult = role === "admin" ? await this.adminRepo.getAdminAndRoleWithEmail(logInDetails.email) : await repo.getUserProfileWithEmail(logInDetails.email);
+        const errorResponse = super.handleRepoError(repoResult);
+        if (errorResponse) return errorResponse;
 
-        if (repoResult.error) {
-            return super.responseData(500, true, http("500")!);
-        }
+        const user = repoResult.data;
 
-        const vendor: VendorDto = (repoResult.data as VendorDto);
-
-        if (vendor) {
-            const hashedPassword = vendor.password
-            const validPassword = Password.compare(password, hashedPassword!, this.storedSalt);
+        if (user) {
+            const hashedPassword = user.password
+            const validPassword = Password.compare(logInDetails.password, hashedPassword, this.storedSalt);
 
             if (validPassword) {
-                delete vendor.password;
-                const cacheSuccessful = await this.vendorCache.set(
-                    String(vendor.id),
-                    vendor
+                user.profilePictureUrl = user[repo.imageRelation].length != 0 ? user[repo.imageRelation][0].imageUrl : null;
+                delete user[repo.imageRelation];
+                delete user.password;
+                const cacheSuccessful = await cache.set(
+                    String(user.id),
+                    user
                 );
 
-                return cacheSuccessful ? super.responseData(200, false, "Login successful", {
-                    token: Token.createToken(env('tokenSecret')!, { id: vendor.id }, ["vendor"]), // TODO: testing here
-                    vendor: vendor
-                }) : super.responseData(500, true, http('500')!);
+                const token = role === "admin" ? this.generateAdminToken(user) : this.generateUserToken(user.id, role);
+
+                return cacheSuccessful ? super.responseData(200, false, "Login was successful", {
+                    token: token,
+                    user: user
+                }) : super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
             }
-            return super.responseData(400, true, "Invalid password");
+            return super.responseData(HttpStatus.BAD_REQUEST, true, "Invalid password");
         }
-        return super.responseData(404, true, constants("404Vendor")!);
+        return super.responseData(HttpStatus.NOT_FOUND, true, constants("404User")!);
     }
 
     public async customerSignUp(
@@ -111,74 +138,16 @@ export default class Authentication extends BaseService {
     }
 
     public async customerLogin(email: string, password: string) {
-        const repoResult = await this.customerRepo.getUserProfileWithEmail(email);
-
-        if (repoResult.error) {
-            return super.responseData(500, true, http("500")!);
-        }
-
-        const customer: CustomerDto = repoResult.data;
-
-        if (customer) {
-            const hashedPassword = customer.password
-            const validPassword = Password.compare(password, hashedPassword!, this.storedSalt);
-
-            if (validPassword) {
-                delete customer.password;
-                const cacheSuccessful = await this.vendorCache.set(
-                    String(customer.id),
-                    customer
-                );
-
-                return cacheSuccessful ? super.responseData(200, false, "Login successful", {
-                    token: Token.createToken(env('tokenSecret')!, { id: customer.id }, ["customer"]),
-                    customer: customer
-                }) : super.responseData(500, true, http('500')!);
-            }
-            return super.responseData(400, true, "Invalid password");
-        }
-        return super.responseData(404, true, constants("404Customer")!);
+        return await this.login<Customer, CustomerCache>(this.customerRepo, { email, password }, this.customerCache, "customer");
     }
 
     public async adminLogin(email: string, password: string) {
-        const repoResult = await this.adminRepo.getAdminAndRoleWithEmail(email);
-
-        if (repoResult.error) {
-            return super.responseData(500, true, http("500")!);
-        }
-
-        const admin: AdminDto = (repoResult.data as AdminDto);
-
-        if (admin) {
-            const hashedPassword = admin.password
-            const validPassword = Password.compare(password, hashedPassword!, this.storedSalt);
-
-            if (validPassword) {
-                delete admin.password;
-                const token = Token.createToken(env('tokenSecret')!, admin, ["admin"]);
-                delete admin.role;
-                delete admin.directPermissions;
-
-                // const cacheSuccessful = await Authentication.vendorCache.set(
-                //     admin.email,
-                //     admin
-                // );
-
-                return super.responseData(200, false, "Login successful", {
-                    token: token,
-                    admin: admin
-                })
-
-                // return cacheSuccessful ? Service.responseData(200, false, "login successful", {
-                //     token: Token.createToken(env('tokenSecret')!, admin, ["vendor"]),
-                //     vendor: admin
-                // }) : Service.responseData(500, true, http('500')!);
-            }
-            return super.responseData(400, true, "Invalid password");
-        }
-        return super.responseData(404, true, constants("404Vendor")!);
+        return await this.login<Admin, AdminCache>(this.adminRepo, { email, password }, this.adminCache, "admin");
     }
 
+    public async vendorLogin(email: string, password: string) {
+        return await this.login<Vendor, VendorCache>(this.vendorRepo, { email, password }, this.vendorCache, "vendor");
+    }
 
     public async vendorEmailOTP(email: string) {
         const repoResult = await this.vendorRepo.getUserProfileWithEmail(email);
@@ -258,8 +227,48 @@ export default class Authentication extends BaseService {
         const blacklisted = await this.tokenBlackListCache.set(token, { data: decoded.data, types: decoded.types }, decoded.expiresAt);
 
         return blacklisted ?
-            super.responseData(200, false, "Logged out successfully") :
+            super.responseData(200, false, "User has been logged out successfully") :
             super.responseData(500, true, http('500')!);
+    }
+
+    private isValidAdminFormat(decodedJson: any) {
+
+        return (
+            typeof decodedJson === 'object' &&
+            decodedJson !== null &&
+            'roleId' in decodedJson &&
+            'adminName' in decodedJson
+        );
+    }
+
+    public async adminSignUp(signUpData: {
+        firstName: string,
+        lastName: string,
+        email: string,
+        active: boolean,
+        phoneNumber: string,
+        key?: string,
+        roleId?: number
+    }) {
+        
+        const secretKey = 'your-secret-key';
+        const decryptResult = CipherUtility.decrypt(signUpData.key!, secretKey);
+        if (decryptResult.error) {
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        try {
+            const keyDetails = JSON.parse(decryptResult.originalText!);            
+            delete signUpData.key;
+            signUpData.roleId = keyDetails.roleId;
+
+            const serviceResult = await (new AdminService()).createAdmin(signUpData as any, keyDetails.adminName);
+            return serviceResult;
+            // return super.responseData(200, false, "User has been logged out successfully", { keyDetails });
+        } catch (error: any) {
+            console.log(error.message);
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, "Invalid key");
+        }
     }
 
     // public async getToken(user: any,types: string[]){

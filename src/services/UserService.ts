@@ -33,17 +33,10 @@ export default class UserService<T extends UserRepo, U extends BaseCache> extend
         return this.responseData(statusCode, error, error ? constants("service400Email")! : null);
     }
 
-    protected handleRepoError(repoResult: any) {
-        if (repoResult.error) {
-            return this.responseData(repoResult.type, true, repoResult.message as string);
-        }
-        return null;
-    }
-
     public async getUserProfileWithId(vendorId: number) {
         const repoResult = await this.repo!.getUserProfileWithId(vendorId);
 
-        const errorResponse = this.handleRepoError(repoResult);
+        const errorResponse = super.handleRepoError(repoResult);
         if (errorResponse) return errorResponse;
 
         const statusCode = repoResult.data ? HttpStatus.OK : HttpStatus.NOT_FOUND;

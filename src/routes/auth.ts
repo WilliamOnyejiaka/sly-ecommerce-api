@@ -29,6 +29,19 @@ auth.post("/customer/sign-up", validateBody([
     'zip'
 ]), asyncHandler(Auth.customerSignUp));
 
+auth.post(
+    "/admin/sign-up",
+    validateBody([
+        "firstName",
+        "password",
+        "lastName",
+        "email",
+        "phoneNumber",
+        "key"
+    ]),
+    asyncHandler(Auth.adminSignUp)
+);
+
 auth.post("/customer/login", validateBody(['email', 'password']), asyncHandler(Auth.customerLogin));
 auth.get("/logout",asyncHandler(Auth.logOut));
 // auth.get("/google", Auth.oauthRedirect);

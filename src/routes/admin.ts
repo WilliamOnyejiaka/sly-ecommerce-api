@@ -11,6 +11,8 @@ admin.post(
     asyncHandler(Admin.uploadProfilePicture)
 );
 
+admin.get("/generate-sign-up-key/:roleId",adminAuthorization(['manage_all']),asyncHandler(Admin.generateSignUpKey));
+
 admin.get("/get-admin-and-role", asyncHandler(Admin.getAdminAndRole));
 
 admin.post(

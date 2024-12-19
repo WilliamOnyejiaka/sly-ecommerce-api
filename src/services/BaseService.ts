@@ -21,6 +21,13 @@ export default class BaseService<T extends Repo = Repo> {
         };
     }
 
+    protected handleRepoError(repoResult: any) {
+        if (repoResult.error) {
+            return this.responseData(repoResult.type, true, repoResult.message as string);
+        }
+        return null;
+    }
+
     protected async create<U>(createData: U, itemName: string) {
         const repoResult = await this.repo!.insert(createData);
         const error = repoResult.error;
