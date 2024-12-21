@@ -2,7 +2,7 @@ import { Admin } from ".";
 import constants, { http } from "../constants";
 import { AdminPermission as AdminPermissionRepo } from "../repos";
 import { AdminPermissionDto } from "../types/dtos";
-import BaseService from "./BaseService";
+import BaseService from "./bases/BaseService";
 
 export default class AdminPermission extends BaseService<AdminPermissionRepo> {
 

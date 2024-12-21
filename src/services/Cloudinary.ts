@@ -1,6 +1,5 @@
-import * as fs from "fs";
 import { cloudinary, logger } from "../config";
-import BaseService from "./BaseService";
+import BaseService from "./bases/BaseService";
 import { http, imageFolders } from "../constants";
 
 export default class Cloudinary extends BaseService {
@@ -28,8 +27,6 @@ export default class Cloudinary extends BaseService {
         } catch (error: any) {
             logger.error(`Error uploading file: ${error.message}`, { filePath, imageFolder });
             return super.responseData(500, true, http('500')!);
-        } finally {
-            (fs.existsSync(filePath) && fs.unlinkSync(filePath)); // ! TODO:Remove this
         }
 
         const url = this.getUrl(uploadResult.public_id);

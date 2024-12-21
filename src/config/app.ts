@@ -14,6 +14,8 @@ import { Vendor as VendorRepo } from "../repos";
 import cors from "cors";
 import { baseUrl } from "../utils";
 import { urls } from "../constants";
+import { validationResult } from "express-validator";
+import { passwordIsValid } from "../middlewares/validators";
 
 
 function createApp() {
@@ -40,7 +42,7 @@ function createApp() {
         validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
         vendor
     );
-    app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), vendorIsActive, store);
+    app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!) /* TODO: uncomment this and find the bugs,vendorIsActive*/, store);
     app.use("/api/v1/admin", validateJWT(["admin"], env("tokenSecret")!), admin);
     app.use("/api/v1/admin/role", validateJWT(["admin"], env("tokenSecret")!), role);
     app.use("/api/v1/admin/vendor", validateJWT(["admin"], env("tokenSecret")!), adminVendor);
@@ -56,47 +58,20 @@ function createApp() {
     );
 
     app.post("/test2", async (req: Request, res: Response) => {
-        // const result = await Email();
-        const email = new Email();
-        const templatePath = path.join(__dirname, './../views', "email.ejs");
-
-        const htmlContent = await ejs.renderFile(templatePath, {
-            name: "William",
-            otpCode: 564909
-        });
-        const result = await email.sendEmail("Ecommerce Api", "williamonyejiaka20=-021@gmfddfgdfaail.com", "email verification", htmlContent);
         res.status(200).json({
             'error': false,
-            'message': result
+            'message': "result"
         });
     });
 
-    app.get("/test1", async (req: Request, res: Response) => {
-        logger.error("Hello World");
-        res.status(200).json("testing")
-    });
-
-    app.post("/cloudinary", uploads.single("image"), async (req: Request, res: Response) => {
-
-        const image = req.file;
-        if (!image) {
-            res.status(400).json({
-                error: true,
-                message: "image file missing"
-            });
+    app.post("/test1", [passwordIsValid], async (req: Request, res: Response, next: NextFunction) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const error = JSON.parse(errors.array()[0].msg);
+            res.status(error.statusCode).json({ error: true, message: error.message });
+            return;
         }
-        const filePath = image!.path;
-        const service = new Cloudinary();
-        const result = await service.uploadImage(filePath, "storeLogo");
-        // const url = cloudinary.url('ecommerce-cdn/store-logo/ldmm9oj81qrkggevfsfu',{
-        //     transformation:[
-        //         {fetch_format: 'auto'},
-        //         {quality: 'auto'}
-        //     ]
-        // })
-        res.status(200).json(result);
-        // res.status(200).json(url);
-
+        res.status(200).json("testing")
     });
 
     app.use(handleMulterErrors);

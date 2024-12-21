@@ -11,9 +11,9 @@ export default class StoreDetails extends Repo {
 
     public async insertWithRelations(
         storeDetailsDto: StoreDetailsDto,
-        storeLogo: PictureData | null,
-        firstStoreBanner: PictureData | null,
-        secondStoreBanner: PictureData | null
+        storeLogo: any,
+        firstStoreBanner: any,
+        secondStoreBanner: any
     ) {
         try {
             const data: any = {
@@ -155,6 +155,30 @@ export default class StoreDetails extends Repo {
                 totalItems: totalItems
             });
 
+        } catch (error) {
+            return super.handleDatabaseError(error);
+        }
+    }
+
+    public async insertBanners(storeId: number,firstBanner?: any,secondBanner?: any){
+        try{
+            const banners = await prisma.storeDetails.update({
+                where: {id: storeId},
+                data: {
+                    firstStoreBanner: {
+                        create: firstBanner
+                    },
+                    secondStoreBanner: {
+                        create: secondBanner
+                    }
+                },
+                include: {
+                    firstStoreBanner: true,
+                    secondStoreBanner: true
+                }
+            });
+
+            return super.repoResponse(false,201,null,banners);
         } catch (error) {
             return super.handleDatabaseError(error);
         }

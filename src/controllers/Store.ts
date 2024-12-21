@@ -6,6 +6,7 @@ import { StoreDetailsDto } from "../types/dtos";
 import * as fs from "fs";
 import { baseUrl } from "../utils";
 import { FirstBanner, StoreLogo } from "../repos";
+import Controller from "./bases/Controller";
 
 export default class Store {
 
@@ -16,7 +17,7 @@ export default class Store {
         const images = req.files!;
 
         if (!req.body.name || !req.body.address || !req.body.city || !req.body.description || !req.body.tagLine) {
-            await Store.imageService.deleteImages(images as Express.Multer.File[]);
+            await Store.imageService.deleteFiles(images as Express.Multer.File[]);
             res.status(400).json({
                 'error': true,
                 'message': "All values are required",
@@ -30,20 +31,19 @@ export default class Store {
 
         const storeExists = await Store.service.storeExists(storeDetailsDto.vendorId);
         if (storeExists.json.error) {
-            await Store.imageService.deleteImages(images as Express.Multer.File[]);
+            await Store.imageService.deleteFiles(images as Express.Multer.File[]);
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
 
         const nameExists = await Store.service.storeNameExists(storeDetailsDto.name);
         if (nameExists.json.error) {
-            await Store.imageService.deleteImages(images as Express.Multer.File[]);
+            await Store.imageService.deleteFiles(images as Express.Multer.File[]);
             res.status(nameExists.statusCode).json(nameExists.json);
             return;
         }
 
-        const baseServerUrl = baseUrl(req);
-        const serviceResult = await Store.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[], baseServerUrl);
+        const serviceResult = await Store.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[]);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -72,14 +72,14 @@ export default class Store {
         const idResult = numberValidator(req.params.storeId);
 
         if (idResult.error) {
-            await Store.imageService.deleteImages([image]);
+            await Store.imageService.deleteFiles([image]);
             res.status(400).json(idResult);
             return;
         }
         const storeId = idResult.number;
         const storeExists = await Store.service.getStoreWithId(storeId);
         if (storeExists.json.error) {
-            await Store.imageService.deleteImages([image]);
+            await Store.imageService.deleteFiles([image]);
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
@@ -98,7 +98,7 @@ export default class Store {
         const firstBannerExists = images.some((image) => image.fieldname === "firstBanner");
 
         if (!firstBannerExists) {
-            await Store.imageService.deleteImages(images);
+            await Store.imageService.deleteFiles(images);
             res.status(400).json({
                 error: true,
                 message: "firstBanner is required"
@@ -109,7 +109,7 @@ export default class Store {
         const idResult = numberValidator(req.params.storeId);
 
         if (idResult.error) {
-            await Store.imageService.deleteImages(images);
+            await Store.imageService.deleteFiles(images);
             res.status(400).json(idResult);
             return;
         }
@@ -117,19 +117,19 @@ export default class Store {
         const storeId = idResult.number;
         const storeExists = await Store.service.getStoreWithId(storeId);
         if (storeExists.json.error) {
-            await Store.imageService.deleteImages(images);
+            await Store.imageService.deleteFiles(images);
             res.status(storeExists.statusCode).json(storeExists.json);
             return;
         }
 
-        const baseServerUrl = baseUrl(req);
-        const serviceResult = images.length == 1 ? await Store.imageService.uploadImage<FirstBanner>(
-            images[0],
-            storeId,
-            new FirstBanner(),
-            'firstStoreBanner'
-        ) : await Store.service.uploadBanners(images, storeId, baseServerUrl);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        // const serviceResult = images.length == 1 ? await Store.imageService.uploadImage<FirstBanner>(
+        //     images[0],
+        //     storeId,
+        //     new FirstBanner(),
+        //     'firstStoreBanner'
+        // ) : await Store.service.uploadBanners(images, storeId);
+        const serviceResult = await Store.service.uploadBanners(images, storeId);
+        Controller.response(res, serviceResult);
     }
 
     public static async getStoreAll(req: Request, res: Response) {

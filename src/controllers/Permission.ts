@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Permission as PermissionService } from "../services";
 import { PermissionDto } from "../types/dtos";
 import { numberValidator } from "../validators";
-import Controller from "./Controller";
+import {Controller} from ".";
 
 export default class Permission {
 

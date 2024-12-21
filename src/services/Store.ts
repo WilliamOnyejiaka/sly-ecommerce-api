@@ -1,96 +1,73 @@
-import mime from "mime";
-import BaseService from "./BaseService";
+import BaseService from "./bases/BaseService";
 import constants, { http, urls } from "../constants";
-import { getPagination, processImage } from "../utils";
+import { getPagination } from "../utils";
 import { FirstBanner, SecondBanner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
-import { PictureData } from "../interfaces/PictureData";
+import ImageService from "./Image";
 
 export default class Store extends BaseService {
 
-    private readonly storeLogoRepo: StoreLogo = new StoreLogo();
     private readonly storeRepo: StoreDetails = new StoreDetails();
     private readonly secondBannerRepo: SecondBanner = new SecondBanner();
     private readonly firstBannerRepo: FirstBanner = new FirstBanner();
+    private readonly imageService: ImageService = new ImageService();
 
 
     public constructor() {
         super();
     }
 
-    public async createStoreAll(storeDetailsDto: StoreDetailsDto, images: Express.Multer.File[], baseUrl: string) {
-
-        let base64Images: any = {
-            firstBanner: null,
-            secondBanner: null,
-            storeLogo: null
+    public async createStoreAll(
+        storeDetailsDto: StoreDetailsDto,
+        images: Express.Multer.File[]
+    ) {
+        const uploadFolders: Record<string, string> = {
+            storeLogo: "storeLogo",
+            firstBanner: "firstStoreBanner",
+            secondBanner: "secondStoreBanner",
         };
 
-        try {
-            for (const image of images) {
-                let mimeType = mime.lookup(image.path);
-                let base64Image = await processImage(image);
-                if (base64Image.error) {
-                    return super.responseData(
-                        500,
-                        true,
-                        http("500")!
-                    );
-                }
-                base64Images[image.fieldname] = {
-                    mimeType: mimeType,
-                    picture: base64Image.data!,
+        const uploadResults = await this.imageService.uploadImages(images, uploadFolders);
+        const storeImages = uploadResults.data;
+
+        if (storeImages) {
+
+            const repoResult = await this.storeRepo.insertWithRelations(
+                storeDetailsDto,
+                storeImages?.storeLogo,
+                storeImages?.firstBanner,
+                storeImages?.secondBanner
+            );
+
+            if (!repoResult.error) {
+                const result = {
+                    ...repoResult.data,
+                    storeLogoUrl: storeImages.storeLogo?.imageUrl ?? null,
+                    firstBannerUrl: storeImages.firstBanner?.imageUrl ?? null,
+                    secondBannerUrl: storeImages.secondBanner?.imageUrl ?? null,
                 };
+
+                return super.responseData(
+                    201,
+                    false,
+                    "Store was created successfully",
+                    result
+                );
             }
-        } catch (error) {
-            return super.responseData(
-                500,
-                true,
-                http("500")!,
-            );
+
+            return super.responseData(repoResult.type, true, repoResult.message!);
         }
-
-        const repoResult = await this.storeRepo.insertWithRelations(
-            storeDetailsDto,
-            base64Images.storeLogo as PictureData,
-            base64Images.firstBanner as PictureData,
-            base64Images.secondBanner as PictureData
-        );
-
-        if (!repoResult.error) {
-            const result = repoResult.data as any;
-            const storeId: string = result.id;
-            const baseImageUrl: string = urls("baseImageUrl")!;
-
-            result['storeLogoUrl'] =
-                base64Images.storeLogo ? baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId : null;
-            result['firstBannerUrl'] =
-                base64Images.firstBanner ? baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId : null;
-            result['secondBannerUrl'] =
-                base64Images.secondBanner ? baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId : null;
-
-            return super.responseData(
-                201,
-                false,
-                "Store was created successfully",
-                result
-            );
-        }
-
-        return super.responseData(repoResult.type, true, repoResult.message!);
+        return super.responseData(500, true, "Error processing images");
     }
 
     public async createStore(storeDetailsDto: StoreDetailsDto) {
-
         const repoResult = await this.storeRepo.insert(storeDetailsDto);
-
         return !repoResult.error ? super.responseData(201, false, "Store was created successfully", repoResult) :
             super.responseData(repoResult.type, true, repoResult.message!);
     }
 
     public async storeNameExists(name: string) {
         const nameExists = await this.storeRepo.getItemWithName(name);
-
         if (nameExists.error) {
             return super.responseData(nameExists.type, true, nameExists.message as string);
         }
@@ -132,41 +109,19 @@ export default class Store extends BaseService {
         );
     }
 
-    public async uploadBanners(banners: Express.Multer.File[], storeId: number, baseUrl: string) {
-        let base64Banners: any = {
-            firstBanner: null,
-            secondBanner: null
+    public async uploadBanners(banners: Express.Multer.File[], storeId: number) {
+
+        const uploadFolders: Record<string, string> = {
+            firstBanner: "firstStoreBanner",
+            secondBanner: "secondStoreBanner"
         };
 
-        try {
-            for (const banner of banners) {
-                let mimeType = mime.lookup(banner.path);
-                let base64Banner = await processImage(banner);
-                if (base64Banner.error) {
-                    return super.responseData(
-                        500,
-                        true,
-                        http("500")!
-                    );
-                }
-                base64Banners[banner.fieldname] = {
-                    mimeType: mimeType,
-                    picture: base64Banner.data!,
-                    parentId: storeId
-                };
-            }
-        } catch (error) {
-            return super.responseData(
-                500,
-                true,
-                http("500")!,
-            );
-        }
-
-        const repoResult = await this.firstBannerRepo.insertImage(base64Banners.firstBanner);
-        const repoResult1 = await this.secondBannerRepo.insertImage(base64Banners.secondBanner);
-        const firstStoreBannerUrl = baseUrl + urls("baseImageUrl")! + urls("firstBanner")!.split(":")[0] + storeId;
-        const secondStoreBannerUrl = baseUrl + urls("baseImageUrl")! + urls("secondBanner")!.split(":")[0] + storeId;
+        const uploadResults = await this.imageService.uploadImages(banners, uploadFolders);
+        const storeBanners = uploadResults.data;
+        const repoResult = await this.firstBannerRepo.insertImage({ ...storeBanners?.firstBanner, parentId: storeId });
+        const repoResult1 = await this.secondBannerRepo.insertImage({ ...storeBanners?.secondBanner, parentId: storeId });
+        const firstStoreBannerUrl = storeBanners?.firstBanner.imageUrl ?? null;
+        const secondStoreBannerUrl = storeBanners?.secondBanner.imageUrl ?? null;
 
         return repoResult && repoResult1 ?
             super.responseData(
@@ -184,6 +139,56 @@ export default class Store extends BaseService {
                 http("500")!,
             );
     }
+
+
+    // public async uploadBanners(banners: Express.Multer.File[], storeId: number) { // ! TODO: update this method
+    //     let storeBanners: any = {
+    //         firstBanner: null,
+    //         secondBanner: null
+    //     };
+
+    //     const uploadFolders: Record<string, string > = {
+    //         firstBanner: "firstStoreBanner",
+    //         secondBanner: "secondStoreBanner"
+    //     };
+
+    //     for (const banner of banners) {
+    //         const fieldName: string = banner.fieldname;
+    //         const uploadFolder = uploadFolders[fieldName];
+    //         let uploadResult = await this.imageService.processAndUpload(banner, uploadFolder);
+    //         if (uploadResult.json.error) {
+    //             return uploadResult;
+    //         }
+    //         storeBanners[fieldName] = {
+    //             mimeType: uploadResult.json.data.imageData.format,
+    //             imageUrl: uploadResult.json.data.url,
+    //             publicId: uploadResult.json.data.imageData.public_id,
+    //             size: uploadResult.json.data.imageData.bytes,
+    //             parentId: storeId
+    //         };
+    //     }
+
+    //     const repoResult = await this.firstBannerRepo.insertImage(storeBanners.firstBanner);
+    //     const repoResult1 = await this.secondBannerRepo.insertImage(storeBanners.secondBanner);
+    //     const firstStoreBannerUrl = storeBanners.firstBanner;
+    //     const secondStoreBannerUrl = storeBanners.secondBanner;
+
+    //     return repoResult && repoResult1 ?
+    //         super.responseData(
+    //             201,
+    //             false,
+    //             "banners were created successfully",
+    //             {
+    //                 firstStoreBannerUrl: firstStoreBannerUrl,
+    //                 secondStoreBannerUrl: secondStoreBannerUrl
+    //             }
+    //         ) :
+    //         super.responseData(
+    //             500,
+    //             true,
+    //             http("500")!,
+    //         );
+    // }
 
     public async getStoreAll(vendorId: number, baseUrl: string) {
         const repoResult = await this.storeRepo.getStoreAndRelationsWithVendorId(vendorId);

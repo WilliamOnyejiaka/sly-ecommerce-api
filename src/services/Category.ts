@@ -1,4 +1,4 @@
-import BaseService from "./BaseService";
+import BaseService from "./bases/BaseService";
 import constants, { http } from "../constants";
 import { Category as CategoryRepo } from "../repos";
 import { CategoryDto } from "../types/dtos";

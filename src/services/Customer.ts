@@ -1,7 +1,7 @@
 import constants, { http, urls } from "../constants";
 import { Customer as CustomerRepo } from "../repos";
 import { CustomerCache } from "../cache";
-import UserService from "./UserService";
+import UserService from "./bases/UserService";
 
 export default class Customer extends UserService<CustomerRepo, CustomerCache> {
 

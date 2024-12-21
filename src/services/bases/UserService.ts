@@ -1,7 +1,7 @@
-import BaseCache from "../cache/BaseCache";
-import constants, { http, HttpStatus } from "../constants";
-import UserRepo from "../repos/UserRepo";
-import { getPagination } from "../utils";
+import BaseCache from "../../cache/BaseCache";
+import constants, { http, HttpStatus } from "../../constants";
+import UserRepo from "../../repos/UserRepo";
+import { getPagination } from "../../utils";
 import BaseService from "./BaseService";
 
 export default class UserService<T extends UserRepo, U extends BaseCache> extends BaseService<T> {

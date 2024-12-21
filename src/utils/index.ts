@@ -8,6 +8,7 @@ import loadJsonFile from "./loadJsonFile";
 import getPagination from "./getPagination";
 import compressImage from "./compressImage";
 import CipherUtility from "./CipherUtility";
+import parseJson from "./parseJson";
 
 export {
     Password,
@@ -19,5 +20,6 @@ export {
     loadJsonFile,
     getPagination,
     compressImage,
-    CipherUtility
+    CipherUtility,
+    parseJson
 };

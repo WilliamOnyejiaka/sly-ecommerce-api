@@ -1,9 +1,9 @@
-import BaseService from "./BaseService";
+import BaseService from "./bases/BaseService";
 import constants, { http, urls } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
 import { getPagination } from "../utils";
 import { VendorCache } from "../cache";
-import UserService from "./UserService";
+import UserService from "./bases/UserService";
 
 export default class Vendor extends UserService<VendorRepo, VendorCache> {
 

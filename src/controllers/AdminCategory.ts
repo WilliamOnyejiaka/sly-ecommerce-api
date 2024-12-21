@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Category } from "../services";
 import { CategoryDto } from "../types/dtos";
 import { numberValidator } from "../validators";
-import Controller from "./Controller";
+import { Controller } from ".";
 
 export default class AdminCategory {
 

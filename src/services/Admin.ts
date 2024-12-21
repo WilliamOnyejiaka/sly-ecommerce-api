@@ -5,17 +5,17 @@ import { Admin as AdminRepo, AdminProfilePicture } from "../repos";
 import { CipherUtility, Password, processImage } from "../utils";
 import { env } from "../config";
 import { AdminDto } from "../types/dtos";
-import BaseService from "./BaseService";
-import UserService from "./UserService";
-import { CustomerCache } from "../cache";
+import BaseService from "./bases/BaseService";
+import UserService from "./bases/UserService";
+import { AdminCache, AdminKey } from "../cache";
 import BaseCache from "../cache/BaseCache";
-export default class Admin extends UserService<AdminRepo, CustomerCache> { // ! TODO: change cache to AdminCache
+export default class Admin extends UserService<AdminRepo, AdminCache> {
 
     private readonly roleService: Role = new Role();
     private readonly profilePicRepo: AdminProfilePicture = new AdminProfilePicture();
 
     public constructor() {
-        super(new AdminRepo(), new CustomerCache());
+        super(new AdminRepo(), new AdminCache());
     }
 
     public async defaultAdmin(roleId: number) {
@@ -58,42 +58,6 @@ export default class Admin extends UserService<AdminRepo, CustomerCache> { // ! 
         }
         return roleExistsResult;
     }
-
-    public async uploadProfilePicture(image: Express.Multer.File, adminId: number, baseUrl: string) {
-        const result = await processImage(image);
-
-        if (result.error) {
-            console.error(result.message);
-            return super.responseData(
-                500,
-                true,
-                http("500")!,
-            );
-        }
-
-        const mimeType = mime.lookup(image.path);
-        const repoResult = await this.profilePicRepo.insert({
-            mimeType: mimeType,
-            picture: result.data!,
-            adminId: adminId
-        });
-
-        const imageUrl = baseUrl + urls("baseImageUrl")! + urls("adminPic")!.split(":")[0] + adminId;
-
-        return repoResult ?
-            super.responseData(
-                201,
-                false,
-                constants('201ProfilePic')!,
-                { imageUrl: imageUrl }
-            ) :
-            super.responseData(
-                500,
-                true,
-                http("500")!,
-            );
-    }
-
 
     public async getAdminWithEmail(email: string) {
         const repoResult = await this.repo!.getUserProfileWithEmail(email);
@@ -160,15 +124,15 @@ export default class Admin extends UserService<AdminRepo, CustomerCache> { // ! 
     }
 
     public async generateAdminSignUpKey(roleId: number, adminName: string) {
-        const keyCache = new BaseCache("adminKey", 900);
-        const secretKey = 'your-secret-key';
-        const key = CipherUtility.encrypt(JSON.stringify({ roleId, adminName }),secretKey);
+        const keyCache = new AdminKey();
+        const secretKey: string = env('secretKey')!;
+        const key = CipherUtility.encrypt(JSON.stringify({ roleId, adminName }), secretKey);
 
-        const cached = await keyCache.set(key, "adminKey");
+        const cached = await keyCache.set(key);
         if (!cached) {
             return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
         }
-        return super.responseData(HttpStatus.OK, false, "Key has been generated successfully", { key});
+        return super.responseData(HttpStatus.OK, false, "Key has been generated successfully", { key });
     }
 
     public async deleteAdmin(adminId: number) {
@@ -212,23 +176,25 @@ export default class Admin extends UserService<AdminRepo, CustomerCache> { // ! 
     }
 
     public async assignRole(adminId: number, roleId: number) {
-        const repoResult = await this.repo!.assignRole(adminId, roleId);
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message!);
+        const roleExistsResult = await this.getRoleWithId(roleId);
+
+        if (roleExistsResult.json.error) {
+            return roleExistsResult;
         }
 
+        const repoResult = await this.repo!.assignRole(adminId, roleId);
+        const error = super.handleRepoError(repoResult);
+        if (error) return error;
         return super.responseData(200, false, "Role was assigned successfully");
     }
 
     public async assignPermission(adminId: number, permissionId: number) {
         const repoResult = await this.repo!.assignRole(adminId, permissionId);
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message!);
-        }
+        const error = super.handleRepoError(repoResult);
+        if (error) return error;
 
         return super.responseData(200, false, "Permission was assigned successfully");
     }
-
 
     public async getRoleWithId(roleId: number) {
         return await this.roleService.getRoleWithId(roleId);

@@ -1,4 +1,4 @@
-import BaseService from "./BaseService";
+import BaseService from "./bases/BaseService";
 import Repo from "../repos/Repo";
 import { http } from "../constants";
 import jsonRoles from "./../seeds/roles.json";

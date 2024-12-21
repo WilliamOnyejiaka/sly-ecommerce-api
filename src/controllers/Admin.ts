@@ -1,129 +1,118 @@
 import { Request, Response } from "express";
-import { Admin as AdminService } from "../services";
+import { Admin as AdminService, ImageService } from "../services";
 import { emailValidator, numberValidator, phoneNumberValidator } from "../validators";
 import { baseUrl } from "../utils";
 import { AdminDto } from "../types/dtos";
 import constants from "../constants";
+import { AdminProfilePicture } from "../repos";
+import { Controller } from ".";
+import { validationResult } from "express-validator";
 
 export default class Admin {
 
     private static readonly service: AdminService = new AdminService();
+    public static readonly imageService: ImageService = new ImageService();
 
     public static async defaultAdmin(req: Request, res: Response) {
-        const idResult = numberValidator(req.params.roleId);
+        const validationErrors = validationResult(req);
 
-        if (idResult.error) {
-            res.status(400).json({
-                error: true,
-                message: "Id must be an integer",
-                data: {}
-            });
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
             return;
         }
-        const serviceResult = await Admin.service.defaultAdmin(idResult.number);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const roleId = Number(req.params.roleId);
+        const serviceResult = await Admin.service.defaultAdmin(roleId);
+        Controller.response(res, serviceResult);
     }
-
 
     public static async uploadProfilePicture(req: Request, res: Response) {
         const image = req.file!;
-        const vendorId = Number(res.locals.data.id);
-        const baseServerUrl = baseUrl(req);
-        const serviceResult = await Admin.service.uploadProfilePicture(image, vendorId, baseServerUrl);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const adminId = Number(res.locals.data.id);
+
+        const serviceResult = await Admin.imageService.uploadImage<AdminProfilePicture>(
+            image,
+            adminId,
+            new AdminProfilePicture(),
+            'adminProfilePic'
+        );
+        Controller.response(res, serviceResult);
     }
 
     public static async getAdmin(req: Request, res: Response) {
         const adminEmail = res.locals.data.email;
         const serviceResult = await Admin.service.getAdminWithEmail(adminEmail);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        Controller.response(res, serviceResult);
     }
 
     public static async getAdminAndRole(req: Request, res: Response) {
         const id = Number(res.locals.data.id);
         const serviceResult = await Admin.service.getAdminAndRole(id);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        Controller.response(res, serviceResult);
     }
 
     public static async createAdmin(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
         const createData: AdminDto = req.body;
-
-        const phoneNumberIsValid = phoneNumberValidator(createData.phoneNumber!);
-
-        if (phoneNumberIsValid !== null) {
-            res.status(400).json({
-                error: true,
-                message: phoneNumberIsValid
-            });
-            return;
-        }
-
-        if (!emailValidator(createData.email)) {
-            res.status(400).json({
-                error: true,
-                message: constants('400Email')!
-            });
-            return;
-        }
-
-        const emailExistsResult = await Admin.service.emailExists(createData.email);
-        if (emailExistsResult.json.error) {
-            res.status(emailExistsResult.statusCode).json(emailExistsResult.json);
-            return;
-        }
         const adminName = res.locals.data.firstName + " " + res.locals.data.lastName; // ! TODO: get from cache
         const serviceResult = await Admin.service.createAdmin(createData, adminName);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        Controller.response(res, serviceResult);
     }
 
     public static async generateSignUpKey(req: Request, res: Response) {
         const id = Number(res.locals.data.id);
-        const adminName = res.locals.data.firstName + " " + res.locals.data.lastName;
-
-        const idResult = numberValidator(req.params.roleId);
-        if (idResult.error) {
-            res.status(400).json({
-                error: true,
-                message: "Id must be an integer"
-            });
+        const adminName = res.locals.data.firstName + " " + res.locals.data.lastName; // TODO: change createdBy to parent admin - INT
+        const validationErrors = validationResult(req);
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
             return;
         }
-        // res.status(400).json({
-        //     error: true,
-        //     message: "Id must be an integer"
-        // });
-        const serviceResult = await Admin.service.generateAdminSignUpKey(idResult.number,adminName);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const roleId = Number(req.params.roleId);
+        const serviceResult = await Admin.service.generateAdminSignUpKey(roleId, adminName);
+        Controller.response(res, serviceResult);
     }
 
     public static async deleteAdmin(req: Request, res: Response) {
-        const idResult = numberValidator(req.params.adminId);
+        const validationErrors = validationResult(req);
 
-        if (idResult.error) {
-            res.status(400).json({
-                error: true,
-                message: "Id must be an integer"
-            });
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
             return;
         }
 
-        const serviceResult = await Admin.service.deleteAdmin(idResult.number);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const adminId = Number(req.params.adminId);
+        const serviceResult = await Admin.service.deleteAdmin(adminId);
+        Controller.response(res, serviceResult);
+    }
+
+    public static async deleteSelf(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+
+        const adminId = Number(res.locals.id);
+        const serviceResult = await Admin.service.deleteAdmin(adminId);
+        Controller.response(res, serviceResult);
     }
 
     public static toggleActivate(activate: boolean = true) {
         return async (req: Request, res: Response) => {
-            const idResult = numberValidator(req.body.adminId);
 
-            if (idResult.error) {
-                res.status(400).json({
-                    error: true,
-                    message: "Admin id must be an integer"
-                });
+            const validationErrors = validationResult(req);
+            if (!validationErrors.isEmpty()) {
+                Controller.handleValidationErrors(res, validationErrors);
                 return;
             }
 
-            const serviceResult = activate ? await Admin.service.activateAdmin(idResult.number) : await Admin.service.deactivateAdmin(idResult.number);
+            const adminId = Number(req.body.adminId);
+
+            const serviceResult = activate ? await Admin.service.activateAdmin(adminId) : await Admin.service.deactivateAdmin(adminId);
             res.status(serviceResult.statusCode).json(serviceResult.json);
         }
     }
@@ -137,32 +126,16 @@ export default class Admin {
     }
 
     public static async assignRole(req: Request, res: Response) {
-        const idResult = numberValidator(req.body.adminId);
-
-        if (idResult.error) {
-            res.status(400).json({
-                error: true,
-                message: "Admin id must be an integer"
-            });
+        const validationErrors = validationResult(req);
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
             return;
         }
 
-        const roleIdResult = numberValidator(req.body.roleId);
+        const roleId = Number(req.body.roleId);
+        const adminId = Number(req.body.adminId);
 
-        if (roleIdResult.error) {
-            res.status(400).json({
-                error: true,
-                message: "Role id must be an integer"
-            });
-            return;
-        }
-        const roleExistsResult = await Admin.service.getRoleWithId(roleIdResult.number);
-        if (roleExistsResult.json.error) {
-            res.status(roleExistsResult.statusCode).json(roleExistsResult.json);
-            return;
-        }
-
-        const serviceResult = await Admin.service.assignRole(idResult.number, roleIdResult.number);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const serviceResult = await Admin.service.assignRole(adminId, roleId);
+        Controller.response(res, serviceResult);
     }
 }

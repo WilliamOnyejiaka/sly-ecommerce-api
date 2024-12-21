@@ -1,20 +1,20 @@
-import { OTP, Token } from ".";
+import { OTP, Token, Admin as AdminService } from ".";
 import { Admin, Vendor, Customer } from "../repos";
-import { CipherUtility, Password } from "../utils";
-import { env } from "../config";
+import { CipherUtility, parseJson, Password } from "../utils";
+import { env, logger } from "../config";
 import VendorDto, { AdminDto, CustomerAddressDto, CustomerDto } from "../types/dtos";
 import constants, { http, HttpStatus } from "../constants";
-import { AdminCache, CustomerCache, TokenBlackList, VendorCache } from "../cache";
-import BaseService from "./BaseService";
+import { AdminCache, AdminKey, CustomerCache, TokenBlackList, VendorCache } from "../cache";
+import BaseService from "./bases/BaseService";
 import UserRepo from "../repos/UserRepo";
 import BaseCache from "../cache/BaseCache";
-import { Admin as AdminService } from ".";
 
 
 export default class Authentication extends BaseService {
 
     private readonly storedSalt: string = env("storedSalt")!;
     private readonly tokenSecret: string = env('tokenSecret')!;
+    private readonly secretKey: string = env('secretKey')!;
     private readonly vendorRepo: Vendor = new Vendor();
     private readonly vendorCache: VendorCache = new VendorCache();
     private readonly customerCache: CustomerCache = new CustomerCache();
@@ -231,16 +231,6 @@ export default class Authentication extends BaseService {
             super.responseData(500, true, http('500')!);
     }
 
-    private isValidAdminFormat(decodedJson: any) {
-
-        return (
-            typeof decodedJson === 'object' &&
-            decodedJson !== null &&
-            'roleId' in decodedJson &&
-            'adminName' in decodedJson
-        );
-    }
-
     public async adminSignUp(signUpData: {
         firstName: string,
         lastName: string,
@@ -250,25 +240,33 @@ export default class Authentication extends BaseService {
         key?: string,
         roleId?: number
     }) {
-        
-        const secretKey = 'your-secret-key';
-        const decryptResult = CipherUtility.decrypt(signUpData.key!, secretKey);
+        const keyCache = new AdminKey();
+        const cacheResult = await keyCache.get(signUpData.key!);
+
+        if (cacheResult.error) {
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        if (!cacheResult.data) {
+            return super.responseData(HttpStatus.NOT_FOUND, true, "Key not found");
+        }
+
+        const decryptResult = CipherUtility.decrypt(signUpData.key!, this.secretKey);
         if (decryptResult.error) {
             return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
         }
 
-        try {
-            const keyDetails = JSON.parse(decryptResult.originalText!);            
-            delete signUpData.key;
-            signUpData.roleId = keyDetails.roleId;
-
-            const serviceResult = await (new AdminService()).createAdmin(signUpData as any, keyDetails.adminName);
-            return serviceResult;
-            // return super.responseData(200, false, "User has been logged out successfully", { keyDetails });
-        } catch (error: any) {
-            console.log(error.message);
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, "Invalid key");
+        const decodedJson = parseJson(decryptResult.originalText!);
+        if (decodedJson.error) {
+            return super.responseData(HttpStatus.BAD_REQUEST, true, decodedJson.message);
         }
+
+        const keyDetails = decodedJson.data;
+        delete signUpData.key;
+        signUpData.roleId = keyDetails.roleId;
+
+        const serviceResult = await (new AdminService()).createAdmin(signUpData as any, keyDetails.adminName);
+        return serviceResult;
     }
 
     // public async getToken(user: any,types: string[]){

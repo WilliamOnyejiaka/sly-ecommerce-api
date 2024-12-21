@@ -2,7 +2,7 @@ import { randomInt } from "../utils";
 import { Email } from ".";
 import { OTPCache } from "../cache";
 import constants, { http } from "../constants";
-import BaseService from "./BaseService";
+import BaseService from "./bases/BaseService";
 
 
 // TODO: Refractor this Service

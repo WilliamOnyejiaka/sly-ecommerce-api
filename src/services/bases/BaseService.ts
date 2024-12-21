@@ -1,6 +1,6 @@
-import constants from "../constants";
-import Repo from "../repos/Repo";
-import { getPagination } from "../utils";
+import constants from "../../constants";
+import Repo from "../../repos/Repo";
+import { getPagination } from "../../utils";
 
 export default class BaseService<T extends Repo = Repo> {
 

@@ -2,7 +2,7 @@ import { Admin } from ".";
 import constants, { http } from "../constants";
 import { Role as RoleRepo } from "../repos";
 import { RoleDto } from "../types/dtos";
-import BaseService from "./BaseService";
+import BaseService from "./bases/BaseService";
 
 export default class Role extends BaseService<RoleRepo> {
 
