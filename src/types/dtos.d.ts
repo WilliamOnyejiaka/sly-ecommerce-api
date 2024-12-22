@@ -10,7 +10,7 @@ export interface AdminDto {
     createdAt?: any,
     updatedAt?: any,
     role?: any[],
-    createdBy: string,
+    createdBy: number,
     directPermissions?: any[],
     active?: boolean
 }

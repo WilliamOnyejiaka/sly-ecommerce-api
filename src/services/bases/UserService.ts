@@ -1,14 +1,17 @@
 import BaseCache from "../../cache/BaseCache";
 import constants, { http, HttpStatus } from "../../constants";
+import ImageRepo from "../../repos/ImageRepo";
 import UserRepo from "../../repos/UserRepo";
 import { getPagination } from "../../utils";
+import ImageService from "../Image";
 import BaseService from "./BaseService";
 
-export default class UserService<T extends UserRepo, U extends BaseCache> extends BaseService<T> {
+export default class UserService<T extends UserRepo, U extends BaseCache, V extends ImageRepo> extends BaseService<T> {
 
     protected readonly cache: U;
+    protected readonly imageService: ImageService = new ImageService();
 
-    public constructor(repo: T, cache: U) {
+    public constructor(repo: T, cache: U, protected readonly profilePicRepo: V, protected readonly imageFolderName: string) {
         super(repo);
         this.cache = cache;
     }
@@ -33,8 +36,8 @@ export default class UserService<T extends UserRepo, U extends BaseCache> extend
         return this.responseData(statusCode, error, error ? constants("service400Email")! : null);
     }
 
-    public async getUserProfileWithId(vendorId: number) {
-        const repoResult = await this.repo!.getUserProfileWithId(vendorId);
+    public async getUserProfileWithId(userId: number) {
+        const repoResult = await this.repo!.getUserProfileWithId(userId);
 
         const errorResponse = super.handleRepoError(repoResult);
         if (errorResponse) return errorResponse;
@@ -96,5 +99,56 @@ export default class UserService<T extends UserRepo, U extends BaseCache> extend
         });
     }
 
+    public async uploadProfilePicture(image: Express.Multer.File, userId: number) {
+        const repoResult = await this.repo!.getUserProfileWithId(userId);
+        const repoResultError = this.handleRepoError(repoResult);
+        if (repoResultError) {
+            if (!(await this.imageService.deleteFiles([image]))) return repoResultError;
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        const userProfile = repoResult.data;
+        const hasProfilePic = userProfile[this.repo!.imageRelation].length > 0;
+        if (hasProfilePic) {
+            if (!(await this.imageService.deleteFiles([image]))) return super.responseData(400, true, "This user already has a profile picture");
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        const serviceResult = await this.imageService.uploadImage<V>(
+            image,
+            userId,
+            this.profilePicRepo,
+            this.imageFolderName
+        );
+        return serviceResult;
+    }
+
+    public async deleteUser(userId: number) {
+        const profileRepoResult = await this.repo!.getUserProfileWithId(userId);
+        const profileRepoResultError = super.handleRepoError(profileRepoResult);
+        if (profileRepoResultError) return profileRepoResultError;
+
+        const userProfile = profileRepoResult.data;
+        if (!userProfile) return super.responseData(404, true, "User was not found");
+
+        const profilePictureDetails = userProfile[this.repo!.imageRelation].length > 0 ? userProfile[this.repo!.imageRelation][0] : null;
+
+        if (profilePictureDetails) {
+            const cloudinaryResult = await this.imageService.deleteCloudinaryImage(profilePictureDetails.publicId);
+            if (cloudinaryResult.statusCode >= 500) {
+                return cloudinaryResult;
+            }
+        }
+
+        const repoResult = await this.repo!.deleteWithId(userId);
+        const repoResultError = super.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+
+        const deleted = await this.cache.delete(String(userId));
+
+        return deleted ?
+            super.responseData(200, false, "User was deleted successfully") :
+            super.responseData(500, true, http('500')!);
+    }
 
 }

@@ -8,12 +8,17 @@ const customer: Router = Router();
 customer.post(
     "/upload-profile-pic",
     uploads.single("image"),
-    asyncHandler(Customer.uploadProfilePic)
+    asyncHandler(Customer.uploadProfilePicture)
 );
 
 customer.get(
     "/",
     asyncHandler(Customer.getCustomerAll)
+);
+
+customer.delete(
+    "/",
+    asyncHandler(Customer.delete)
 );
 
 export default customer;

@@ -15,21 +15,6 @@ export default class Store {
         const images = req.files!;
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
-
-        // const storeExists = await Store.service.storeExists(storeDetailsDto.vendorId);
-        // if (storeExists.json.error) {
-        //     await Store.imageService.deleteFiles(images as Express.Multer.File[]);
-        //     res.status(storeExists.statusCode).json(storeExists.json);
-        //     return;
-        // }
-
-        // const nameExists = await Store.service.storeNameExists(storeDetailsDto.name);
-        // if (nameExists.json.error) {
-        //     await Store.imageService.deleteFiles(images as Express.Multer.File[]);
-        //     res.status(nameExists.statusCode).json(nameExists.json);
-        //     return;
-        // }
-
         const serviceResult = await Store.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[]);
         Controller.response(res, serviceResult);
     }
@@ -63,27 +48,37 @@ export default class Store {
         Controller.response(res, serviceResult);
     }
 
-    public static async uploadFirstBanner(req: Request, res: Response) {
-        const validationErrors = validationResult(req);
-        const image = req.file!;
+    private static uploadABanner(isFirstBanner: boolean = true) {
+        return async (req: Request, res: Response) => {
+            const validationErrors = validationResult(req);
+            const image = req.file!;
 
 
-        if (!validationErrors.isEmpty()) {
-            if (!(await Store.imageService.deleteFiles([image]))) {
-                Controller.handleValidationErrors(res, validationErrors);
+            if (!validationErrors.isEmpty()) {
+                if (!(await Store.imageService.deleteFiles([image]))) {
+                    Controller.handleValidationErrors(res, validationErrors);
+                    return;
+                }
+                res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                    error: true,
+                    message: http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!,
+                    data: {}
+                });
                 return;
             }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                error: true,
-                message: http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!,
-                data: {}
-            });
-            return;
-        }
 
-        const storeId = Number(req.params.storeId);
-        const serviceResult = await Store.service.uploadFirstBanner(image, storeId);
-        Controller.response(res, serviceResult);
+            const storeId = Number(req.params.storeId);
+            const serviceResult = isFirstBanner ? await Store.service.uploadFirstBanner(image, storeId) : await Store.service.uploadSecondBanner(image, storeId);
+            Controller.response(res, serviceResult);
+        }
+    }
+
+    public static uploadFirstBanner() {
+        return Store.uploadABanner();
+    }
+
+    public static uploadSecondBanner() {
+        return Store.uploadABanner(false);
     }
 
     public static async uploadBanners(req: Request, res: Response) {

@@ -20,8 +20,10 @@ export default class UserRepo extends Repo {
             include: {
                 [this.imageRelation]: {
                     select: {
-                        imageUrl: true
-                    }
+                        imageUrl: true,
+                        publicId: true,
+                        mimeType: true
+                    },
                 }
             }
         });

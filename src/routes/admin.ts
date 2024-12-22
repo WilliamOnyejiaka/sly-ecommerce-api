@@ -81,7 +81,7 @@ admin.get(
 
 admin.delete(
     "/",
-    asyncHandler(Admin.deleteSelf)
+    asyncHandler(Admin.delete)
 );
 
 

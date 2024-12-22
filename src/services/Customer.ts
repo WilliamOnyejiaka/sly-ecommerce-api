@@ -1,12 +1,12 @@
 import constants, { http, urls } from "../constants";
-import { Customer as CustomerRepo } from "../repos";
+import { CustomerProfilePic, Customer as CustomerRepo } from "../repos";
 import { CustomerCache } from "../cache";
 import UserService from "./bases/UserService";
 
-export default class Customer extends UserService<CustomerRepo, CustomerCache> {
+export default class Customer extends UserService<CustomerRepo, CustomerCache, CustomerProfilePic> {
 
     public constructor() {
-        super(new CustomerRepo(), new CustomerCache());
+        super(new CustomerRepo(), new CustomerCache(), new CustomerProfilePic(), 'customerProfilePic');
     }
 
     private async toggleActiveStatus(id: number, activate: boolean = true) {
@@ -14,7 +14,7 @@ export default class Customer extends UserService<CustomerRepo, CustomerCache> {
         if (repoResult.error) {
             return super.responseData(repoResult.type, true, repoResult.message!);
         }
-        //Cache here
+        // ! TODO: Cache here
         const message = activate ? "Customer was activated successfully" : "Customer was deactivated successfully";
         return super.responseData(200, false, message, repoResult.data);
     }

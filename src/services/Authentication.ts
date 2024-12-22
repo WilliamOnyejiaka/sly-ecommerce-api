@@ -265,7 +265,7 @@ export default class Authentication extends BaseService {
         delete signUpData.key;
         signUpData.roleId = keyDetails.roleId;
 
-        const serviceResult = await (new AdminService()).createAdmin(signUpData as any, keyDetails.adminName);
+        const serviceResult = await (new AdminService()).createAdmin(signUpData as any, keyDetails.createdBy);
         return serviceResult;
     }
 

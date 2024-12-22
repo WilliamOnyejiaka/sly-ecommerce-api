@@ -1,21 +1,17 @@
-import mime from "mime";
 import { Role } from ".";
-import constants, { http, HttpStatus, urls } from "../constants";
+import constants, { http, HttpStatus } from "../constants";
 import { Admin as AdminRepo, AdminProfilePicture } from "../repos";
-import { CipherUtility, Password, processImage } from "../utils";
+import { CipherUtility, Password } from "../utils";
 import { env } from "../config";
 import { AdminDto } from "../types/dtos";
-import BaseService from "./bases/BaseService";
 import UserService from "./bases/UserService";
 import { AdminCache, AdminKey } from "../cache";
-import BaseCache from "../cache/BaseCache";
-export default class Admin extends UserService<AdminRepo, AdminCache> {
+export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfilePicture> {
 
     private readonly roleService: Role = new Role();
-    private readonly profilePicRepo: AdminProfilePicture = new AdminProfilePicture();
 
     public constructor() {
-        super(new AdminRepo(), new AdminCache());
+        super(new AdminRepo(), new AdminCache(), new AdminProfilePicture(), 'adminProfilePic');
     }
 
     public async defaultAdmin(roleId: number) {
@@ -38,7 +34,6 @@ export default class Admin extends UserService<AdminRepo, AdminCache> {
                 lastName: "Admin",
                 email: email,
                 roleId: roleId,
-                createdBy: "self",
                 active: true,
                 password: env('defaultAdminPassword')!
             }
@@ -95,7 +90,7 @@ export default class Admin extends UserService<AdminRepo, AdminCache> {
         return super.responseData(statusCode, error, message, admin);
     }
 
-    public async createAdmin(createData: AdminDto, adminName: string) {
+    public async createAdmin(createData: AdminDto, createdBy: number) {
         const roleExistsResult = await this.roleService.getRoleWithId(createData.roleId);
 
         if (roleExistsResult.json.error) {
@@ -105,7 +100,7 @@ export default class Admin extends UserService<AdminRepo, AdminCache> {
         if (roleExistsResult.json.data) {
             const passwordHash = Password.hashPassword(createData.password!, env("storedSalt")!);
             createData.password = passwordHash;
-            createData.createdBy = adminName;
+            createData.createdBy = createdBy;
 
             const repoResult = await this.repo!.insert(createData);
             const error: boolean = repoResult.error
@@ -123,10 +118,10 @@ export default class Admin extends UserService<AdminRepo, AdminCache> {
         return roleExistsResult;
     }
 
-    public async generateAdminSignUpKey(roleId: number, adminName: string) {
+    public async generateAdminSignUpKey(roleId: number, createdBy: number) {
         const keyCache = new AdminKey();
         const secretKey: string = env('secretKey')!;
-        const key = CipherUtility.encrypt(JSON.stringify({ roleId, adminName }), secretKey);
+        const key = CipherUtility.encrypt(JSON.stringify({ roleId, createdBy }), secretKey);
 
         const cached = await keyCache.set(key);
         if (!cached) {
@@ -135,14 +130,14 @@ export default class Admin extends UserService<AdminRepo, AdminCache> {
         return super.responseData(HttpStatus.OK, false, "Key has been generated successfully", { key });
     }
 
-    public async deleteAdmin(adminId: number) {
-        const repoResult = await this.repo!.deleteAdmin(adminId);
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message!);
-        }
+    // public async deleteAdmin(adminId: number) {
+    //     const repoResult = await this.repo!.deleteAdmin(adminId);
+    //     if (repoResult.error) {
+    //         return super.responseData(repoResult.type, true, repoResult.message!);
+    //     }
 
-        return super.responseData(200, repoResult.error, "Admin was deleted successfully");
-    }
+    //     return super.responseData(200, repoResult.error, "Admin was deleted successfully");
+    // }
 
     private async toggleActiveStatus(id: number, activate: boolean = true) {
         const repoResult = activate ? await this.repo!.updateActiveStatus(id, true) : await this.repo!.updateActiveStatus(id, false);

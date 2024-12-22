@@ -1,17 +1,12 @@
 import { Request, Response } from "express";
-import { Admin as AdminService, ImageService } from "../services";
-import { emailValidator, numberValidator, phoneNumberValidator } from "../validators";
-import { baseUrl } from "../utils";
+import { Admin as AdminService } from "../services";
 import { AdminDto } from "../types/dtos";
-import constants from "../constants";
-import { AdminProfilePicture } from "../repos";
 import { Controller } from ".";
 import { validationResult } from "express-validator";
 
 export default class Admin {
 
     private static readonly service: AdminService = new AdminService();
-    public static readonly imageService: ImageService = new ImageService();
 
     public static async defaultAdmin(req: Request, res: Response) {
         const validationErrors = validationResult(req);
@@ -28,13 +23,7 @@ export default class Admin {
     public static async uploadProfilePicture(req: Request, res: Response) {
         const image = req.file!;
         const adminId = Number(res.locals.data.id);
-
-        const serviceResult = await Admin.imageService.uploadImage<AdminProfilePicture>(
-            image,
-            adminId,
-            new AdminProfilePicture(),
-            'adminProfilePic'
-        );
+        const serviceResult = await Admin.service.uploadProfilePicture(image, adminId);
         Controller.response(res, serviceResult);
     }
 
@@ -57,21 +46,26 @@ export default class Admin {
             return;
         }
         const createData: AdminDto = req.body;
-        const adminName = res.locals.data.firstName + " " + res.locals.data.lastName; // ! TODO: get from cache
-        const serviceResult = await Admin.service.createAdmin(createData, adminName);
+        const createdBy = Number(res.locals.data.id); // ! TODO: get from cache
+        const serviceResult = await Admin.service.createAdmin(createData, createdBy);
         Controller.response(res, serviceResult);
     }
 
     public static async generateSignUpKey(req: Request, res: Response) {
-        const id = Number(res.locals.data.id);
-        const adminName = res.locals.data.firstName + " " + res.locals.data.lastName; // TODO: change createdBy to parent admin - INT
+        const createdBy = Number(res.locals.data.id);
         const validationErrors = validationResult(req);
         if (!validationErrors.isEmpty()) {
             Controller.handleValidationErrors(res, validationErrors);
             return;
         }
         const roleId = Number(req.params.roleId);
-        const serviceResult = await Admin.service.generateAdminSignUpKey(roleId, adminName);
+        const serviceResult = await Admin.service.generateAdminSignUpKey(roleId, createdBy);
+        Controller.response(res, serviceResult);
+    }
+
+    public static async delete(req: Request, res: Response) {
+        const adminId = Number(req.params.adminId);
+        const serviceResult = await Admin.service.deleteUser(adminId);
         Controller.response(res, serviceResult);
     }
 
@@ -82,23 +76,19 @@ export default class Admin {
             Controller.handleValidationErrors(res, validationErrors);
             return;
         }
+        await Admin.delete(req, res); // TODO: test these routes
 
-        const adminId = Number(req.params.adminId);
-        const serviceResult = await Admin.service.deleteAdmin(adminId);
-        Controller.response(res, serviceResult);
+        //     const adminId = Number(req.params.adminId);
+        //     const serviceResult = await Admin.service.deleteUser(adminId);
+        //     Controller.response(res, serviceResult);
     }
 
     public static async deleteSelf(req: Request, res: Response) {
-        const validationErrors = validationResult(req);
+        // const adminId = Number(res.locals.id);
+        // const serviceResult = await Admin.service.deleteUser(adminId);
+        // Controller.response(res, serviceResult);
+        await Admin.delete(req, res); // TODO: test these routes
 
-        if (!validationErrors.isEmpty()) {
-            Controller.handleValidationErrors(res, validationErrors);
-            return;
-        }
-
-        const adminId = Number(res.locals.id);
-        const serviceResult = await Admin.service.deleteAdmin(adminId);
-        Controller.response(res, serviceResult);
     }
 
     public static toggleActivate(activate: boolean = true) {

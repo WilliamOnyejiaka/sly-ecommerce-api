@@ -55,7 +55,7 @@ export default class Repo implements Repository {
         }
     }
 
-    protected async getItem(where: any,others: any = {}) {
+    protected async getItem(where: any, others: any = {}) {
         try {
             const item = await (prisma[this.tblName] as any).findFirst({
                 where: where,
@@ -69,17 +69,29 @@ export default class Repo implements Repository {
 
     public async delete(where: any) {
         try {
-            await (prisma[this.tblName] as any).delete({
+            const deletedData = await (prisma[this.tblName] as any).delete({
                 where: where,
             });
-            return this.repoResponse(false, 200);
+            return this.repoResponse(false, 200, null, deletedData);
         } catch (error: any) {
             return this.handleDatabaseError(error);
         }
     }
 
+    // public async undoDelete(where: any) { // TODO: handle this later
+    //     try {
+    //         const restoredData = await (prisma[this.tblName] as any).update({
+    //             where: where,
+    //             data: { deleted: false },
+    //         });
+    //         return this.repoResponse(false, 200, null, restoredData);
+    //     } catch (error: any) {
+    //         return this.handleDatabaseError(error);
+    //     }
+    // }
+
     public async deleteWithId(id: number) {
-        return this.delete({ id: id });
+        return await this.delete({ id: id });
     }
 
     protected async update(where: any, data: any) {

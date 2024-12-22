@@ -46,7 +46,16 @@ store.post(
     [
         paramNumberIsValid('storeId')
     ],
-    asyncHandler(Store.uploadFirstBanner)
+    asyncHandler(Store.uploadFirstBanner())
+);
+
+store.post(
+    "/upload-second-banner/:storeId",
+    uploads.single("image"),
+    [
+        paramNumberIsValid('storeId')
+    ],
+    asyncHandler(Store.uploadSecondBanner())
 );
 
 store.post(

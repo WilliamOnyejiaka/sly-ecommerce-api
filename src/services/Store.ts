@@ -7,10 +7,7 @@ import ImageService from "./Image";
 
 export default class Store extends BaseService<StoreDetails> {
 
-    private readonly secondBannerRepo: SecondBanner = new SecondBanner();
-    private readonly firstBannerRepo: FirstBanner = new FirstBanner();
     private readonly imageService: ImageService = new ImageService();
-
 
     public constructor() {
         super(new StoreDetails());
@@ -205,6 +202,25 @@ export default class Store extends BaseService<StoreDetails> {
             storeId,
             new FirstBanner(),
             'firstStoreBanner'
+        );
+    }
+
+    public async uploadSecondBanner(image: Express.Multer.File, storeId: number) {
+        const checkStoreImages = await this.checkStoreImages(storeId);
+        if (checkStoreImages.json.error) {
+            if (!(await this.imageService.deleteFiles([image]))) return checkStoreImages;
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+        if (checkStoreImages.json.data.hasSecondBanner) {
+            if (!(await this.imageService.deleteFiles([image]))) return super.responseData(400, true, "A banner already exists");
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        return await this.imageService.uploadImage<SecondBanner>(
+            image,
+            storeId,
+            new SecondBanner(),
+            'secondStoreBanner'
         );
     }
 

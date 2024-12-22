@@ -1,14 +1,12 @@
-import BaseService from "./bases/BaseService";
-import constants, { http, urls } from "../constants";
+import constants, { http, HttpStatus, urls } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
-import { getPagination } from "../utils";
 import { VendorCache } from "../cache";
 import UserService from "./bases/UserService";
 
-export default class Vendor extends UserService<VendorRepo, VendorCache> {
+export default class Vendor extends UserService<VendorRepo, VendorCache, VendorProfilePicture> {
 
     public constructor() {
-        super(new VendorRepo(), new VendorCache());
+        super(new VendorRepo(), new VendorCache(), new VendorProfilePicture(), 'vendorProfilePic');
     }
 
     public async updateFirstName(id: number, firstName: string) {

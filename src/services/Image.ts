@@ -12,6 +12,9 @@ const bytesToMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2); // Conv
 
 export default class ImageService extends BaseService {
 
+    private readonly cloudinary = new Cloudinary();
+
+
     public constructor() {
         super();
     }
@@ -55,8 +58,7 @@ export default class ImageService extends BaseService {
             return super.responseData(500, true, http('500')!);
         }
 
-        const cloudinary = new Cloudinary();
-        const uploadResult = await cloudinary.uploadImage(result.outputPath!, imageFolder);
+        const uploadResult = await this.cloudinary.uploadImage(result.outputPath!, imageFolder);
         const deletedCompressedImage = await this.deleteFiles([result.outputPath!]);
         if (deletedCompressedImage) {
             return super.responseData(500, true, http('500')!);
@@ -167,6 +169,10 @@ export default class ImageService extends BaseService {
                 { imageUrl: uploadResult.json.data.url }
             ) :
             super.responseData(repoResult.type, true, repoResult.message as string);
+    }
+
+    public async deleteCloudinaryImage(publicID: string) {
+        return await this.cloudinary.delete(publicID);
     }
 
 }

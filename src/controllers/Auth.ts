@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { Authentication } from "./../services";
-import VendorDto, { AdminDto, CustomerAddressDto, CustomerDto } from "./../types/dtos";
-import constants from "../constants";
+import VendorDto, { CustomerAddressDto } from "./../types/dtos";
 import { validationResult } from "express-validator";
 import { Controller } from ".";
 
