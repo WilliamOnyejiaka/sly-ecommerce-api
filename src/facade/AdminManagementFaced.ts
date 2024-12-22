@@ -10,17 +10,17 @@ export default class AdminManagementFacade {
     public constructor() {
     }
 
-    public async createAdmin(createData: AdminDto, adminName: string){
-        return await this.adminService.createAdmin(createData,adminName);
+    public async createAdmin(createData: AdminDto, adminId: number) {
+        return await this.adminService.createAdmin(createData, adminId);
     }
 
-    public async createRole(roleData: RoleDto){
+    public async createRole(roleData: RoleDto) {
         return await this.roleService.createRole(roleData);
     }
 
-    public async createPermission(permissionData: PermissionDto){
+    public async createPermission(permissionData: PermissionDto) {
         return await this.permissionService.createPermission(permissionData);
     }
 
-    
+
 }

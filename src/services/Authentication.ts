@@ -160,7 +160,7 @@ export default class Authentication extends BaseService {
 
         if (vendor) {
             const vendorName = (vendor as VendorDto).firstName + " " + (vendor as VendorDto).lastName;
-            const otpService = new OTP((vendor as VendorDto).email, { name: vendorName });
+            const otpService = new OTP((vendor as VendorDto).email, "vendor", { name: vendorName });
             const otpServiceResult = await otpService.send();
             return super.responseData(otpServiceResult.statusCode, otpServiceResult.json.error, otpServiceResult.json.message);
         }
@@ -170,7 +170,7 @@ export default class Authentication extends BaseService {
 
 
     public async vendorEmailVerification(vendorEmail: string, otpCode: string) {
-        const otp = new OTP(vendorEmail);
+        const otp = new OTP(vendorEmail, "vendor");
         const otpServiceResult = await otp.confirmOTP(otpCode);
 
         if (otpServiceResult.json.error) {

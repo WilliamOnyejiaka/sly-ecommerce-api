@@ -13,6 +13,9 @@ import AdminPermission from "./AdminPermission";
 import Category from "./Category";
 import Customer from "./Customer";
 import Cloudinary from "./Cloudinary";
+import UserRegistration from "./UserRegistration";
+import Auth from "./Auth";
+import UserOTP from "./UserOTP";
 
 export {
     Token,
@@ -29,5 +32,8 @@ export {
     AdminPermission,
     Category,
     Customer,
-    Cloudinary
+    Cloudinary,
+    UserRegistration,
+    Auth,
+    UserOTP
 };

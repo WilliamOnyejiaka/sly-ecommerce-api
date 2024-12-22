@@ -33,8 +33,4 @@ export default class Vendor extends UserRepo {
     public async updateEmail(id: number, email: string) {
         return await this.updateVendor(id, { email: email, verified: false });
     }
-
-    public async updateVerifiedStatus(email: string) {
-        return await super.update({ email: email }, { verified: true });
-    }
 }

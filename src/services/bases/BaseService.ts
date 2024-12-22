@@ -10,7 +10,7 @@ export default class BaseService<T extends Repo = Repo> {
         this.repo = repo;
     }
 
-    protected responseData(statusCode: number, error: boolean, message: string | null, data: any = {}) {
+    public responseData(statusCode: number, error: boolean, message: string | null, data: any = {}) {
         return {
             statusCode: statusCode,
             json: {
