@@ -40,7 +40,25 @@ export default class StoreDetails extends Repo {
     }
 
     public async getStoreWithVendorId(vendorId: number) {
-        return await super.getItem({ vendorId: vendorId });
+        return await super.getItem({ vendorId: vendorId }, {
+            include: {
+                storeLogo: {
+                    select: {
+                        imageUrl: true
+                    }
+                },
+                firstStoreBanner: {
+                    select: {
+                        imageUrl: true
+                    }
+                },
+                secondStoreBanner: {
+                    select: {
+                        imageUrl: true
+                    }
+                }
+            }
+        });
     }
 
     public async sd(vendorId: number, filter?: any) {
@@ -160,10 +178,10 @@ export default class StoreDetails extends Repo {
         }
     }
 
-    public async insertBanners(storeId: number,firstBanner?: any,secondBanner?: any){
-        try{
+    public async insertBanners(storeId: number, firstBanner?: any, secondBanner?: any) {
+        try {
             const banners = await prisma.storeDetails.update({
-                where: {id: storeId},
+                where: { id: storeId },
                 data: {
                     firstStoreBanner: {
                         create: firstBanner
@@ -178,7 +196,24 @@ export default class StoreDetails extends Repo {
                 }
             });
 
-            return super.repoResponse(false,201,null,banners);
+            return super.repoResponse(false, 201, null, banners);
+        } catch (error) {
+            return super.handleDatabaseError(error);
+        }
+    }
+
+    public async getStore(storeId: number) {
+        try {
+            const banners = await prisma.storeDetails.findUnique({
+                where: { id: storeId },
+                include: {
+                    storeLogo: true,
+                    firstStoreBanner: true,
+                    secondStoreBanner: true
+                }
+            });
+
+            return super.repoResponse(false, 201, null, banners);
         } catch (error) {
             return super.handleDatabaseError(error);
         }

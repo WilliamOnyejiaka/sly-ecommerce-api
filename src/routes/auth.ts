@@ -3,7 +3,6 @@ import { Auth } from "../controllers";
 import { validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
 import { emailIsValid, passwordIsValid, phoneNumberIsValid, tokenIsPresent, userEmailExists, zipCodeIsValid } from "../middlewares/validators";
-import UserRepo from "../repos/UserRepo";
 import { Admin, Customer, Vendor } from "../repos";
 
 const auth: Router = Router();

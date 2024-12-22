@@ -3,6 +3,7 @@ import { Store } from "../controllers";
 import { bannerUploads, uploads, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
 import { storeImagesUploads } from "../middlewares/multer";
+import { paramNumberIsValid } from "../middlewares/validators";
 
 const store: Router = Router();
 
@@ -20,22 +21,44 @@ store.post(
 
 store.post("/create-vendor-store",
     storeImagesUploads.any(),
+    validateBody([
+        'name',
+        'address',
+        'city',
+        'description',
+        'tagLine'
+    ]),
     asyncHandler(Store.createAll)
 );
 
 store.post(
     "/upload-logo/:storeId",
-    uploads.single("logo"),
+    uploads.single("image"),
+    [
+        paramNumberIsValid('storeId')
+    ],
     asyncHandler(Store.uploadStoreLogo)
+);
+
+store.post(
+    "/upload-first-banner/:storeId",
+    uploads.single("image"),
+    [
+        paramNumberIsValid('storeId')
+    ],
+    asyncHandler(Store.uploadFirstBanner)
 );
 
 store.post(
     "/upload-banners/:storeId",
     bannerUploads.any(),
+    [
+        paramNumberIsValid('storeId')
+    ],
     asyncHandler(Store.uploadBanners)
 );
 
-store.get("/",asyncHandler(Store.getStoreAll));
+store.get("/", asyncHandler(Store.getStoreAll));
 
 store.delete(
     "/",

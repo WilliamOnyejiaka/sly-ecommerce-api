@@ -1,26 +1,46 @@
 import BaseService from "./bases/BaseService";
-import constants, { http, urls } from "../constants";
+import constants, { http, HttpStatus, urls } from "../constants";
 import { getPagination } from "../utils";
 import { FirstBanner, SecondBanner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
 import ImageService from "./Image";
 
-export default class Store extends BaseService {
+export default class Store extends BaseService<StoreDetails> {
 
-    private readonly storeRepo: StoreDetails = new StoreDetails();
     private readonly secondBannerRepo: SecondBanner = new SecondBanner();
     private readonly firstBannerRepo: FirstBanner = new FirstBanner();
     private readonly imageService: ImageService = new ImageService();
 
 
     public constructor() {
-        super();
+        super(new StoreDetails());
     }
 
-    public async createStoreAll(
-        storeDetailsDto: StoreDetailsDto,
-        images: Express.Multer.File[]
-    ) {
+    public async createStoreAll(storeDetailsDto: StoreDetailsDto, images: Express.Multer.File[]) {
+        const storeRepoResult = await this.repo!.getStoreWithVendorId(storeDetailsDto.vendorId!);
+        const storeRepoResultError = this.handleRepoError(storeRepoResult);
+        if (storeRepoResultError) {
+            if (!(await this.imageService.deleteFiles(images))) return storeRepoResultError;
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        const storeNameRepoResult = await this.repo!.getItemWithName(storeDetailsDto.name);
+        const storeNameRepoResultError = this.handleRepoError(storeNameRepoResult);
+        if (storeNameRepoResultError) {
+            if (!(await this.imageService.deleteFiles(images))) return storeNameRepoResultError;
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        const storeDetails = storeRepoResult.data;
+        const hasStoreLogo = storeDetails.storeLogo.length > 0;
+        const hasFirstBanner = storeDetails.firstStoreBanner.length > 0;
+        const hasSecondBanner = storeDetails.secondStoreBanner.length > 0;
+
+        if (hasFirstBanner || hasSecondBanner || hasStoreLogo) {
+            if (!(await this.imageService.deleteFiles(images))) return super.responseData(400, true, "This store already has an image");
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
         const uploadFolders: Record<string, string> = {
             storeLogo: "storeLogo",
             firstBanner: "firstStoreBanner",
@@ -32,7 +52,7 @@ export default class Store extends BaseService {
 
         if (storeImages) {
 
-            const repoResult = await this.storeRepo.insertWithRelations(
+            const repoResult = await this.repo!.insertWithRelations(
                 storeDetailsDto,
                 storeImages?.storeLogo,
                 storeImages?.firstBanner,
@@ -61,38 +81,21 @@ export default class Store extends BaseService {
     }
 
     public async createStore(storeDetailsDto: StoreDetailsDto) {
-        const repoResult = await this.storeRepo.insert(storeDetailsDto);
+        const storeRepoResult = await this.repo!.getStoreWithVendorId(storeDetailsDto.vendorId!);
+        const storeRepoResultError = this.handleRepoError(storeRepoResult);
+        if (storeRepoResultError) return storeRepoResultError;
+
+        const storeNameRepoResult = await this.repo!.getItemWithName(storeDetailsDto.name);
+        const storeNameRepoResultError = this.handleRepoError(storeNameRepoResult);
+        if (storeNameRepoResultError) return storeNameRepoResultError;
+
+        const repoResult = await this.repo!.insert(storeDetailsDto);
         return !repoResult.error ? super.responseData(201, false, "Store was created successfully", repoResult) :
             super.responseData(repoResult.type, true, repoResult.message!);
     }
 
-    public async storeNameExists(name: string) {
-        const nameExists = await this.storeRepo.getItemWithName(name);
-        if (nameExists.error) {
-            return super.responseData(nameExists.type, true, nameExists.message as string);
-        }
-
-        const statusCode = nameExists.data ? 400 : 200;
-        const error: boolean = nameExists.data ? true : false;
-
-        return super.responseData(statusCode, error, error ? "This name already exists" : null);
-    }
-
-    public async storeExists(vendorId: number) {
-        const storeExists = await this.storeRepo.getStoreWithVendorId(vendorId);
-
-        if (storeExists.error) {
-            super.responseData(storeExists.type, true, storeExists.message!);
-        }
-
-        const statusCode = storeExists.data ? 400 : 200;
-        const error: boolean = storeExists.data ? true : false;
-
-        return super.responseData(statusCode, error, error ? "This vendor already has a store" : null);
-    }
-
     public async getStoreWithId(id: number) {
-        const repoResult = await this.storeRepo.getItemWithId(id);
+        const repoResult = await this.repo!.getItemWithId(id);
 
         if (repoResult.error) {
             super.responseData(repoResult.type, true, repoResult.message!);
@@ -110,6 +113,15 @@ export default class Store extends BaseService {
     }
 
     public async uploadBanners(banners: Express.Multer.File[], storeId: number) {
+        const checkStoreImages = await this.checkStoreImages(storeId);
+        if (checkStoreImages.json.error) {
+            if (!(await this.imageService.deleteFiles(banners))) return checkStoreImages;
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+        if (checkStoreImages.json.data.hasFirstBanner || checkStoreImages.json.data.hasSecondBanner) {
+            if (!(await this.imageService.deleteFiles(banners))) return super.responseData(400, true, "A banner already exists");
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
 
         const uploadFolders: Record<string, string> = {
             firstBanner: "firstStoreBanner",
@@ -118,13 +130,16 @@ export default class Store extends BaseService {
 
         const uploadResults = await this.imageService.uploadImages(banners, uploadFolders);
         const storeBanners = uploadResults.data;
-        const repoResult = await this.firstBannerRepo.insertImage({ ...storeBanners?.firstBanner, parentId: storeId });
-        const repoResult1 = await this.secondBannerRepo.insertImage({ ...storeBanners?.secondBanner, parentId: storeId });
-        const firstStoreBannerUrl = storeBanners?.firstBanner.imageUrl ?? null;
-        const secondStoreBannerUrl = storeBanners?.secondBanner.imageUrl ?? null;
 
-        return repoResult && repoResult1 ?
-            super.responseData(
+        if (storeBanners) {
+            const repoResult = await this.repo!.insertBanners(storeId, storeBanners?.firstBanner, storeBanners?.secondBanner);
+            const firstStoreBannerUrl = storeBanners?.firstBanner?.imageUrl ?? null;
+            const secondStoreBannerUrl = storeBanners?.secondBanner?.imageUrl ?? null;
+
+            const error = this.handleRepoError(repoResult);
+            if (error) return error;
+
+            return super.responseData(
                 201,
                 false,
                 "banners were created successfully",
@@ -132,66 +147,69 @@ export default class Store extends BaseService {
                     firstStoreBannerUrl: firstStoreBannerUrl,
                     secondStoreBannerUrl: secondStoreBannerUrl
                 }
-            ) :
-            super.responseData(
-                500,
-                true,
-                http("500")!,
             );
+        }
+        return super.responseData(500, true, "Error processing images");
     }
 
+    private async checkStoreImages(storeId: number) {
+        const storeDetailsRepoResult = await this.repo!.getStore(storeId);
+        const storeDetailsRepoResultError = this.handleRepoError(storeDetailsRepoResult);
+        if (storeDetailsRepoResultError) return storeDetailsRepoResultError;
 
-    // public async uploadBanners(banners: Express.Multer.File[], storeId: number) { // ! TODO: update this method
-    //     let storeBanners: any = {
-    //         firstBanner: null,
-    //         secondBanner: null
-    //     };
+        const storeDetails = storeDetailsRepoResult.data;
+        if (!storeDetails) return super.responseData(HttpStatus.NOT_FOUND, true, "Store was not found");
 
-    //     const uploadFolders: Record<string, string > = {
-    //         firstBanner: "firstStoreBanner",
-    //         secondBanner: "secondStoreBanner"
-    //     };
+        const data = {
+            hasStoreLogo: storeDetails.storeLogo.length > 0,
+            hasFirstBanner: storeDetails.firstStoreBanner.length > 0,
+            hasSecondBanner: storeDetails.secondStoreBanner.length > 0
+        };
 
-    //     for (const banner of banners) {
-    //         const fieldName: string = banner.fieldname;
-    //         const uploadFolder = uploadFolders[fieldName];
-    //         let uploadResult = await this.imageService.processAndUpload(banner, uploadFolder);
-    //         if (uploadResult.json.error) {
-    //             return uploadResult;
-    //         }
-    //         storeBanners[fieldName] = {
-    //             mimeType: uploadResult.json.data.imageData.format,
-    //             imageUrl: uploadResult.json.data.url,
-    //             publicId: uploadResult.json.data.imageData.public_id,
-    //             size: uploadResult.json.data.imageData.bytes,
-    //             parentId: storeId
-    //         };
-    //     }
+        return super.responseData(200, false, null, data);
+    }
 
-    //     const repoResult = await this.firstBannerRepo.insertImage(storeBanners.firstBanner);
-    //     const repoResult1 = await this.secondBannerRepo.insertImage(storeBanners.secondBanner);
-    //     const firstStoreBannerUrl = storeBanners.firstBanner;
-    //     const secondStoreBannerUrl = storeBanners.secondBanner;
+    public async uploadStoreLogo(image: Express.Multer.File, storeId: number) {
+        const checkStoreImages = await this.checkStoreImages(storeId);
+        if (checkStoreImages.json.error) {
+            if (!(await this.imageService.deleteFiles([image]))) return checkStoreImages;
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
 
-    //     return repoResult && repoResult1 ?
-    //         super.responseData(
-    //             201,
-    //             false,
-    //             "banners were created successfully",
-    //             {
-    //                 firstStoreBannerUrl: firstStoreBannerUrl,
-    //                 secondStoreBannerUrl: secondStoreBannerUrl
-    //             }
-    //         ) :
-    //         super.responseData(
-    //             500,
-    //             true,
-    //             http("500")!,
-    //         );
-    // }
+        if (checkStoreImages.json.data.hasStoreLogo) {
+            if (!(await this.imageService.deleteFiles([image]))) return super.responseData(400, true, "A store logo already exists");
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        return await this.imageService.uploadImage<StoreLogo>(
+            image,
+            storeId,
+            new StoreLogo(),
+            'storeLogo'
+        );
+    }
+
+    public async uploadFirstBanner(image: Express.Multer.File, storeId: number) {
+        const checkStoreImages = await this.checkStoreImages(storeId);
+        if (checkStoreImages.json.error) {
+            if (!(await this.imageService.deleteFiles([image]))) return checkStoreImages;
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+        if (checkStoreImages.json.data.hasFirstBanner) {
+            if (!(await this.imageService.deleteFiles([image]))) return super.responseData(400, true, "A banner already exists");
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        return await this.imageService.uploadImage<FirstBanner>(
+            image,
+            storeId,
+            new FirstBanner(),
+            'firstStoreBanner'
+        );
+    }
 
     public async getStoreAll(vendorId: number, baseUrl: string) {
-        const repoResult = await this.storeRepo.getStoreAndRelationsWithVendorId(vendorId);
+        const repoResult = await this.repo!.getStoreAndRelationsWithVendorId(vendorId);
         if (repoResult.error) {
             super.responseData(repoResult.type, true, repoResult.message!);
         }
@@ -217,7 +235,7 @@ export default class Store extends BaseService {
     }
 
     public async delete(vendorId: number) {
-        const repoResult = await this.storeRepo.delete(vendorId);
+        const repoResult = await this.repo!.delete(vendorId);
         if (repoResult.error) {
             return super.responseData(repoResult.type!, true, repoResult.message!);
         }
@@ -240,7 +258,7 @@ export default class Store extends BaseService {
     public async paginateStores(page: number, pageSize: number, baseUrl: string) {
         const skip = (page - 1) * pageSize;
         const take = pageSize;
-        const repoResult = await this.storeRepo.paginateStore(skip, take);
+        const repoResult = await this.repo!.paginateStore(skip, take);
 
         Store.setUrls(repoResult.data.items, baseUrl);
 
@@ -259,7 +277,7 @@ export default class Store extends BaseService {
     }
 
     public async getAllStores(baseUrl: string) {
-        const repoResult = await this.storeRepo.getAllStoresAndRelations();
+        const repoResult = await this.repo!.getAllStoresAndRelations();
 
         if (repoResult.error) {
             return super.responseData(repoResult.type, true, repoResult.message as string);

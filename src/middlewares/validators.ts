@@ -2,6 +2,7 @@ import { body, header, param } from "express-validator";
 import { emailValidator, numberValidator, phoneNumberValidator, zipCodeValidator } from "../validators";
 import constants, { HttpStatus } from "../constants";
 import UserRepo from "../repos/UserRepo";
+import Repo from "../repos/Repo";
 
 const errorDetails = (message: string, statusCode: number) => {
     return JSON.stringify({
@@ -47,6 +48,20 @@ const emailExists = <T extends UserRepo>(repo: T) => async (value: string) => {
     return true;
 }
 
+const nameExists = <T extends Repo>(repo: T) => async (value: string) => {
+    const repoResult = await repo.getItemWithName(value);
+
+    if (repoResult.error) {
+        throw new Error(JSON.stringify({
+            message: repoResult.message,
+            statusCode: repoResult.type
+        }));
+    } else if (repoResult.data) {
+        throw new Error(errorDetails("Name already exists", HttpStatus.BAD_REQUEST));
+    }
+    return true;
+}
+
 const isValidZipCode = (value: string) => {
     const isValid = zipCodeValidator(value);
     if (isValid.error) {
@@ -69,7 +84,7 @@ const isValidNumber = (value: string) => {
     const idResult = numberValidator(value);
 
     if (idResult.error) {
-        throw new Error(errorDetails("Id must be an integer", HttpStatus.BAD_REQUEST));
+        throw new Error(errorDetails("Param must be an integer", HttpStatus.BAD_REQUEST));
     }
     return true;
 }
@@ -83,3 +98,4 @@ export const zipCodeIsValid = body('zip').custom(isValidZipCode);
 export const tokenIsPresent = header('Authorization').custom(isTokenPresent);
 export const paramNumberIsValid = (paramName: string) => param(paramName).custom(isValidNumber);
 export const bodyNumberIsValid = (bodyName: string) => body(bodyName).custom(isValidNumber);
+export const itemNameExists = <T extends Repo>(repo: T) => body('email').custom(nameExists<T>(repo));

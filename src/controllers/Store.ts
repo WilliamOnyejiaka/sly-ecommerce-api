@@ -1,12 +1,10 @@
 import { Request, Response } from "express";
 import { ImageService, Store as StoreService } from "../services";
-import constants, { http, urls } from "../constants";
-import { numberValidator } from "../validators";
+import constants, { http, HttpStatus, urls } from "../constants";
 import { StoreDetailsDto } from "../types/dtos";
-import * as fs from "fs";
 import { baseUrl } from "../utils";
-import { FirstBanner, StoreLogo } from "../repos";
 import Controller from "./bases/Controller";
+import { validationResult } from "express-validator";
 
 export default class Store {
 
@@ -15,119 +13,97 @@ export default class Store {
 
     public static async createAll(req: Request, res: Response) {
         const images = req.files!;
-
-        if (!req.body.name || !req.body.address || !req.body.city || !req.body.description || !req.body.tagLine) {
-            await Store.imageService.deleteFiles(images as Express.Multer.File[]);
-            res.status(400).json({
-                'error': true,
-                'message': "All values are required",
-                'data': {}
-            });
-            return;
-        }
-
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
 
-        const storeExists = await Store.service.storeExists(storeDetailsDto.vendorId);
-        if (storeExists.json.error) {
-            await Store.imageService.deleteFiles(images as Express.Multer.File[]);
-            res.status(storeExists.statusCode).json(storeExists.json);
-            return;
-        }
+        // const storeExists = await Store.service.storeExists(storeDetailsDto.vendorId);
+        // if (storeExists.json.error) {
+        //     await Store.imageService.deleteFiles(images as Express.Multer.File[]);
+        //     res.status(storeExists.statusCode).json(storeExists.json);
+        //     return;
+        // }
 
-        const nameExists = await Store.service.storeNameExists(storeDetailsDto.name);
-        if (nameExists.json.error) {
-            await Store.imageService.deleteFiles(images as Express.Multer.File[]);
-            res.status(nameExists.statusCode).json(nameExists.json);
-            return;
-        }
+        // const nameExists = await Store.service.storeNameExists(storeDetailsDto.name);
+        // if (nameExists.json.error) {
+        //     await Store.imageService.deleteFiles(images as Express.Multer.File[]);
+        //     res.status(nameExists.statusCode).json(nameExists.json);
+        //     return;
+        // }
 
         const serviceResult = await Store.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[]);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        Controller.response(res, serviceResult);
     }
 
     public static async createStore(req: Request, res: Response) {
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
-
-        const storeExists = await Store.service.storeExists(storeDetailsDto.vendorId);
-        if (storeExists.json.error) {
-            res.status(storeExists.statusCode).json(storeExists.json);
-            return;
-        }
-
-        const nameExists = await Store.service.storeNameExists(storeDetailsDto.name);
-        if (nameExists.json.error) {
-            res.status(nameExists.statusCode).json(nameExists.json);
-            return;
-        }
-
         const serviceResult = await Store.service.createStore(storeDetailsDto);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        Controller.response(res, serviceResult);
     }
 
     public static async uploadStoreLogo(req: Request, res: Response) {
         const image = req.file!;
-        const idResult = numberValidator(req.params.storeId);
+        const validationErrors = validationResult(req);
 
-        if (idResult.error) {
-            await Store.imageService.deleteFiles([image]);
-            res.status(400).json(idResult);
-            return;
-        }
-        const storeId = idResult.number;
-        const storeExists = await Store.service.getStoreWithId(storeId);
-        if (storeExists.json.error) {
-            await Store.imageService.deleteFiles([image]);
-            res.status(storeExists.statusCode).json(storeExists.json);
-            return;
-        }
-
-        const serviceResult = await Store.imageService.uploadImage<StoreLogo>(
-            image,
-            storeId,
-            new StoreLogo(),
-            'storeLogo'
-        );
-        res.status(serviceResult.statusCode).json(serviceResult.json);
-    }
-
-    public static async uploadBanners(req: Request, res: Response) {
-        const images = req.files! as Express.Multer.File[];
-        const firstBannerExists = images.some((image) => image.fieldname === "firstBanner");
-
-        if (!firstBannerExists) {
-            await Store.imageService.deleteFiles(images);
-            res.status(400).json({
+        if (!validationErrors.isEmpty()) {
+            if (!(await Store.imageService.deleteFiles([image]))) {
+                Controller.handleValidationErrors(res, validationErrors);
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 error: true,
-                message: "firstBanner is required"
+                message: http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!,
+                data: {}
             });
             return;
         }
 
-        const idResult = numberValidator(req.params.storeId);
+        const storeId = Number(req.params.storeId);
+        const serviceResult = await Store.service.uploadStoreLogo(image, storeId);
+        Controller.response(res, serviceResult);
+    }
 
-        if (idResult.error) {
-            await Store.imageService.deleteFiles(images);
-            res.status(400).json(idResult);
+    public static async uploadFirstBanner(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+        const image = req.file!;
+
+
+        if (!validationErrors.isEmpty()) {
+            if (!(await Store.imageService.deleteFiles([image]))) {
+                Controller.handleValidationErrors(res, validationErrors);
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                error: true,
+                message: http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!,
+                data: {}
+            });
             return;
         }
 
-        const storeId = idResult.number;
-        const storeExists = await Store.service.getStoreWithId(storeId);
-        if (storeExists.json.error) {
-            await Store.imageService.deleteFiles(images);
-            res.status(storeExists.statusCode).json(storeExists.json);
+        const storeId = Number(req.params.storeId);
+        const serviceResult = await Store.service.uploadFirstBanner(image, storeId);
+        Controller.response(res, serviceResult);
+    }
+
+    public static async uploadBanners(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+        const images = req.files! as Express.Multer.File[];
+
+        if (!validationErrors.isEmpty()) {
+            if (!(await Store.imageService.deleteFiles(images))) {
+                Controller.handleValidationErrors(res, validationErrors);
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                error: true,
+                message: http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!,
+                data: {}
+            });
             return;
         }
 
-        // const serviceResult = images.length == 1 ? await Store.imageService.uploadImage<FirstBanner>(
-        //     images[0],
-        //     storeId,
-        //     new FirstBanner(),
-        //     'firstStoreBanner'
-        // ) : await Store.service.uploadBanners(images, storeId);
+        const storeId = Number(req.params.storeId);
         const serviceResult = await Store.service.uploadBanners(images, storeId);
         Controller.response(res, serviceResult);
     }
