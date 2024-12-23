@@ -54,17 +54,17 @@ export default class Vendor extends UserService<VendorRepo, VendorCache, VendorP
         return super.responseData(statusCode, repoResult.error, message);
     }
 
-    public async delete(vendorId: number) {
-        const repoResult = await this.repo!.deleteWithId(vendorId); // ! TODO: add cloudinary image delete
-        const errorResponse = this.handleRepoError(repoResult);
-        if (errorResponse) return errorResponse;
+    // public async delete(vendorId: number) {
+    //     const repoResult = await this.repo!.deleteWithId(vendorId); // ! TODO: add cloudinary image delete
+    //     const errorResponse = this.handleRepoError(repoResult);
+    //     if (errorResponse) return errorResponse;
 
-        const deleted = await this.cache.delete(String(vendorId));
+    //     const deleted = await this.cache.delete(String(vendorId));
 
-        return deleted ?
-            super.responseData(200, false, "Vendor was deleted successfully") :
-            super.responseData(500, true, http('500')!);
-    }
+    //     return deleted ?
+    //         super.responseData(200, false, "Vendor was deleted successfully") :
+    //         super.responseData(500, true, http('500')!);
+    // }
 
     private async toggleActiveStatus(id: number, activate: boolean = true) {
         const repoResult = activate ? await this.repo!.updateActiveStatus(id, true) : await this.repo!.updateActiveStatus(id, false);

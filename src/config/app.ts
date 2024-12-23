@@ -15,7 +15,7 @@ import cors from "cors";
 import { baseUrl } from "../utils";
 import { urls } from "../constants";
 import { validationResult } from "express-validator";
-import { passwordIsValid } from "../middlewares/validators";
+import { passwordIsValid } from "../middlewares/validators/validators";
 
 
 function createApp() {

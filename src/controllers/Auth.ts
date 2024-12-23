@@ -28,35 +28,12 @@ export default class Auth {
             const serviceResult = await Auth.facade.login(
                 email as string,
                 password as string,
-                UserType.Customer
+                user as UserType
             );
 
             Controller.response(res, serviceResult);
         }
-
     }
-    // public static async vendorLogin(req: Request, res: Response) {
-    //     const { email, password } = req.body;
-    //     const serviceResult = await Auth.facade.login(
-    //         email as string,
-    //         password as string,
-    //         UserType.Vendor
-    //     );
-
-    //     Controller.response(res, serviceResult);
-    // }
-
-    // public static async adminLogin(req: Request, res: Response) {
-    //     const { email, password } = req.body;
-    //     const serviceResult = await Auth.facade.login(
-    //         email as string,
-    //         password as string,
-    //         UserType.Admin
-    //     );
-
-    //     Controller.response(res, serviceResult);
-    // }
-
 
     public static sendUserOTP(user: string) {
         return async (req: Request, res: Response) => {
@@ -71,37 +48,6 @@ export default class Auth {
             Controller.response(res, serviceResult);
         }
     }
-
-    // public static async sendVendorOTP(req: Request, res: Response) {
-    //     const serviceResult = await Auth.facade.sendUserOTP(req.params.email, UserType.Vendor);
-    //     Controller.response(res, serviceResult);
-    // }
-
-    // public static async vendorEmailVerification(req: Request, res: Response) {
-    //     const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, UserType.Vendor);
-    //     Controller.response(res, serviceResult);
-    // }
-
-    // public static async sendCustomerOTP(req: Request, res: Response) {
-    //     const serviceResult = await Auth.facade.sendUserOTP(req.params.email,);
-    //     Controller.response(res, serviceResult);
-    // }
-
-    // public static async customerEmailVerification(req: Request, res: Response) {
-    //     const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, "customer");
-    //     Controller.response(res, serviceResult);
-    // }
-
-    // public static async sendAdminOTP(req: Request, res: Response) {
-    //     const serviceResult = await Auth.facade.sendUserOTP(req.params.email, "admin");
-    //     Controller.response(res, serviceResult);
-    // }
-
-    // public static async adminEmailVerification(req: Request, res: Response) {
-    //     const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, "admin");
-    //     Controller.response(res, serviceResult);
-    // }
-
 
     public static async customerSignUp(req: Request, res: Response) {
         const validationErrors = validationResult(req);
@@ -126,17 +72,6 @@ export default class Auth {
         }, addressDto);
         Controller.response(res, serviceResult);
     }
-
-    // public static async customerLogin(req: Request, res: Response) {
-    //     const { email, password } = req.body;
-    //     const serviceResult = await Auth.facade.login(
-    //         email as string,
-    //         password as string,
-    //         "customer"
-    //     );
-
-    //     Controller.response(res, serviceResult);
-    // }
 
     public static async logOut(req: Request, res: Response) {
         const validationErrors = validationResult(req);

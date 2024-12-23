@@ -43,28 +43,19 @@ export default class AuthenticationManagementFacade extends BaseFacade {
      */
     public async login(email: string, password: string, user: UserType) {
         const loginMethods = {
-            [UserType.Customer]: this.authService.customerLogin,
-            [UserType.Admin]: this.authService.adminLogin,
-            [UserType.Vendor]: this.authService.vendorLogin,
+            [UserType.Admin]: this.authService.adminLogin.bind(this.authService),
+            [UserType.Customer]: this.authService.customerLogin.bind(this.authService),
+            [UserType.Vendor]: this.authService.vendorLogin.bind(this.authService)
         };
 
         const loginMethod = loginMethods[user];
         return loginMethod ? await loginMethod(email, password) : this.service.responseData(500, true, "Invalid user type");
     }
 
-    // public async login(email: string, password: string, user: string) {
-    //     switch (user) {
-    //         case "customer":
-    //             return await this.authService.customerLogin(email, password);
-    //         case "admin":
-    //             return await this.authService.adminLogin(email, password);
-    //         case "vendor":
-    //             return await this.authService.vendorLogin(email, password);
-    //         default:
-    //             return this.service.responseData(500, true, "Invalid user");
-    //     }
-    // }
-
+    /**
+     * Logs a user out with their a jwt token
+     * @param token User jwt token
+     */
     public async logOut(token: string) {
         return await this.authService.logOut(token);
     }
@@ -77,9 +68,9 @@ export default class AuthenticationManagementFacade extends BaseFacade {
      */
     public async sendUserOTP(email: string, user: UserType) {
         const sendOTPMethods = {
-            [UserType.Vendor]: this.userOTPService.sendVendorOTP,
-            [UserType.Admin]: this.userOTPService.sendAdminOTP,
-            [UserType.Customer]: this.userOTPService.sendCustomerOTP,
+            [UserType.Vendor]: this.userOTPService.sendVendorOTP.bind(this.userOTPService),
+            [UserType.Admin]: this.userOTPService.sendAdminOTP.bind(this.userOTPService),
+            [UserType.Customer]: this.userOTPService.sendCustomerOTP.bind(this.userOTPService)
         };
 
         const sendOTPMethod = sendOTPMethods[user];
@@ -94,38 +85,12 @@ export default class AuthenticationManagementFacade extends BaseFacade {
      */
     public async emailVerification(email: string, otpCode: string, user: UserType) {
         const verifyEmailMethods = {
-            [UserType.Vendor]: this.userOTPService.vendorEmailVerification,
-            [UserType.Admin]: this.userOTPService.adminEmailVerification,
-            [UserType.Customer]: this.userOTPService.customerEmailVerification,
+            [UserType.Vendor]: this.userOTPService.vendorEmailVerification.bind(this.userOTPService),
+            [UserType.Admin]: this.userOTPService.adminEmailVerification.bind(this.userOTPService),
+            [UserType.Customer]: this.userOTPService.customerEmailVerification.bind(this.userOTPService)
         };
 
         const verifyEmailMethod = verifyEmailMethods[user];
         return verifyEmailMethod ? await verifyEmailMethod(email, otpCode) : this.service.responseData(500, true, "Invalid user type");
     }
-
-    // public async sendUserOTP(email: string, user: string) {
-    //     switch (user) {
-    //         case "vendor":
-    //             return await this.userOTPService.sendVendorOTP(email);
-    //         case "admin":
-    //             return await this.userOTPService.sendAdminOTP(email);
-    //         case "customer":
-    //             return await this.userOTPService.sendCustomerOTP(email);
-    //         default:
-    //             return this.service.responseData(500, true, "Invalid user");
-    //     }
-    // }
-
-    // public async emailVerification(email: string, otpCode: string, user: string) {
-    //     switch (user) {
-    //         case "vendor":
-    //             return await this.userOTPService.vendorEmailVerification(email, otpCode);
-    //         case "admin":
-    //             return await this.userOTPService.adminEmailVerification(email, otpCode);
-    //         case "customer":
-    //             return await this.userOTPService.customerEmailVerification(email, otpCode);
-    //         default:
-    //             return this.service.responseData(500, true, "Invalid user");
-    //     }
-    // }
 }

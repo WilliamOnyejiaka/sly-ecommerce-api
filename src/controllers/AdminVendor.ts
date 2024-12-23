@@ -34,7 +34,7 @@ export default class AdminVendor {
             return;
         }
 
-        const serviceResult = await AdminVendor.service.delete(idResult.number);
+        const serviceResult = await AdminVendor.service.deleteUser(idResult.number);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

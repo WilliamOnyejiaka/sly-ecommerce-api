@@ -1,5 +1,5 @@
 import AuthenticationManagementFacade from "./AuthenticationManagementFacade";
-import UserFacade from "./UserManagementFacade";
+import UserFacade from "./UserFacade";
 
 
 

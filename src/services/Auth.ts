@@ -4,6 +4,7 @@ import BaseCache from "../cache/BaseCache";
 import constants, { http, HttpStatus } from "../constants";
 import { Admin, Customer, Vendor } from "../repos";
 import UserRepo from "../repos/UserRepo";
+import { UserType } from "../types/enums";
 import { Password } from "../utils";
 import Authentication from "./bases/Authentication";
 
@@ -20,7 +21,7 @@ export default class Auth extends Authentication {
             password: string
         },
         cache: U,
-        role: string
+        role: UserType
     ) {
         const repoResult = role === "admin" ? await this.adminRepo.getAdminAndRoleWithEmail(logInDetails.email) : await repo.getUserProfileWithEmail(logInDetails.email);
         const errorResponse = super.handleRepoError(repoResult);
@@ -54,15 +55,15 @@ export default class Auth extends Authentication {
     }
 
     public async customerLogin(email: string, password: string) {
-        return await this.login<Customer, CustomerCache>(this.customerRepo, { email, password }, this.customerCache, "customer");
+        return await this.login<Customer, CustomerCache>(this.customerRepo, { email, password }, this.customerCache, UserType.Customer);
     }
 
     public async adminLogin(email: string, password: string) {
-        return await this.login<Admin, AdminCache>(this.adminRepo, { email, password }, this.adminCache, "admin");
+        return await this.login<Admin, AdminCache>(this.adminRepo, { email, password }, this.adminCache, UserType.Admin);
     }
 
     public async vendorLogin(email: string, password: string) {
-        return await this.login<Vendor, VendorCache>(this.vendorRepo, { email, password }, this.vendorCache, "vendor");
+        return await this.login<Vendor, VendorCache>(this.vendorRepo, { email, password }, this.vendorCache, UserType.Vendor);
     }
 
     public async logOut(token: string) {

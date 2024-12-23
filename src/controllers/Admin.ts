@@ -83,14 +83,6 @@ export default class Admin {
         //     Controller.response(res, serviceResult);
     }
 
-    public static async deleteSelf(req: Request, res: Response) {
-        // const adminId = Number(res.locals.id);
-        // const serviceResult = await Admin.service.deleteUser(adminId);
-        // Controller.response(res, serviceResult);
-        await Admin.delete(req, res); // TODO: test these routes
-
-    }
-
     public static toggleActivate(activate: boolean = true) {
         return async (req: Request, res: Response) => {
 
