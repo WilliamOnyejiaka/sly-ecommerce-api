@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { Authentication, ImageService, Vendor as VendorService } from "../services";
+import { Auth, Vendor as VendorService } from "../services";
 import Controller from "./bases/Controller";
 
 export default class Vendor {
 
     private static readonly service: VendorService = new VendorService();
-    private static readonly authService: Authentication = new Authentication();
+    private static readonly authService: Auth = new Auth();
 
 
     public static async uploadProfilePicture(req: Request, res: Response) {
@@ -44,7 +44,7 @@ export default class Vendor {
 
     public static async delete(req: Request, res: Response) {
         const token = req.headers.authorization!.split(' ')[1];
-        const hasLoggedOut = await Vendor.authService.logoOut(token);
+        const hasLoggedOut = await Vendor.authService.logOut(token);
         if (hasLoggedOut.json.error) {
             Controller.response(res, hasLoggedOut);
             return;

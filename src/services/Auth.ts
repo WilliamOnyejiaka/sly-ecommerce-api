@@ -65,7 +65,7 @@ export default class Auth extends Authentication {
         return await this.login<Vendor, VendorCache>(this.vendorRepo, { email, password }, this.vendorCache, "vendor");
     }
 
-    public async logoOut(token: string) {
+    public async logOut(token: string) {
         const tokenValidationResult: any = Token.validateToken(token, ["any"], this.tokenSecret);
 
         if (tokenValidationResult.error) {

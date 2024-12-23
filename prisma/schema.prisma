@@ -142,6 +142,7 @@ model Admin {
   email             String                @unique @db.VarChar(50)
   phoneNumber       String?
   active            Boolean               @default(false)
+  verified          Boolean               @default(false)
   roleId            Int?
   role              Role?                 @relation(fields: [roleId], references: [id])
   createdBy         Int                   @default(0)

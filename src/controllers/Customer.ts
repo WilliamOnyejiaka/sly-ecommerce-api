@@ -1,13 +1,12 @@
 import { Controller } from ".";
-import { Authentication, Customer as CustomerService } from "./../services";
+import { Auth, Customer as CustomerService } from "./../services";
 import { Request, Response } from "express";
 
 
 export default class Customer {
 
     private static readonly service: CustomerService = new CustomerService();
-    private static readonly authService: Authentication = new Authentication();
-
+    private static readonly authService: Auth = new Auth();
 
     public static async uploadProfilePicture(req: Request, res: Response) {
         const image = req.file!;
@@ -24,13 +23,13 @@ export default class Customer {
 
     public static async delete(req: Request, res: Response) {
         const token = req.headers.authorization!.split(' ')[1];
-        const hasLoggedOut = await Customer.authService.logoOut(token);
+        const hasLoggedOut = await Customer.authService.logOut(token);
         if (hasLoggedOut.json.error) {
             Controller.response(res, hasLoggedOut);
             return;
         }
         const vendorId = Number(res.locals.data.id);
-        const serviceResult = await Customer.service.deleteUser(vendorId);        
+        const serviceResult = await Customer.service.deleteUser(vendorId);
         Controller.response(res, serviceResult);
     }
 

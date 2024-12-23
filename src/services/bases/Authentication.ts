@@ -1,6 +1,7 @@
 import { AdminCache, CustomerCache, TokenBlackList, VendorCache } from "../../cache";
 import { env } from "../../config";
 import { Admin, Customer, Vendor } from "../../repos";
+import UserRepo from "../../repos/UserRepo";
 import { Password } from "../../utils";
 import Token from "../Token";
 import BaseService from "./BaseService";
@@ -32,5 +33,9 @@ export default class Authentication extends BaseService {
 
     protected generateAdminToken(admin: any) {
         return this.generateToken(admin, "admin");
+    }
+
+    protected setUserProfilePicture<T extends UserRepo>(userProfile: any,repo: T){
+        userProfile.profilePictureUrl = userProfile[repo.imageRelation].length != 0 ? userProfile[repo.imageRelation][0].imageUrl : null;
     }
 }

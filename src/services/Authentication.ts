@@ -10,7 +10,7 @@ import UserRepo from "../repos/UserRepo";
 import BaseCache from "../cache/BaseCache";
 
 
-export default class Authentication extends BaseService {
+export default class Authentication extends BaseService { // ! TODO: Deprecated class remove
 
     private readonly storedSalt: string = env("storedSalt")!;
     private readonly tokenSecret: string = env('tokenSecret')!;

@@ -1,5 +1,4 @@
 import Token from "./Token";
-import Authentication from "./Authentication";
 import Vendor from "./Vendor";
 import Email from "./Email";
 import OTP from "./OTP";
@@ -19,7 +18,6 @@ import UserOTP from "./UserOTP";
 
 export {
     Token,
-    Authentication,
     Vendor,
     Email,
     OTP,

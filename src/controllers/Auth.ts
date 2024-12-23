@@ -1,13 +1,12 @@
 import { Request, Response } from "express";
-import { Authentication } from "./../services";
 import VendorDto, { CustomerAddressDto } from "./../types/dtos";
 import { validationResult } from "express-validator";
 import { Controller } from ".";
 import { AuthenticationManagementFacade } from "../facade";
+import { UserType } from "../types/enums";
 
 export default class Auth {
 
-    // private static readonly facade: Authentication = new Authentication();
     private static readonly facade: AuthenticationManagementFacade = new AuthenticationManagementFacade();
 
     public static async vendorSignUp(req: Request, res: Response) {
@@ -23,42 +22,86 @@ export default class Auth {
         Controller.response(res, serviceResult);
     }
 
-    public static async vendorLogin(req: Request, res: Response) {
-        const { email, password } = req.body;
-        const serviceResult = await Auth.facade.login(
-            email as string,
-            password as string,
-            "vendor"
-        );
+    public static login(user: string) {
+        return async (req: Request, res: Response) => {
+            const { email, password } = req.body;
+            const serviceResult = await Auth.facade.login(
+                email as string,
+                password as string,
+                UserType.Customer
+            );
 
-        Controller.response(res, serviceResult);
+            Controller.response(res, serviceResult);
+        }
+
+    }
+    // public static async vendorLogin(req: Request, res: Response) {
+    //     const { email, password } = req.body;
+    //     const serviceResult = await Auth.facade.login(
+    //         email as string,
+    //         password as string,
+    //         UserType.Vendor
+    //     );
+
+    //     Controller.response(res, serviceResult);
+    // }
+
+    // public static async adminLogin(req: Request, res: Response) {
+    //     const { email, password } = req.body;
+    //     const serviceResult = await Auth.facade.login(
+    //         email as string,
+    //         password as string,
+    //         UserType.Admin
+    //     );
+
+    //     Controller.response(res, serviceResult);
+    // }
+
+
+    public static sendUserOTP(user: string) {
+        return async (req: Request, res: Response) => {
+            const serviceResult = await Auth.facade.sendUserOTP(req.params.email, user as UserType);
+            Controller.response(res, serviceResult);
+        }
     }
 
-    public static async adminLogin(req: Request, res: Response) {
-        const { email, password } = req.body;
-        const serviceResult = await Auth.facade.login(
-            email as string,
-            password as string,
-            "admin"
-        );
-
-        Controller.response(res, serviceResult);
+    public static emailVerification(user: string) {
+        return async (req: Request, res: Response) => {
+            const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, user as UserType);
+            Controller.response(res, serviceResult);
+        }
     }
 
+    // public static async sendVendorOTP(req: Request, res: Response) {
+    //     const serviceResult = await Auth.facade.sendUserOTP(req.params.email, UserType.Vendor);
+    //     Controller.response(res, serviceResult);
+    // }
 
-    public static async vendorEmailOTP(req: Request, res: Response) {
-        const serviceResult = await Auth.facade.sendUserOTP(req.params.email, "vendor");
-        Controller.response(res, serviceResult);
-    }
+    // public static async vendorEmailVerification(req: Request, res: Response) {
+    //     const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, UserType.Vendor);
+    //     Controller.response(res, serviceResult);
+    // }
 
-    public static async vendorEmailVerification(req: Request, res: Response) {
-        // const serviceResult = await Auth.facade.vendorEmailVerification(req.params.email, req.params.otpCode);
-        // Controller.response(res, serviceResult);
-        res.status(400).json({
-            error: true,
-            message: "Incomplete code"
-        })
-    }
+    // public static async sendCustomerOTP(req: Request, res: Response) {
+    //     const serviceResult = await Auth.facade.sendUserOTP(req.params.email,);
+    //     Controller.response(res, serviceResult);
+    // }
+
+    // public static async customerEmailVerification(req: Request, res: Response) {
+    //     const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, "customer");
+    //     Controller.response(res, serviceResult);
+    // }
+
+    // public static async sendAdminOTP(req: Request, res: Response) {
+    //     const serviceResult = await Auth.facade.sendUserOTP(req.params.email, "admin");
+    //     Controller.response(res, serviceResult);
+    // }
+
+    // public static async adminEmailVerification(req: Request, res: Response) {
+    //     const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, "admin");
+    //     Controller.response(res, serviceResult);
+    // }
+
 
     public static async customerSignUp(req: Request, res: Response) {
         const validationErrors = validationResult(req);
@@ -84,16 +127,16 @@ export default class Auth {
         Controller.response(res, serviceResult);
     }
 
-    public static async customerLogin(req: Request, res: Response) {
-        const { email, password } = req.body;
-        const serviceResult = await Auth.facade.login(
-            email as string,
-            password as string,
-            "customer"
-        );
+    // public static async customerLogin(req: Request, res: Response) {
+    //     const { email, password } = req.body;
+    //     const serviceResult = await Auth.facade.login(
+    //         email as string,
+    //         password as string,
+    //         "customer"
+    //     );
 
-        Controller.response(res, serviceResult);
-    }
+    //     Controller.response(res, serviceResult);
+    // }
 
     public static async logOut(req: Request, res: Response) {
         const validationErrors = validationResult(req);

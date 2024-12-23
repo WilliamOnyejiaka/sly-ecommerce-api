@@ -1,9 +1,9 @@
-import { OTP, Token } from ".";
+import { OTP } from ".";
+import { AdminCache, CustomerCache, VendorCache } from "../cache";
 import BaseCache from "../cache/BaseCache";
 import constants, { http } from "../constants";
 import { Admin, Customer, Vendor } from "../repos";
 import UserRepo from "../repos/UserRepo";
-import VendorDto from "../types/dtos";
 import Authentication from "./bases/Authentication";
 
 export default class UserOTP extends Authentication {
@@ -41,8 +41,7 @@ export default class UserOTP extends Authentication {
         return await this.sendUserOTP<Admin>(this.adminRepo, email, "admin");
     }
 
-
-    public async emailVerification<T extends UserRepo, U extends BaseCache>(repo: T, cache: U, email: string, otpCode: string, user: string) {
+    private async emailVerification<T extends UserRepo, U extends BaseCache>(repo: T, cache: U, email: string, otpCode: string, user: string) {
         const otp = new OTP(email, user);
         const otpServiceResult = await otp.confirmOTP(otpCode);
 
@@ -65,7 +64,10 @@ export default class UserOTP extends Authentication {
         const userProfile = repoResult.data;
 
         if (userProfile) {
+            this.setUserProfilePicture<T>(userProfile, repo);
             delete userProfile.password;
+            delete userProfile[repo.imageRelation];
+
             const cacheSuccessful = await cache.set(
                 userProfile.id,
                 userProfile
@@ -77,6 +79,36 @@ export default class UserOTP extends Authentication {
             }) : super.responseData(500, true, http('500')!);
         }
         return super.responseData(404, true, constants('404User')!);
+    }
+
+    public async vendorEmailVerification(email: string, otpCode: string) {
+        return await this.emailVerification<Vendor, VendorCache>(
+            this.vendorRepo,
+            this.vendorCache,
+            email,
+            otpCode,
+            "vendor"
+        );
+    }
+
+    public async customerEmailVerification(email: string, otpCode: string) {
+        return await this.emailVerification<Customer, CustomerCache>(
+            this.customerRepo,
+            this.customerCache,
+            email,
+            otpCode,
+            "customer"
+        );
+    }
+
+    public async adminEmailVerification(email: string, otpCode: string) {
+        return await this.emailVerification<Admin, AdminCache>(
+            this.adminRepo,
+            this.adminCache,
+            email,
+            otpCode,
+            "admin"
+        );
     }
 
 } 
