@@ -1,7 +1,7 @@
 import prisma from ".";
 import { PictureData } from "../interfaces/PictureData";
 import { StoreDetailsDto } from "../types/dtos";
-import Repo from "./Repo";
+import Repo from "./bases/Repo";
 
 export default class StoreDetails extends Repo {
 

@@ -37,7 +37,7 @@ export default class OTP extends BaseService {
         const mailResult = await email.sendEmail(
             "Ecommerce Api",
             this.email,
-            "Vendor Email Verification",
+            "Email Verification",
             emailContent as string
         );
         return mailResult;

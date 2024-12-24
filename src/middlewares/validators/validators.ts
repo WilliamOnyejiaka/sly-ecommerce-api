@@ -1,8 +1,8 @@
-import { body, header, param } from "express-validator";
+import { body, header, param, query } from "express-validator";
 import { emailValidator, numberValidator, phoneNumberValidator, zipCodeValidator } from "../../validators";
 import constants, { HttpStatus } from "../../constants";
-import UserRepo from "../../repos/UserRepo";
-import Repo from "../../repos/Repo";
+import UserRepo from "../../repos/bases/UserRepo";
+import Repo from "../../repos/bases/Repo";
 
 const errorDetails = (message: string, statusCode: number) => {
     return JSON.stringify({
@@ -89,6 +89,15 @@ const isValidNumber = (value: string) => {
     return true;
 }
 
+const validateQueryNumber = (name: string) => (value: string) => {
+    const numberResult = numberValidator(value);
+
+    if (numberResult.error) {
+        throw new Error(errorDetails(`${name} query param must be an integer`, HttpStatus.BAD_REQUEST));
+    }
+    return true;
+}
+
 
 export const passwordIsValid = body('password').custom(isValidPassword); // Custom password validation
 export const phoneNumberIsValid = body('phoneNumber').custom(isValidPhoneNumber);
@@ -99,3 +108,6 @@ export const tokenIsPresent = header('Authorization').custom(isTokenPresent);
 export const paramNumberIsValid = (paramName: string) => param(paramName).custom(isValidNumber);
 export const bodyNumberIsValid = (bodyName: string) => body(bodyName).custom(isValidNumber);
 export const itemNameExists = <T extends Repo>(repo: T) => body('email').custom(nameExists<T>(repo));
+export const pageQueryIsValid = query('page').custom(validateQueryNumber('page'));
+export const pageSizeQueryIsValid = query('pageSize').custom(validateQueryNumber('pageSize'));
+export const queryIsValidNumber = (queryName: string) => query(queryName).custom(validateQueryNumber(queryName));

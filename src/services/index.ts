@@ -15,6 +15,7 @@ import Cloudinary from "./Cloudinary";
 import UserRegistration from "./UserRegistration";
 import Auth from "./Auth";
 import UserOTP from "./UserOTP";
+import TwilioService from "./TwilioService";
 
 export {
     Token,
@@ -33,5 +34,6 @@ export {
     Cloudinary,
     UserRegistration,
     Auth,
-    UserOTP
+    UserOTP,
+    TwilioService
 };

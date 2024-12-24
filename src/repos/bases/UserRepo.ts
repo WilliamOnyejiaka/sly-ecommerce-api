@@ -1,4 +1,4 @@
-import prisma from ".";
+import prisma from "..";
 import Repo from "./Repo";
 
 export default class UserRepo extends Repo {
@@ -60,5 +60,17 @@ export default class UserRepo extends Repo {
 
     public async updateVerifiedStatus(email: string) {
         return await super.update({ email: email }, { verified: true });
+    }
+
+    public async paginate(skip: number, take: number) {
+        return super.paginate(skip, take, {
+            include: {
+                [this.imageRelation]: {
+                    select: {
+                        imageUrl: true
+                    }
+                }
+            }
+        });
     }
 }

@@ -2,11 +2,26 @@ import constants, { http, HttpStatus, urls } from "../constants";
 import { VendorProfilePicture, Vendor as VendorRepo } from "../repos";
 import { VendorCache } from "../cache";
 import UserService from "./bases/UserService";
+import { Password } from "../utils";
+import VendorDto from "../types/dtos";
 
 export default class Vendor extends UserService<VendorRepo, VendorCache, VendorProfilePicture> {
 
     public constructor() {
         super(new VendorRepo(), new VendorCache(), new VendorProfilePicture(), 'vendorProfilePic');
+    }
+
+    public async createVendor(vendorDto: VendorDto) {
+        const passwordHash: string = Password.hashPassword(vendorDto.password!, this.storedSalt);
+        vendorDto.password = passwordHash;
+
+        const repoResult = await this.repo!.insert(vendorDto);
+        const repoResultError = this.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+
+        const vendor = repoResult.data!;
+        delete vendor.password;
+        return super.responseData(201, false, "Vendor has been created successfully");
     }
 
     public async updateFirstName(id: number, firstName: string) {
@@ -66,21 +81,5 @@ export default class Vendor extends UserService<VendorRepo, VendorCache, VendorP
     //         super.responseData(500, true, http('500')!);
     // }
 
-    private async toggleActiveStatus(id: number, activate: boolean = true) {
-        const repoResult = activate ? await this.repo!.updateActiveStatus(id, true) : await this.repo!.updateActiveStatus(id, false);
-        const errorResponse = this.handleRepoError(repoResult);
-        if (errorResponse) return errorResponse;
-        //Cache here
-        const message = activate ? "Vendor was activated successfully" : "Vendor was deactivated successfully";
-        return super.responseData(200, false, message, repoResult.data);
-    }
-
-    public async activateVendor(id: number) {
-        return await this.toggleActiveStatus(id);
-    }
-
-    public async deActivateVendor(id: number) {
-        return await this.toggleActiveStatus(id, false);
-    }
 }
 

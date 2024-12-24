@@ -2,7 +2,7 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { cloudinary, corsConfig, env, logger } from ".";
 import { auth, vendor, store, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory, customer } from "./../routes";
-import { Cloudinary, Email } from "../services";
+import { Cloudinary, Email, TwilioService } from "../services";
 import path from "path";
 import ejs from "ejs";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, redisClientMiddleware, vendorIsActive, uploads } from "./../middlewares";
@@ -64,14 +64,10 @@ function createApp() {
         });
     });
 
-    app.post("/test1", [passwordIsValid], async (req: Request, res: Response, next: NextFunction) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            const error = JSON.parse(errors.array()[0].msg);
-            res.status(error.statusCode).json({ error: true, message: error.message });
-            return;
-        }
-        res.status(200).json("testing")
+    app.post("/test1", async (req: Request, res: Response, next: NextFunction) => {
+        const twilio = new TwilioService();
+        const serviceResult = await twilio.sendSMS(req.body.to,req.body.message);
+        res.status(serviceResult.statusCode).json(serviceResult.json)
     });
 
     app.use(handleMulterErrors);

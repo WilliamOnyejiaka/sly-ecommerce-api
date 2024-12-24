@@ -3,7 +3,7 @@ import { AdminCache, CustomerCache, VendorCache } from "../cache";
 import BaseCache from "../cache/BaseCache";
 import constants, { http } from "../constants";
 import { Admin, Customer, Vendor } from "../repos";
-import UserRepo from "../repos/UserRepo";
+import UserRepo from "../repos/bases/UserRepo";
 import Authentication from "./bases/Authentication";
 
 export default class UserOTP extends Authentication {

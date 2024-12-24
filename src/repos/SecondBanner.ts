@@ -1,5 +1,5 @@
 import { ImageRepository } from "../interfaces/Repository";
-import ImageRepo from "./ImageRepo";
+import ImageRepo from "./bases/ImageRepo";
 
 export default class SecondBanner extends ImageRepo {
 

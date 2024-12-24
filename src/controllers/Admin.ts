@@ -83,29 +83,29 @@ export default class Admin {
         //     Controller.response(res, serviceResult);
     }
 
-    public static toggleActivate(activate: boolean = true) {
-        return async (req: Request, res: Response) => {
+    // public static toggleActivate(activate: boolean = true) {
+    //     return async (req: Request, res: Response) => {
 
-            const validationErrors = validationResult(req);
-            if (!validationErrors.isEmpty()) {
-                Controller.handleValidationErrors(res, validationErrors);
-                return;
-            }
+    //         const validationErrors = validationResult(req);
+    //         if (!validationErrors.isEmpty()) {
+    //             Controller.handleValidationErrors(res, validationErrors);
+    //             return;
+    //         }
 
-            const adminId = Number(req.body.adminId);
+    //         const adminId = Number(req.body.adminId);
 
-            const serviceResult = activate ? await Admin.service.activateAdmin(adminId) : await Admin.service.deactivateAdmin(adminId);
-            res.status(serviceResult.statusCode).json(serviceResult.json);
-        }
-    }
+    //         const serviceResult = activate ? await Admin.service.activateAdmin(adminId) : await Admin.service.deactivateAdmin(adminId);
+    //         res.status(serviceResult.statusCode).json(serviceResult.json);
+    //     }
+    // }
 
-    public static deactivateAdmin() {
-        return Admin.toggleActivate(false);
-    }
+    // public static deactivateAdmin() {
+    //     return Admin.toggleActivate(false);
+    // }
 
-    public static activateAdmin() {
-        return Admin.toggleActivate();
-    }
+    // public static activateAdmin() {
+    //     return Admin.toggleActivate();
+    // }
 
     public static async assignRole(req: Request, res: Response) {
         const validationErrors = validationResult(req);

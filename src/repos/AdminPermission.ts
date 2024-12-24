@@ -1,6 +1,6 @@
 import prisma from ".";
 import { PermissionDto } from "../types/dtos";
-import Repo from "./Repo"
+import Repo from "./bases/Repo"
 
 
 export default class AdminPermission extends Repo {

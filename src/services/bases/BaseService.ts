@@ -1,5 +1,5 @@
 import constants from "../../constants";
-import Repo from "../../repos/Repo";
+import Repo from "../../repos/bases/Repo";
 import { getPagination } from "../../utils";
 
 export default class BaseService<T extends Repo = Repo> {

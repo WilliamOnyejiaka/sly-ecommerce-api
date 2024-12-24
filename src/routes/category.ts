@@ -4,9 +4,9 @@ import { adminAuthorization, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
 import { validateQueryParams } from "../validators";
 
-const adminCategory: Router = Router();
+const category: Router = Router();
 
-adminCategory.get(
+category.get(
     "/paginate-categories",
     adminAuthorization(['any']),
     validateQueryParams([
@@ -22,34 +22,14 @@ adminCategory.get(
     asyncHandler(CategoryManagement.paginateCategories())
 );
 
-adminCategory.post(
-    "/create-category",
-    adminAuthorization(['manage_all']),
-    validateBody([
-        "name",
-        "priority",
-        "active"
-    ]),
-    asyncHandler(CategoryManagement.createCategory)
-);
-
-adminCategory.get(
+category.get(
     "/get-category-with-name/:categoryName",
-    adminAuthorization(['any']),
     asyncHandler(CategoryManagement.getCategoryWithName)
 );
 
-adminCategory.get(
+category.get(
     "/get-category-with-id/:id",
-    adminAuthorization(['any']),
     asyncHandler(CategoryManagement.getCategoryWithName)
 );
 
-
-adminCategory.delete(
-    "/:id",
-    adminAuthorization(['manage_all']),
-    asyncHandler(CategoryManagement.delete)
-);
-
-export default adminCategory;
+export default category;

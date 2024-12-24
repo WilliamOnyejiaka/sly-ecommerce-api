@@ -139,23 +139,23 @@ export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfi
     //     return super.responseData(200, repoResult.error, "Admin was deleted successfully");
     // }
 
-    private async toggleActiveStatus(id: number, activate: boolean = true) {
-        const repoResult = activate ? await this.repo!.updateActiveStatus(id, true) : await this.repo!.updateActiveStatus(id, false);
-        if (repoResult.error) {
-            const message = repoResult.type == 404 ? constants('404Admin')! : http('500')!; // TODO: remove this line
-            return super.responseData(repoResult.type!, true, message);
-        }
-        const message = activate ? "Admin was activated successfully" : "Admin was deactivated successfully";
-        return super.responseData(200, false, message);
-    }
+    // private async toggleActiveStatus(id: number, activate: boolean = true) {
+    //     const repoResult = activate ? await this.repo!.updateActiveStatus(id, true) : await this.repo!.updateActiveStatus(id, false);
+    //     if (repoResult.error) {
+    //         const message = repoResult.type == 404 ? constants('404Admin')! : http('500')!; // TODO: remove this line
+    //         return super.responseData(repoResult.type!, true, message);
+    //     }
+    //     const message = activate ? "Admin was activated successfully" : "Admin was deactivated successfully";
+    //     return super.responseData(200, false, message);
+    // }
 
-    public async deactivateAdmin(id: number) {
-        return this.toggleActiveStatus(id, false);
-    }
+    // public async deactivateAdmin(id: number) {
+    //     return this.toggleActiveStatus(id, false);
+    // }
 
-    public async activateAdmin(id: number) {
-        return this.toggleActiveStatus(id);
-    }
+    // public async activateAdmin(id: number) {
+    //     return this.toggleActiveStatus(id);
+    // }
 
     public async paginateRoles(page: number, pageSize: number) {
         return await this.roleService.paginateRoles(page, pageSize);
@@ -171,12 +171,6 @@ export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfi
     }
 
     public async assignRole(adminId: number, roleId: number) {
-        const roleExistsResult = await this.getRoleWithId(roleId);
-
-        if (roleExistsResult.json.error) {
-            return roleExistsResult;
-        }
-
         const repoResult = await this.repo!.assignRole(adminId, roleId);
         const error = super.handleRepoError(repoResult);
         if (error) return error;
@@ -184,9 +178,9 @@ export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfi
     }
 
     public async assignPermission(adminId: number, permissionId: number) {
-        const repoResult = await this.repo!.assignRole(adminId, permissionId);
-        const error = super.handleRepoError(repoResult);
-        if (error) return error;
+        const repoResult = await this.repo!.assignRole(adminId, permissionId); // TODO: wrong method
+        const repoResultError = super.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
 
         return super.responseData(200, false, "Permission was assigned successfully");
     }

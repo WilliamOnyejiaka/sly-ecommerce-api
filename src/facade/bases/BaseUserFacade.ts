@@ -37,4 +37,9 @@ export default class BaseUserFacade extends BaseFacade {
         return await service.uploadProfilePicture(image, userId);
     }
 
+    public async deleteUser(userId: number, user: UserType) {
+        const service = this.getUserService(user);
+        if (!service) return this.service.responseData(500, true, "Invalid user");
+        return await service.deleteUser(userId);
+    }
 }

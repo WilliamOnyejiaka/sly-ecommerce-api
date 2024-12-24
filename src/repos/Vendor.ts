@@ -1,8 +1,8 @@
 import prisma from ".";
 import { http } from "../constants";
 import VendorDto from "../types/dtos";
-import Repo from "./Repo";
-import UserRepo from "./UserRepo";
+import Repo from "./bases/Repo";
+import UserRepo from "./bases/UserRepo";
 
 interface UpdateData {
     firstName?: string,
@@ -15,7 +15,7 @@ interface UpdateData {
 export default class Vendor extends UserRepo {
 
     public constructor() {
-        super("vendor","profilePicture");
+        super("vendor", "profilePicture");
     }
 
     public async updateVendor(id: number, data: any) {

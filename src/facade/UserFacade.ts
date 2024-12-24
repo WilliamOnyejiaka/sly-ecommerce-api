@@ -30,13 +30,10 @@ export default class UserFacade extends BaseUserFacade {
         return this.service.responseData(400, true, "Not yet implemented");
     }
 
-    public async deleteUser(userId: number, token: string, user: UserType) {
+    public async deleteUserAndLogOut(userId: number, token: string, user: UserType) {
         const hasLoggedOut = await this.authService.logOut(token);
         const serviceError = this.handleServiceError(hasLoggedOut);
         if (serviceError) return serviceError;
-
-        const service = this.getUserService(user);
-        if (!service) return this.service.responseData(500, true, "Invalid user");
-        return await service.deleteUser(userId);
+        return await this.deleteUser(userId, user);
     }
 }

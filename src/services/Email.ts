@@ -15,7 +15,7 @@ export default class Email {
             port: 465,
             secure: true, // Use TLS
             auth: {
-                user: 'mirordev@gmail.com',
+                user: 'mirordev@gmail.com', // TODO: add this to env
                 pass: env('smtpPassword'),
             },
         });

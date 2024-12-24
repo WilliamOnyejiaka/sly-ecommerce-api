@@ -8,7 +8,7 @@ import Authentication from "./bases/Authentication";
 
 export default class UserRegistration extends Authentication {
 
-    public constructor(){
+    public constructor() {
         super();
     }
 
@@ -17,6 +17,7 @@ export default class UserRegistration extends Authentication {
         vendorDto.password = passwordHash;
 
         const repoResult = await this.vendorRepo.insert(vendorDto);
+
         const error: boolean = repoResult.error
         const statusCode = repoResult.type;
         const message: string = !error ? "Vendor has been created successfully" : repoResult.message!;

@@ -2,7 +2,7 @@ import BaseService from "./bases/BaseService";
 import { http } from "../constants";
 import { compressImage } from "../utils";
 import * as fs from "fs";
-import ImageRepo from "../repos/ImageRepo";
+import ImageRepo from "../repos/bases/ImageRepo";
 import { logger } from "../config";
 import { Cloudinary } from ".";
 import { UploadedImageData, UploadResult } from "../types";

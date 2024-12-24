@@ -6,7 +6,7 @@ import VendorDto, { AdminDto, CustomerAddressDto, CustomerDto } from "../types/d
 import constants, { http, HttpStatus } from "../constants";
 import { AdminCache, AdminKey, CustomerCache, TokenBlackList, VendorCache } from "../cache";
 import BaseService from "./bases/BaseService";
-import UserRepo from "../repos/UserRepo";
+import UserRepo from "../repos/bases/UserRepo";
 import BaseCache from "../cache/BaseCache";
 
 

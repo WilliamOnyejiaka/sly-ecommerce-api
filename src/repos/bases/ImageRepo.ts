@@ -1,5 +1,5 @@
-import prisma from ".";
-import { ImageRepository } from "../interfaces/Repository";
+import prisma from "..";
+import { ImageRepository } from "../../interfaces/Repository";
 import Repo from "./Repo";
 
 export default class ImageRepo extends Repo implements ImageRepository {
@@ -10,14 +10,14 @@ export default class ImageRepo extends Repo implements ImageRepository {
         super(tblName);
         this.parentIdName = parentIdName;
     }
-    
+
     public async insertImage(data: any) {
-        const parentColumn = {[this.parentIdName]: data.parentId };
+        const parentColumn = { [this.parentIdName]: data.parentId };
         delete data.parentId;
 
         try {
             const newImage = await (prisma[this.tblName] as any).create({
-                data: { ...data,...parentColumn },
+                data: { ...data, ...parentColumn },
             });
             return super.repoResponse(false, 201, null, newImage);
         } catch (error) {

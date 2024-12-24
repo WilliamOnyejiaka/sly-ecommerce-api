@@ -3,7 +3,7 @@ import { AdminCache, CustomerCache, VendorCache } from "../cache";
 import BaseCache from "../cache/BaseCache";
 import constants, { http, HttpStatus } from "../constants";
 import { Admin, Customer, Vendor } from "../repos";
-import UserRepo from "../repos/UserRepo";
+import UserRepo from "../repos/bases/UserRepo";
 import { UserType } from "../types/enums";
 import { Password } from "../utils";
 import Authentication from "./bases/Authentication";
@@ -79,5 +79,13 @@ export default class Auth extends Authentication {
         return blacklisted ?
             super.responseData(200, false, "User has been logged out successfully") :
             super.responseData(500, true, http('500')!);
+    }
+
+    public async requestPasswordOTP() {
+
+    }
+
+    public async resetPassword() {
+
     }
 }

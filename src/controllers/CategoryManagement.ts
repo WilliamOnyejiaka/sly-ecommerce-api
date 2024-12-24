@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
-import { Category } from "../services";
+// import { Category } from "../services";
 import { CategoryDto } from "../types/dtos";
 import { numberValidator } from "../validators";
 import { Controller } from ".";
+import Category from "./Category";
 
-export default class AdminCategory {
+export default class CategoryManagement extends Category {
 
-    private static readonly service: Category = new Category();
+    // private static readonly service: Category = new Category();
 
     public static async createCategory(req: Request, res: Response) {
         if (typeof req.body.active !== "boolean") {
@@ -33,7 +34,7 @@ export default class AdminCategory {
             adminId: adminId
         };
 
-        const categoryExistsResult = await AdminCategory.service.getCategoryWithName(categoryData.name);
+        const categoryExistsResult = await CategoryManagement.service.getCategoryWithName(categoryData.name);
         if (categoryExistsResult.json.error && categoryExistsResult.statusCode == 500) {
             res.status(categoryExistsResult.statusCode).json(categoryExistsResult.json);
             return;
@@ -47,33 +48,7 @@ export default class AdminCategory {
             return;
         }
 
-        const serviceResult = await AdminCategory.service.createCategory(categoryData);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
-    }
-
-    public static paginateCategories() {
-        return Controller.paginate<Category>(AdminCategory.service);
-    }
-
-    public static async getAllCategories(req: Request, res: Response) {
-        const serviceResult = await AdminCategory.service.getAllCategories();
-        res.status(serviceResult.statusCode).json(serviceResult.json);
-    }
-
-    public static async getCategoryWithName(req: Request, res: Response) {
-        const serviceResult = await AdminCategory.service.getCategoryWithName(req.params.categoryName);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
-    }
-
-    public static async getCategoryWithId(req: Request, res: Response) {
-        const idResult = numberValidator(req.params.categoryId);
-
-        if (idResult.error) {
-            res.status(400).send("Category id must be an integer");
-            return;
-        }
-
-        const serviceResult = await AdminCategory.service.getCategoryWithId(idResult.number);
+        const serviceResult = await CategoryManagement.service.createCategory(categoryData);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
@@ -85,7 +60,7 @@ export default class AdminCategory {
             return;
         }
 
-        const serviceResult = await AdminCategory.service.delete(idResult.number);
+        const serviceResult = await Category.service.deleteItem(idResult.number);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

@@ -1,7 +1,8 @@
 import BaseCache from "../../cache/BaseCache";
+import { env } from "../../config";
 import constants, { http, HttpStatus } from "../../constants";
-import ImageRepo from "../../repos/ImageRepo";
-import UserRepo from "../../repos/UserRepo";
+import ImageRepo from "../../repos/bases/ImageRepo";
+import UserRepo from "../../repos/bases/UserRepo";
 import { getPagination } from "../../utils";
 import ImageService from "../Image";
 import BaseService from "./BaseService";
@@ -10,6 +11,7 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
 
     protected readonly cache: U;
     protected readonly imageService: ImageService = new ImageService();
+    protected readonly storedSalt: string = env("storedSalt")!;
 
     public constructor(repo: T, cache: U, protected readonly profilePicRepo: V, protected readonly imageFolderName: string) {
         super(repo);
@@ -56,20 +58,19 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
 
     public async getUserProfileWithEmail(email: string) {
         const repoResult = await this.repo!.getUserProfileWithEmail(email);
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message as string);
-        }
+        const errorResponse = super.handleRepoError(repoResult);
+        if (errorResponse) return errorResponse;
 
-        const vendor = repoResult.data;
-        const statusCode = vendor ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+        const statusCode = repoResult.data ? HttpStatus.OK : HttpStatus.NOT_FOUND;
         const error: boolean = repoResult.error;
-        const message = error ? http(HttpStatus.NOT_FOUND.toString())! : "User has been retrieved";
+        const user = repoResult.data;
 
-        if (!error) {
-            delete repoResult.data.password;
+        if (user) {
+            this.sanitizeUserImageItems([user]);
+            return super.responseData(statusCode, error, constants('200User')!, user);
         }
 
-        return super.responseData(statusCode, error, message, vendor);
+        return super.responseData(statusCode, error, constants('404User')!, user);
     }
 
     public async getAllUsers() {
@@ -121,6 +122,23 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
             this.imageFolderName
         );
         return serviceResult;
+    }
+
+    private async toggleActiveStatus(userId: number, activate: boolean = true) {
+        const repoResult = activate ? await this.repo!.updateActiveStatus(userId, true) : await this.repo!.updateActiveStatus(userId, false);
+        const errorResponse = this.handleRepoError(repoResult);
+        if (errorResponse) return errorResponse;
+        //Cache here
+        const message = activate ? "Vendor was activated successfully" : "Vendor was deactivated successfully";
+        return super.responseData(200, false, message, repoResult.data);
+    }
+
+    public async activateUser(userId: number) {
+        return await this.toggleActiveStatus(userId);
+    }
+
+    public async deActivateUser(userId: number) {
+        return await this.toggleActiveStatus(userId, false);
     }
 
     public async deleteUser(userId: number) {

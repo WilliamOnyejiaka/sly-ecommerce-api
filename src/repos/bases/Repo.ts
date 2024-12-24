@@ -1,8 +1,8 @@
 import { Prisma } from "@prisma/client";
-import prisma from ".";
-import { http } from "../constants";
-import Repository from "../interfaces/Repository";
-import { logger } from "../config";
+import prisma from "..";
+import { http } from "../../constants";
+import Repository from "../../interfaces/Repository";
+import { logger } from "../../config";
 
 export default class Repo implements Repository {
 

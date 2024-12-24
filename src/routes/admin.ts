@@ -43,21 +43,21 @@ admin.post(
     asyncHandler(Admin.createAdmin)
 );
 
-admin.patch(
-    "/deactivate-admin",
-    adminAuthorization(['manage_all']),
-    validateBody(['adminId']),
-    [bodyNumberIsValid('adminId')],
-    asyncHandler(Admin.deactivateAdmin())
-);
+// admin.patch(
+//     "/deactivate-admin",
+//     adminAuthorization(['manage_all']),
+//     validateBody(['adminId']),
+//     [bodyNumberIsValid('adminId')],
+//     asyncHandler(Admin.deactivateAdmin())
+// );
 
-admin.patch(
-    "/activate-admin",
-    adminAuthorization(['manage_all']),
-    validateBody(['adminId']),
-    [bodyNumberIsValid('adminId')],
-    asyncHandler(Admin.activateAdmin())
-);
+// admin.patch(
+//     "/activate-admin",
+//     adminAuthorization(['manage_all']),
+//     validateBody(['adminId']),
+//     [bodyNumberIsValid('adminId')],
+//     asyncHandler(Admin.activateAdmin())
+// );
 
 admin.patch(
     "/assign-role",

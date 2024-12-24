@@ -4,11 +4,11 @@ import Store from "./Store";
 import Admin from "./Admin";
 import Seed from "./Seed";
 import Role from "./Role";
-import AdminVendor from "./AdminVendor";
+import VendorManagement from "./VendorManagement";
 import Permission from "./Permission";
 import AdminPermission from "./AdminPermission";
 import AdminStore from "./AdminStore";
-import AdminCategory from "./AdminCategory";
+import CategoryManagement from "./CategoryManagement";
 import Controller from "./bases/Controller";
 import Customer from "./Customer";
 
@@ -19,11 +19,11 @@ export {
     Admin,
     Seed,
     Role,
-    AdminVendor,
+    VendorManagement,
     Permission,
     AdminPermission,
     AdminStore,
-    AdminCategory,
+    CategoryManagement,
     Controller,
     Customer
 };

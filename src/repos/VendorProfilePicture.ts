@@ -1,4 +1,4 @@
-import ImageRepo from "./ImageRepo";
+import ImageRepo from "./bases/ImageRepo";
 
 export default class VendorProfilePicture extends ImageRepo {
 

@@ -1,5 +1,5 @@
 import prisma from ".";
-import UserRepo from "./UserRepo";
+import UserRepo from "./bases/UserRepo";
 export default class Admin extends UserRepo {
 
     public constructor() {

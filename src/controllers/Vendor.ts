@@ -6,8 +6,6 @@ import { UserType } from "../types/enums";
 
 export default class Vendor {
 
-    // private static readonly facade: VendorService = new VendorService();
-    private static readonly authService: Auth = new Auth();
     private static readonly facade: UserFacade = new UserFacade();
 
 
@@ -53,7 +51,7 @@ export default class Vendor {
         //     return;
         // }
         const vendorId = res.locals.data.id;
-        const serviceResult = await Vendor.facade.deleteUser(vendorId, token, UserType.Vendor);
+        const serviceResult = await Vendor.facade.deleteUserAndLogOut(vendorId, token, UserType.Vendor);
         Controller.response(res, serviceResult);
     }
 

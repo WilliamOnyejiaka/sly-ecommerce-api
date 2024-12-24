@@ -1,12 +1,12 @@
 import prisma from ".";
 import { CategoryDto } from "../types/dtos";
-import Repo from "./Repo"
+import AssetRepo from "./bases/AssetRepo";
 
 
-export default class Category extends Repo {
+export default class Category extends AssetRepo {
 
     public constructor() {
-        super('category');
+        super('category','CategoryImage');
     }
 
     public async insertCategory(data: CategoryDto) {
