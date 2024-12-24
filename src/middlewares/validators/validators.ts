@@ -50,6 +50,8 @@ const emailExists = <T extends UserRepo>(repo: T) => async (value: string) => {
 
 const nameExists = <T extends Repo>(repo: T) => async (value: string) => {
     const repoResult = await repo.getItemWithName(value);
+    console.log(repoResult);
+    
 
     if (repoResult.error) {
         throw new Error(JSON.stringify({
@@ -107,7 +109,7 @@ export const zipCodeIsValid = body('zip').custom(isValidZipCode);
 export const tokenIsPresent = header('Authorization').custom(isTokenPresent);
 export const paramNumberIsValid = (paramName: string) => param(paramName).custom(isValidNumber);
 export const bodyNumberIsValid = (bodyName: string) => body(bodyName).custom(isValidNumber);
-export const itemNameExists = <T extends Repo>(repo: T) => body('email').custom(nameExists<T>(repo));
+export const itemNameExists = <T extends Repo>(repo: T, bodyName: string) => body(bodyName).custom(nameExists<T>(repo));
 export const pageQueryIsValid = query('page').custom(validateQueryNumber('page'));
 export const pageSizeQueryIsValid = query('pageSize').custom(validateQueryNumber('pageSize'));
 export const queryIsValidNumber = (queryName: string) => query(queryName).custom(validateQueryNumber(queryName));

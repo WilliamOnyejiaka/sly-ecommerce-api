@@ -3,6 +3,7 @@ import { CategoryManagement } from "../controllers";
 import { adminAuthorization, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
 import { validateQueryParams } from "../validators";
+import { createCategory } from "../middlewares/validators/category";
 
 const adminCategory: Router = Router();
 
@@ -24,7 +25,7 @@ adminCategory.get(
 
 adminCategory.post(
     "/create-category",
-    adminAuthorization(['manage_all']),
+    createCategory,
     validateBody([
         "name",
         "priority",
@@ -34,13 +35,13 @@ adminCategory.post(
 );
 
 adminCategory.get(
-    "/get-category-with-name/:categoryName",
+    "/get-with-name/:categoryName",
     adminAuthorization(['any']),
     asyncHandler(CategoryManagement.getCategoryWithName)
 );
 
 adminCategory.get(
-    "/get-category-with-id/:id",
+    "/get-with-id/:id",
     adminAuthorization(['any']),
     asyncHandler(CategoryManagement.getCategoryWithName)
 );

@@ -1,25 +1,26 @@
 import { Request, Response } from "express";
-import { Category as CategoryService } from "../services";
-import { CategoryDto } from "../types/dtos";
 import { numberValidator } from "../validators";
 import { Controller } from ".";
+import { CategoryManagementFacade } from "../facade";
+import { CategoryType } from "../types/enums";
+import BaseService from "../services/bases/BaseService";
 
 export default abstract class Category {
 
-    protected static readonly service: CategoryService = new CategoryService();
+    protected static readonly facade: CategoryManagementFacade = new CategoryManagementFacade();
 
     public static paginateCategories() {
-        return Controller.paginate<CategoryService>(Category.service);
+        return Controller.paginate<BaseService>(Category.facade.getCategoryService(CategoryType.Main));
     }
 
     public static async getAllCategories(req: Request, res: Response) {
-        const serviceResult = await Category.service.getAllCategories();
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const serviceResult = await Category.facade.getAllCategories(CategoryType.Main);
+        Controller.response(res,serviceResult);
     }
 
     public static async getCategoryWithName(req: Request, res: Response) {
-        const serviceResult = await Category.service.getCategoryWithName(req.params.categoryName);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const serviceResult = await Category.facade.getCategoryWithName(req.params.categoryName,CategoryType.Main);
+        Controller.response(res, serviceResult);
     }
 
     public static async getCategoryWithId(req: Request, res: Response) {
@@ -30,7 +31,7 @@ export default abstract class Category {
             return;
         }
 
-        const serviceResult = await Category.service.getCategoryWithId(idResult.number);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const serviceResult = await Category.facade.getCategoryWithId(idResult.number,CategoryType.Main);
+        Controller.response(res, serviceResult);
     }
 }

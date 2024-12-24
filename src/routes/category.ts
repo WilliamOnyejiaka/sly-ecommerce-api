@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
 import { CategoryManagement } from "../controllers";
-import { adminAuthorization, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
 import { validateQueryParams } from "../validators";
 
@@ -8,7 +7,6 @@ const category: Router = Router();
 
 category.get(
     "/paginate-categories",
-    adminAuthorization(['any']),
     validateQueryParams([
         {
             name: "page",
@@ -23,12 +21,12 @@ category.get(
 );
 
 category.get(
-    "/get-category-with-name/:categoryName",
+    "/get-with-name/:categoryName",
     asyncHandler(CategoryManagement.getCategoryWithName)
 );
 
 category.get(
-    "/get-category-with-id/:id",
+    "/get-with-id/:id",
     asyncHandler(CategoryManagement.getCategoryWithName)
 );
 
