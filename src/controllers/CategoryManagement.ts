@@ -26,8 +26,18 @@ export default class CategoryManagement extends Category {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
-    public static async createCategoryAll(req: Request,res: Response){
-        
+    public static async createCategoryAll(req: Request, res: Response) {
+
+    }
+
+    public static override async getCategoryWithName(req: Request, res: Response) {
+        const serviceResult = await Category.facade.adminGetCategory(req.params.categoryName, CategoryType.Main);
+        Controller.response(res, serviceResult);
+    }
+
+    public static override async getAllCategories(req: Request, res: Response) {
+        const serviceResult = await Category.facade.adminGetCategories(CategoryType.Main);
+        Controller.response(res, serviceResult);
     }
 
     public static async uploadCategoryImage(req: Request, res: Response) {

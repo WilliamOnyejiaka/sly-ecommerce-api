@@ -26,22 +26,24 @@ export default class CategoryManagementFacade extends BaseFacade {
         return await service.createCategory(categoryData);
     }
 
-    public async getCategoryWithId(categoryId: number, category: CategoryType) {
+    public async getCategory(identifier: string | number, category: CategoryType, admin: boolean = false) {
         const service = this.getCategoryService(category);
         if (!service) return this.invalidType();
-        return await service.getCategoryWithId(categoryId);
+        return await service.getCategory(identifier, admin);
     }
 
-    public async getCategoryWithName(categoryName: string, category: CategoryType) {
-        const service = this.getCategoryService(category);
-        if (!service) return this.invalidType();
-        return await service.getCategoryWithName(categoryName);
+    public async adminGetCategory(identifier: string, category: CategoryType) {
+        return await this.getCategory(identifier, category, true)
     }
 
-    public async getAllCategories(category: CategoryType) {
+    public async getAllCategories(category: CategoryType, admin: boolean = false) {
         const service = this.getCategoryService(category);
         if (!service) return this.invalidType();
-        return await service.getAllCategories();
+        return await service.getAllCategories(admin);
+    }
+
+    public async adminGetCategories(category: CategoryType) {
+        return await this.getAllCategories(category, true)
     }
 
     public async deleteCategory(categoryId: number, category: CategoryType) {

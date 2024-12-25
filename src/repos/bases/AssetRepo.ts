@@ -33,4 +33,8 @@ export default class AssetRepo extends Repo {
     public override async paginate(skip: number, take: number) {
         return super.paginate(skip, take, this.imageFilter);
     }
+
+    public override async getAll(filter?: any) {
+        return await super.getAll(this.imageFilter)
+    }
 }

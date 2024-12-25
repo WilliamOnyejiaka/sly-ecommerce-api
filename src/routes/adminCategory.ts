@@ -48,6 +48,13 @@ adminCategory.post(
     asyncHandler(CategoryManagement.uploadCategoryImage)
 );
 
+adminCategory.get(
+    "/",
+    adminAuthorization(['any']),
+    asyncHandler(CategoryManagement.getAllCategories)
+);
+
+
 adminCategory.delete(
     "/:id",
     adminAuthorization(['manage_all']),

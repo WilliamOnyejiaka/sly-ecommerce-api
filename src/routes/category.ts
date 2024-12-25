@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { CategoryManagement } from "../controllers";
+import { Category } from "../controllers";
 import asyncHandler from "express-async-handler";
 import { validateQueryParams } from "../validators";
 
@@ -17,17 +17,23 @@ category.get(
             type: "number"
         }
     ]),
-    asyncHandler(CategoryManagement.paginateCategories())
+    asyncHandler(Category.paginateCategories())
 );
 
 category.get(
     "/get-with-name/:categoryName",
-    asyncHandler(CategoryManagement.getCategoryWithName)
+    asyncHandler(Category.getCategoryWithName)
 );
 
 category.get(
     "/get-with-id/:categoryId",
-    asyncHandler(CategoryManagement.getCategoryWithId)
+    asyncHandler(Category.getCategoryWithId)
 );
+
+category.get(
+    "/",
+    asyncHandler(Category.getAllCategories)
+);
+
 
 export default category;

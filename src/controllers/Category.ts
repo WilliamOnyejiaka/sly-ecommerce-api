@@ -19,7 +19,7 @@ export default abstract class Category {
     }
 
     public static async getCategoryWithName(req: Request, res: Response) {
-        const serviceResult = await Category.facade.getCategoryWithName(req.params.categoryName,CategoryType.Main);
+        const serviceResult = await Category.facade.getCategory(req.params.categoryName,CategoryType.Main);
         Controller.response(res, serviceResult);
     }
 
@@ -31,7 +31,7 @@ export default abstract class Category {
             return;
         }
 
-        const serviceResult = await Category.facade.getCategoryWithId(idResult.number,CategoryType.Main);
+        const serviceResult = await Category.facade.getCategory(idResult.number,CategoryType.Main);
         Controller.response(res, serviceResult);
     }
 }

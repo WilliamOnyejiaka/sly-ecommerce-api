@@ -11,6 +11,7 @@ import AdminStore from "./AdminStore";
 import CategoryManagement from "./CategoryManagement";
 import Controller from "./bases/Controller";
 import Customer from "./Customer";
+import Category from "./Category";
 
 export {
     Auth,
@@ -24,6 +25,7 @@ export {
     AdminPermission,
     AdminStore,
     CategoryManagement,
+    Category,
     Controller,
     Customer
 };

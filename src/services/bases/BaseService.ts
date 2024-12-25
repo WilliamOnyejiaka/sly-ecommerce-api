@@ -92,6 +92,14 @@ export default class BaseService<T extends Repo = Repo> {
         });
     }
 
+    public sanitizeData(data: any[], fieldsToRemove: any[]): void {
+        data.forEach(item => {
+            fieldsToRemove.forEach(key => {
+                delete item[key];
+            });
+        });
+    }
+
     protected async deleteWithId(id: number) {
         const repoResult = await this.repo!.deleteWithId(id);
         if (repoResult.error) {
