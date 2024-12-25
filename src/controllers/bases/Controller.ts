@@ -1,8 +1,15 @@
 import { Result, ValidationError } from "express-validator";
 import BaseService from "../../services/bases/BaseService";
 import { Request, Response } from "express";
+import { ImageService } from "../../services";
 
 export default class Controller {
+
+    private static readonly imageService = new ImageService();
+
+    public static async deleteFiles(files: Express.Multer.File[]) {
+        return await Controller.imageService.deleteFiles(files);
+    }
 
     public static paginate<T extends BaseService>(service: T) {
         return async (req: Request, res: Response) => {

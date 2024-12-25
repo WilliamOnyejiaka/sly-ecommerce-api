@@ -20,7 +20,7 @@ export default class CategoryManagementFacade extends BaseFacade {
         return services[category] || null;
     }
 
-    public async createCategory(categoryData: CategoryDto,category: CategoryType){
+    public async createCategory(categoryData: CategoryDto, category: CategoryType) {
         const service = this.getCategoryService(category);
         if (!service) return this.invalidType();
         return await service.createCategory(categoryData);

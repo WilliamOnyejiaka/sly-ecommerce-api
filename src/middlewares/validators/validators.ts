@@ -50,8 +50,6 @@ const emailExists = <T extends UserRepo>(repo: T) => async (value: string) => {
 
 const nameExists = <T extends Repo>(repo: T) => async (value: string) => {
     const repoResult = await repo.getItemWithName(value);
-    console.log(repoResult);
-    
 
     if (repoResult.error) {
         throw new Error(JSON.stringify({
@@ -91,6 +89,14 @@ const isValidNumber = (value: string) => {
     return true;
 }
 
+const isValidBoolean = (message: string) => (value: string) => {
+    if (typeof value !== "boolean") {
+        throw new Error(errorDetails(message, HttpStatus.BAD_REQUEST));
+    }
+    return true;
+}
+
+
 const validateQueryNumber = (name: string) => (value: string) => {
     const numberResult = numberValidator(value);
 
@@ -113,3 +119,5 @@ export const itemNameExists = <T extends Repo>(repo: T, bodyName: string) => bod
 export const pageQueryIsValid = query('page').custom(validateQueryNumber('page'));
 export const pageSizeQueryIsValid = query('pageSize').custom(validateQueryNumber('pageSize'));
 export const queryIsValidNumber = (queryName: string) => query(queryName).custom(validateQueryNumber(queryName));
+export const bodyBooleanIsValid = (bodyName: string) => body(bodyName).custom(isValidBoolean(`${bodyName} must be a boolean`));
+    

@@ -26,8 +26,8 @@ category.get(
 );
 
 category.get(
-    "/get-with-id/:id",
-    asyncHandler(CategoryManagement.getCategoryWithName)
+    "/get-with-id/:categoryId",
+    asyncHandler(CategoryManagement.getCategoryWithId)
 );
 
 export default category;

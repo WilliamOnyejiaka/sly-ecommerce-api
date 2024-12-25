@@ -23,7 +23,7 @@ export default abstract class Category {
         Controller.response(res, serviceResult);
     }
 
-    public static async getCategoryWithId(req: Request, res: Response) {
+    public static async getCategoryWithId(req: Request, res: Response) {        
         const idResult = numberValidator(req.params.categoryId);
 
         if (idResult.error) {

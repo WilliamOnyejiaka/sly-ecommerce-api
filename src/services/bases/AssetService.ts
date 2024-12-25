@@ -37,6 +37,30 @@ export default class AssetService<T extends AssetRepo, U extends ImageRepo> exte
         return serviceResult;
     }
 
+    protected sanitizeImageItems(items: any[]) {
+        items.forEach((item: any) => {
+            item.imageUrl = item[this.repo!.imageRelation].length != 0 ? item[this.repo!.imageRelation][0].imageUrl : null;
+            delete item[this.repo!.imageRelation];
+        });
+    }
+
+    protected async getItemAndImage(nameOrId: string | number, message200?: string) {
+        const repoResult = typeof nameOrId == "number" ? await this.repo!.getItemAndImageRelationWithId(nameOrId) :
+            await this.repo!.getItemAndImageRelationWithName(nameOrId);
+        const repoResultError = this.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+
+        const data = repoResult.data;
+        if (data) {
+            this.sanitizeImageItems([data]);
+            const message = message200 ?? "Item was retrieved successfully";
+            return super.responseData(200, false, message, data);
+        }
+
+        return this.responseData(404, true, "Item was not found", data);
+    }
+
+
     public async deleteItem(itemId: number) {
         const itemDetailsRepoResult = await this.repo!.getItemAndImageRelationWithId(itemId);
         const itemDetailsRepoResultError = super.handleRepoError(itemDetailsRepoResult);

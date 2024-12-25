@@ -5,10 +5,10 @@ import { CategoryDto } from "../types/dtos";
 import AssetService from "./bases/AssetService";
 import CategoryImage from "../repos/CategoryImage";
 
-export default class Category extends AssetService<CategoryRepo,CategoryImage> {
+export default class Category extends AssetService<CategoryRepo, CategoryImage> {
 
     public constructor() {
-        super(new CategoryRepo(),new CategoryImage(),'categoryImage');
+        super(new CategoryRepo(), new CategoryImage(), 'category');
     }
 
     public async createCategory(categoryData: CategoryDto) {
@@ -16,11 +16,11 @@ export default class Category extends AssetService<CategoryRepo,CategoryImage> {
     }
 
     public async getCategoryWithName(categoryName: string) {
-        return await super.getItemWithName(categoryName);
+        return await super.getItemAndImage(categoryName);
     }
 
     public async getCategoryWithId(categoryId: number) {
-        return await super.getItemWithId(categoryId, constants('200Category'));
+        return await super.getItemAndImage(categoryId, constants('200Category'));
     }
 
     public async getAllCategories() {

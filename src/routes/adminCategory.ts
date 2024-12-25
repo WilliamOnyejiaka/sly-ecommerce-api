@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { CategoryManagement } from "../controllers";
-import { adminAuthorization, validateBody } from "../middlewares";
+import { adminAuthorization, uploads, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
 import { validateQueryParams } from "../validators";
 import { createCategory } from "../middlewares/validators/category";
@@ -26,11 +26,6 @@ adminCategory.get(
 adminCategory.post(
     "/create-category",
     createCategory,
-    validateBody([
-        "name",
-        "priority",
-        "active"
-    ]),
     asyncHandler(CategoryManagement.createCategory)
 );
 
@@ -41,11 +36,17 @@ adminCategory.get(
 );
 
 adminCategory.get(
-    "/get-with-id/:id",
+    "/get-with-id/:categoryId",
     adminAuthorization(['any']),
-    asyncHandler(CategoryManagement.getCategoryWithName)
+    asyncHandler(CategoryManagement.getCategoryWithId)
 );
 
+adminCategory.post(
+    "/upload-category-image/:categoryId",
+    adminAuthorization(['manage_all']),
+    uploads.single("image"),
+    asyncHandler(CategoryManagement.uploadCategoryImage)
+);
 
 adminCategory.delete(
     "/:id",
