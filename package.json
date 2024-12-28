@@ -11,7 +11,7 @@
     "copy-seeds": "cp -R src/seeds dist/seeds",
     "change": "npx prisma generate && npx prisma migrate dev --name init --create-only",
     "migrate": "npx prisma migrate deploy",
-    "db-reset": "npx prisma migrate reset",
+    "db-reset": "npx prisma migrate reset --force",
     "format": "npx prisma format",
     "cli": "ts-node src/console/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
