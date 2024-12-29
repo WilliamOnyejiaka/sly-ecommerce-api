@@ -5,7 +5,7 @@ export default async function compressImage(image: Express.Multer.File) {
     try {
         const outputPath = `compressed/${image.filename}`;
         await sharp(image.path)
-            .resize({ height: 1200, width: 800 })
+            .resize({ height: 800, width: 800 })
             .webp({
                 lossless: true,
                 quality: 80
