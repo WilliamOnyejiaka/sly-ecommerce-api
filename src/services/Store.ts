@@ -16,25 +16,16 @@ export default class Store extends BaseService<StoreDetails> {
     public async createStoreAll(storeDetailsDto: StoreDetailsDto, images: Express.Multer.File[]) {
         const storeRepoResult = await this.repo!.getStoreWithVendorId(storeDetailsDto.vendorId!);
         const storeRepoResultError = this.handleRepoError(storeRepoResult);
-        if (storeRepoResultError) {
-            if (!(await this.imageService.deleteFiles(images))) return storeRepoResultError;
+        if (storeRepoResultError || storeRepoResult.data) {
+            if (!(await this.imageService.deleteFiles(images))) return storeRepoResultError ?? super.responseData(HttpStatus.BAD_REQUEST, true, "This vendor already has a store");
             return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
         }
 
         const storeNameRepoResult = await this.repo!.getItemWithName(storeDetailsDto.name);
         const storeNameRepoResultError = this.handleRepoError(storeNameRepoResult);
+
         if (storeNameRepoResultError) {
             if (!(await this.imageService.deleteFiles(images))) return storeNameRepoResultError;
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
-
-        const storeDetails = storeRepoResult.data;
-        const hasStoreLogo = storeDetails.storeLogo.length > 0;
-        const hasFirstBanner = storeDetails.firstStoreBanner.length > 0;
-        const hasSecondBanner = storeDetails.secondStoreBanner.length > 0;
-
-        if (hasFirstBanner || hasSecondBanner || hasStoreLogo) {
-            if (!(await this.imageService.deleteFiles(images))) return super.responseData(400, true, "This store already has an image");
             return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
         }
 
@@ -43,6 +34,7 @@ export default class Store extends BaseService<StoreDetails> {
             firstBanner: "firstStoreBanner",
             secondBanner: "secondStoreBanner",
         };
+
 
         const uploadResults = await this.imageService.uploadImages(images, uploadFolders);
         const storeImages = uploadResults.data;
