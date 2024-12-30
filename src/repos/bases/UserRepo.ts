@@ -14,6 +14,10 @@ export default class UserRepo extends Repo {
         return await super.getItemWithId(userId);
     }
 
+    public async getUserWithPhoneNumber(phoneNumber: string) {
+        return await super.getItem({ 'phoneNumber': phoneNumber });
+    }
+
     public async getUserProfile(userIdOrEmail: number | string) {
         const where = typeof userIdOrEmail == "number" ? { id: userIdOrEmail } : { email: userIdOrEmail };
         return await super.getItem(where, {

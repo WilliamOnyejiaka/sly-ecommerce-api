@@ -48,6 +48,20 @@ const emailExists = <T extends UserRepo>(repo: T) => async (value: string) => {
     return true;
 }
 
+const phoneNumberExists = <T extends UserRepo>(repo: T) => async (value: string) => {
+    const repoResult = await repo.getUserWithPhoneNumber(value);
+
+    if (repoResult.error) {
+        throw new Error(JSON.stringify({
+            message: repoResult.message,
+            statusCode: repoResult.type
+        }));
+    } else if (repoResult.data) {
+        throw new Error(errorDetails("Phone number already exists", HttpStatus.BAD_REQUEST));
+    }
+    return true;
+}
+
 const nameExists = <T extends Repo>(repo: T) => async (value: string) => {
     const repoResult = await repo.getItemWithName(value);
 
@@ -111,6 +125,7 @@ export const passwordIsValid = body('password').custom(isValidPassword); // Cust
 export const phoneNumberIsValid = body('phoneNumber').custom(isValidPhoneNumber);
 export const emailIsValid = body('email').custom(isValidEmail);
 export const userEmailExists = <T extends UserRepo>(repo: T) => body('email').custom(emailExists<T>(repo));
+export const userPhoneNumberExists = <T extends UserRepo>(repo: T) => body('phoneNumber').custom(phoneNumberExists<T>(repo));
 export const zipCodeIsValid = body('zip').custom(isValidZipCode);
 export const tokenIsPresent = header('Authorization').custom(isTokenPresent);
 export const paramNumberIsValid = (paramName: string) => param(paramName).custom(isValidNumber);

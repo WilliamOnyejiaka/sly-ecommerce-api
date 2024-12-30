@@ -37,6 +37,24 @@ export default class Cloudinary extends BaseService {
         });
     }
 
+    public async updateImage(filePath: string, publicID: string) {
+        try {
+            const uploadResult = await cloudinary.uploader.upload(filePath, {
+                public_id: publicID,
+                overwrite: true // Ensures the image is replaced
+            });
+            const url = this.getUrl(uploadResult.public_id);
+
+            return super.responseData(201, false, null, {
+                imageData: uploadResult,
+                url
+            });
+        } catch (error: any) {
+            logger.error(`Error updating file: ${error.message}`, { filePath });
+            return super.responseData(500, true, http('500')!);
+        }
+    }
+
     private fileOptions(type: string) {
         const resourceMap: Record<string, object> = {
             'image': {},

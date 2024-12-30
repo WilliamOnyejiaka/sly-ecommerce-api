@@ -37,4 +37,17 @@ export default class ImageRepo extends Repo implements ImageRepository {
             return super.handleDatabaseError(error);
         }
     }
+
+    public async getImages(id: number) {
+        try {
+            const image = await (prisma[this.tblName] as any).findMany({
+                where: {
+                    [this.parentIdName]: id
+                }
+            });
+            return super.repoResponse(false, 200, null, image);
+        } catch (error) {
+            return super.handleDatabaseError(error);
+        }
+    }
 }

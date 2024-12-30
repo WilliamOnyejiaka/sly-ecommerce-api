@@ -6,29 +6,27 @@ model Product {
   discountPrice   Decimal?   @db.Decimal(10, 2)
   isAvailable     Boolean    @default(true)
   soldCount       Int        @default(0)
-  sku             String?    @unique
-  barcode         String?
   attributes      Json?
-  stock           Int?
+  stock           Int @default(1)
+  additionalInfo Json?
+  metaData Json?
   averageRating   Float      @default(0)
   reviewCount     Int        @default(0)
   isFeatured      Boolean    @default(false)
-  isDeleted       Boolean    @default(false)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
   // Relations
-  vendorId        Int
-  vendor          Vendor     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  storeId        Int
+  store          Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
   categoryId      Int
   category        Category   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   images          Image[]
-  reviews         Review[]
   inventory       Inventory[]
 
   @@index([name])
   @@index([categoryId])
-  @@index([vendorId])
+  @@index([storeId])
 }
 
 model Comment {
@@ -71,11 +69,12 @@ model Review {
 model Inventory {
   id               Int        @id @default(autoincrement())
   stock            Int        @default(0)
+    soldCount       Int        @default(0)
   lowStockThreshold Int       @default(10) // Alert threshold for low stock
-  restockQuantity  Int?       // Suggested restock quantity
   productId        Int
   product          Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  warehouseId      Int?       // For multi-location inventory
-  warehouse        Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
-  updatedAt        DateTime   @updatedAt
+      storeId        Int
+  store          Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }

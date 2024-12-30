@@ -17,11 +17,14 @@ model Vendor {
   active         Boolean                @default(false)
   isOauth        Boolean                @default(false)
   oAuthDetails   String?
-  phoneNumber    String
+  phoneNumber    String                 @unique
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
   profilePicture VendorProfilePicture[]
   storeDetails   StoreDetails[]
+
+  @@index([email])
+  @@index([phoneNumber])
 }
 
 model VendorProfilePicture {
@@ -34,6 +37,9 @@ model VendorProfilePicture {
   updatedAt DateTime @updatedAt
   vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   vendorId  Int      @unique
+
+  @@index([publicId])
+  @@index([vendorId])
 }
 
 model StoreDetails {
@@ -50,6 +56,11 @@ model StoreDetails {
   storeLogo         StoreLogo[]
   firstStoreBanner  FirstStoreBanner[]
   secondStoreBanner SecondStoreBanner[]
+  Product           Product[]
+  Inventory         Inventory[]
+
+  @@index([name])
+  @@index([vendorId])
 }
 
 model StoreLogo {
@@ -62,6 +73,9 @@ model StoreLogo {
   updatedAt DateTime     @updatedAt
   store     StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
   storeId   Int          @unique
+
+  @@index([publicId])
+  @@index([storeId])
 }
 
 model FirstStoreBanner {
@@ -74,6 +88,9 @@ model FirstStoreBanner {
   updatedAt DateTime     @updatedAt
   store     StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
   storeId   Int          @unique
+
+  @@index([publicId])
+  @@index([storeId])
 }
 
 model SecondStoreBanner {
@@ -86,6 +103,9 @@ model SecondStoreBanner {
   updatedAt DateTime     @updatedAt
   store     StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
   storeId   Int          @unique
+
+  @@index([storeId])
+  @@index([publicId])
 }
 
 enum AdminRole {
@@ -112,6 +132,8 @@ model Role {
   updatedAt      DateTime         @updatedAt
   RolePermission RolePermission[]
   Admin          Admin[]
+
+  @@index([name])
 }
 
 model Permission {
@@ -122,6 +144,8 @@ model Permission {
   updatedAt       DateTime          @updatedAt
   RolePermission  RolePermission[]
   adminPermission AdminPermission[]
+
+  @@index([name])
 }
 
 model RolePermission {
@@ -132,6 +156,8 @@ model RolePermission {
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@unique([roleId, permissionId]) // Prevent duplicate role-permission pairs
+  @@index([permissionId])
+  @@index([roleId])
 }
 
 model Admin {
@@ -140,17 +166,21 @@ model Admin {
   lastName          String                @db.VarChar(15)
   password          String
   email             String                @unique @db.VarChar(50)
-  phoneNumber       String?
+  phoneNumber       String?               @unique
   active            Boolean               @default(false)
   verified          Boolean               @default(false)
   roleId            Int?
-  role              Role?                 @relation(fields: [roleId], references: [id])
+  role              Role?                 @relation(fields: [roleId], references: [id], onDelete: SetNull)
   createdBy         Int                   @default(0)
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
   profilePicture    AdminProfilePicture[]
   directPermissions AdminPermission[]
   Category          Category[]
+
+  @@index([email])
+  @@index([phoneNumber])
+  @@index([roleId])
 }
 
 model AdminProfilePicture {
@@ -163,6 +193,9 @@ model AdminProfilePicture {
   updatedAt DateTime @updatedAt
   admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
   adminId   Int      @unique
+
+  @@index([publicId])
+  @@index([adminId])
 }
 
 model AdminPermission {
@@ -173,6 +206,8 @@ model AdminPermission {
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@unique([adminId, permissionId]) // Prevent duplicate admin-permission pairs
+  @@index([adminId])
+  @@index([permissionId])
 }
 
 model Customer {
@@ -181,13 +216,16 @@ model Customer {
   lastName           String
   email              String               @unique
   password           String
-  phoneNumber        String
+  phoneNumber        String               @unique
   verified           Boolean              @default(false)
   active             Boolean              @default(true)
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   Address            CustomerAddress[]
   CustomerProfilePic CustomerProfilePic[]
+
+  @@index([email])
+  @@index([phoneNumber])
 }
 
 model CustomerAddress {
@@ -199,6 +237,8 @@ model CustomerAddress {
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([customerId])
 }
 
 model CustomerProfilePic {
@@ -211,6 +251,9 @@ model CustomerProfilePic {
   updatedAt  DateTime @updatedAt
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId Int      @unique
+
+  @@index([publicId])
+  @@index([customerId])
 }
 
 model Category {
@@ -224,6 +267,10 @@ model Category {
   admin         Admin?          @relation(fields: [adminId], references: [id], onDelete: SetNull)
   SubCategory   SubCategory[]
   CategoryImage CategoryImage[]
+  Product       Product[]
+
+  @@index([name])
+  @@index([adminId])
 }
 
 model SubCategory {
@@ -236,6 +283,10 @@ model SubCategory {
   category         Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   SubSubCategory   SubSubCategory[]
   SubCategoryImage SubCategoryImage[]
+  Product          Product[]
+
+  @@index([name])
+  @@index([categoryId])
 }
 
 model SubSubCategory {
@@ -247,6 +298,9 @@ model SubSubCategory {
   subCategoryId       Int
   subCategory         SubCategory           @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
   SubSubCategoryImage SubSubCategoryImage[]
+
+  @@index([name])
+  @@index([subCategoryId])
 }
 
 model SubSubCategoryImage {
@@ -259,6 +313,9 @@ model SubSubCategoryImage {
   updatedAt        DateTime       @updatedAt
   subSubCategory   SubSubCategory @relation(fields: [subSubCategoryId], references: [id], onDelete: Cascade)
   subSubCategoryId Int            @unique
+
+  @@index([publicId])
+  @@index([subSubCategoryId])
 }
 
 model SubCategoryImage {
@@ -271,6 +328,9 @@ model SubCategoryImage {
   updatedAt     DateTime    @updatedAt
   subCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
   subCategoryId Int         @unique
+
+  @@index([publicId])
+  @@index([subCategoryId])
 }
 
 model CategoryImage {
@@ -283,6 +343,9 @@ model CategoryImage {
   updatedAt  DateTime @updatedAt
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId Int      @unique
+
+  @@index([publicId])
+  @@index([categoryId])
 }
 
 model Brand {
@@ -291,6 +354,8 @@ model Brand {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   BrandImage BrandImage[]
+
+  @@index([name])
 }
 
 model BrandImage {
@@ -303,4 +368,97 @@ model BrandImage {
   updatedAt DateTime @updatedAt
   brand     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
   brandId   Int      @unique
+
+  @@index([publicId])
+  @@index([brandId])
+}
+
+model AdBanner {
+  id            Int             @id @default(autoincrement())
+  title         String
+  description   String
+  cta           String
+  link          String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  AdBannerImage AdBannerImage[]
+
+  @@index([title])
+}
+
+model AdBannerImage {
+  id         Int      @id @default(autoincrement())
+  mimeType   String
+  imageUrl   String
+  publicId   String
+  size       Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  adBannerId Int      @unique
+  adBanner   AdBanner @relation(fields: [adBannerId], references: [id], onDelete: Cascade)
+
+  @@index([adBannerId])
+  @@index([publicId])
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  mimeType  String
+  imageUrl  String
+  publicId  String
+  size      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([publicId])
+}
+
+model Product {
+  id             Int            @id @default(autoincrement())
+  name           String
+  description    String?        @db.Text
+  price          Decimal        @db.Decimal(10, 2)
+  discountPrice  Decimal?       @db.Decimal(10, 2)
+  isAvailable    Boolean        @default(true)
+  soldCount      Int            @default(0)
+  attributes     Json?
+  stock          Int            @default(1)
+  additionalInfo Json?
+  metaData       Json?
+  averageRating  Float          @default(0)
+  reviewCount    Int            @default(0)
+  isFeatured     Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  storeId        Int
+  store          StoreDetails   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  categoryId     Int?
+  category       Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subcategoryId  Int?
+  subcategory    SubCategory?   @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  productImage   ProductImage[]
+  inventory      Inventory[]
+
+  @@index([name])
+  @@index([categoryId])
+  @@index([storeId])
+}
+
+model Inventory {
+  id                Int          @id @default(autoincrement())
+  stock             Int          @default(0)
+  soldCount         Int          @default(0)
+  lowStockThreshold Int          @default(10)
+  productId         Int
+  product           Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  storeId           Int
+  store             StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([productId])
+  @@index([storeId])
 }

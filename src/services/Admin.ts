@@ -162,7 +162,7 @@ export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfi
     }
 
     public async massUnassignRole(roleId: number) {
-        const repoResult = await this.repo!.massUnassignRole(roleId);
+        const repoResult = await this.repo!.massUnassignRole(roleId); // ! TODO: - try removing this method
         if (repoResult.error) {
             return super.responseData(repoResult.type, true, repoResult.message!);
         }
