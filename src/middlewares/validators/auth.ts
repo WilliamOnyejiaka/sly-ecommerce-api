@@ -19,8 +19,8 @@ export const vendorSignUp = [
         'phoneNumber'
     ]),
     emailIsValid,
-    passwordIsValid,
-    phoneNumberIsValid,
+    passwordIsValid, // ! TODO: add a proper phone number validation check 
+    // phoneNumberIsValid,
     userPhoneNumberExists<Vendor>(new Vendor()),
     userEmailExists<Vendor>(new Vendor())
 ];
@@ -38,7 +38,7 @@ export const customerSignUp = [
     ]),
     emailIsValid,
     passwordIsValid,
-    phoneNumberIsValid,
+    // phoneNumberIsValid,
     zipCodeIsValid,
     userPhoneNumberExists<Customer>(new Customer()),
     userEmailExists<Customer>(new Customer())
@@ -55,7 +55,7 @@ export const adminSignUp = [
     ]),
     emailIsValid,
     passwordIsValid,
-    phoneNumberIsValid,
+    // phoneNumberIsValid,
     userPhoneNumberExists<Admin>(new Admin()),
     userEmailExists<Admin>(new Admin())
 ];

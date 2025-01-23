@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { Admin } from "../controllers";
 import { adminAuthorization, uploads, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
-import { bodyNumberIsValid, emailIsValid, paramNumberIsValid, passwordIsValid, phoneNumberIsValid, userEmailExists } from "../middlewares/validators/validators";
+import { bodyNumberIsValid, emailIsValid, paramNumberIsValid, passwordIsValid, phoneNumberIsValid, userEmailExists, userPhoneNumberExists } from "../middlewares/validators/validators";
 import { Admin as AdminRepo } from "../repos";
 
 const admin: Router = Router();
@@ -36,8 +36,9 @@ admin.post(
     ]),
     [
         emailIsValid,
-        passwordIsValid,
-        phoneNumberIsValid,
+        passwordIsValid, // ! TODO: add a proper phone number validation check 
+        // phoneNumberIsValid,
+        userPhoneNumberExists<AdminRepo>(new AdminRepo()),
         userEmailExists<AdminRepo>(new AdminRepo())
     ],
     asyncHandler(Admin.createAdmin)
