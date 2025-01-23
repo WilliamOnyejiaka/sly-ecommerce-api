@@ -30,7 +30,7 @@ export default class UserOTP extends Authentication {
     }
 
     public async sendVendorOTP(email: string) {
-        return await this.sendUserOTP<Vendor>(this.vendorRepo, email, "vendor");
+        return await this.sendUserOTP<Vendor>(this.vendorRepo, email, "vendor"); // ! TODO: change constant  strings to enums
     }
 
     public async sendCustomerOTP(email: string) {
