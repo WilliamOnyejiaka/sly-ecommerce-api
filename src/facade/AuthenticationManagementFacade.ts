@@ -1,6 +1,6 @@
 import { UserRegistration, Auth, UserOTP } from "../services";
 import VendorDto, { CustomerAddressDto } from "../types/dtos";
-import { UserType } from "./../types/enums";
+import { OTPType, UserType } from "./../types/enums";
 import BaseFacade from "./bases/BaseFacade";
 
 export default class AuthenticationManagementFacade extends BaseFacade {
@@ -66,7 +66,7 @@ export default class AuthenticationManagementFacade extends BaseFacade {
      * @param email User email
      * @param user User type (customer, admin, or vendor)
      */
-    public async sendUserOTP(email: string, user: UserType) {
+    public async sendUserOTP(email: string, otpType: OTPType, user: UserType) {
         const sendOTPMethods = {
             [UserType.Vendor]: this.userOTPService.sendVendorOTP.bind(this.userOTPService),
             [UserType.Admin]: this.userOTPService.sendAdminOTP.bind(this.userOTPService),
@@ -74,7 +74,7 @@ export default class AuthenticationManagementFacade extends BaseFacade {
         };
 
         const sendOTPMethod = sendOTPMethods[user];
-        return sendOTPMethod ? await sendOTPMethod(email) : this.service.responseData(500, true, "Invalid user type")
+        return sendOTPMethod ? await sendOTPMethod(email, otpType) : this.service.responseData(500, true, "Invalid user type")
     }
 
     /**
@@ -93,4 +93,23 @@ export default class AuthenticationManagementFacade extends BaseFacade {
         const verifyEmailMethod = verifyEmailMethods[user];
         return verifyEmailMethod ? await verifyEmailMethod(email, otpCode) : this.service.responseData(500, true, "Invalid user type");
     }
+
+    /**
+     * Verifies email for the user based on their type and OTP code
+     * @param email User email
+     * @param otpCode OTP code
+     * @param password User's new password
+     * @param user User type (customer, admin, or vendor)
+     */
+    public async passwordReset(email: string, password: string, otpCode: string, user: UserType) {
+        const verifyEmailMethods = {
+            [UserType.Vendor]: this.userOTPService.vendorPasswordReset.bind(this.userOTPService),
+            [UserType.Admin]: this.userOTPService.adminPasswordReset.bind(this.userOTPService),
+            [UserType.Customer]: this.userOTPService.customerPasswordReset.bind(this.userOTPService)
+        };
+
+        const verifyEmailMethod = verifyEmailMethods[user];
+        return verifyEmailMethod ? await verifyEmailMethod(email, password, otpCode) : this.service.responseData(500, true, "Invalid user type");
+    }
+
 }

@@ -16,6 +16,7 @@ import UserRegistration from "./UserRegistration";
 import Auth from "./Auth";
 import UserOTP from "./UserOTP";
 import TwilioService from "./TwilioService";
+import PasswordReset from "./PasswordReset";
 
 export {
     Token,
@@ -35,5 +36,6 @@ export {
     UserRegistration,
     Auth,
     UserOTP,
-    TwilioService
+    TwilioService,
+    PasswordReset
 };

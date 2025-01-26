@@ -3,9 +3,9 @@ import VendorDto, { CustomerAddressDto } from "./../types/dtos";
 import { validationResult } from "express-validator";
 import { Controller } from ".";
 import { AuthenticationManagementFacade } from "../facade";
-import { UserType } from "../types/enums";
+import { OTPType, UserType } from "../types/enums";
 
-export default class Auth {
+export default class Auth { // ! TODO: change all constant strings to an Enum
 
     private static readonly facade: AuthenticationManagementFacade = new AuthenticationManagementFacade();
 
@@ -35,9 +35,9 @@ export default class Auth {
         }
     }
 
-    public static sendUserOTP(user: string) {
+    public static sendUserOTP(userType: string, otpType: OTPType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Auth.facade.sendUserOTP(req.params.email, user as UserType);
+            const serviceResult = await Auth.facade.sendUserOTP(req.params.email, otpType, userType as UserType);
             Controller.response(res, serviceResult);
         }
     }
@@ -45,6 +45,15 @@ export default class Auth {
     public static emailVerification(user: string) {
         return async (req: Request, res: Response) => {
             const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, user as UserType);
+            Controller.response(res, serviceResult);
+        }
+    }
+
+
+    public static passwordReset(user: UserType) {
+        return async (req: Request, res: Response) => {
+            const { otp, newPassword, email } = req.body;
+            const serviceResult = await Auth.facade.passwordReset(email, newPassword, otp, user);
             Controller.response(res, serviceResult);
         }
     }

@@ -56,7 +56,7 @@ export const adminSignUp = [
     emailIsValid,
     passwordIsValid,
     // phoneNumberIsValid,
-    userPhoneNumberExists<Admin>(new Admin()),
+    userPhoneNumberExists<Admin>(new Admin()), // ! TODO: check if there is a phone number validation error
     userEmailExists<Admin>(new Admin())
 ];
 

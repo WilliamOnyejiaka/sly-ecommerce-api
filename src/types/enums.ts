@@ -5,6 +5,11 @@ export enum UserType {
     Customer = "customer",
 };
 
+export enum OTPType {
+    Reset = "passwordReset",
+    Verification = "emailVerification"
+};
+
 export enum CategoryType {
     Main = "category",
     SubMain = "subCategory",

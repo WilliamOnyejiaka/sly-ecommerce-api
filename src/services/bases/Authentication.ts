@@ -2,7 +2,6 @@ import { AdminCache, CustomerCache, TokenBlackList, VendorCache } from "../../ca
 import { env } from "../../config";
 import { Admin, Customer, Vendor } from "../../repos";
 import UserRepo from "../../repos/bases/UserRepo";
-import { Password } from "../../utils";
 import Token from "../Token";
 import BaseService from "./BaseService";
 

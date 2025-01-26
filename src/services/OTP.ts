@@ -1,23 +1,19 @@
-import { randomInt } from "../utils";
 import { Email } from ".";
 import { OTPCache } from "../cache";
 import constants, { http } from "../constants";
 import BaseService from "./bases/BaseService";
+import { OTPType, UserType } from "../types/enums";
+import path from "path";
+import { randomInt } from "../utils";
 
-
-// TODO: Refractor this Service
 
 export default class OTP extends BaseService {
 
-    private readonly email: string;
-    private readonly templateData: any;
-    private otpCode!: string;
     private readonly cache: OTPCache;
 
-    public constructor(email: string, private readonly cachePreKey: string, templateData: any = null) {
+    public constructor(private readonly email: string, private readonly otpType: OTPType, userType: UserType) {
         super();
-        this.email = email;
-        this.templateData = templateData;
+        const cachePreKey = otpType + "-" + userType;
         this.cache = new OTPCache(cachePreKey);
     }
 
@@ -27,33 +23,46 @@ export default class OTP extends BaseService {
         return otp;
     }
 
-    private async storeOTP() {
-        return await this.cache.set(this.email, this.otpCode);
+    private async storeOTP(otpCode: string) {
+        return await this.cache.set(this.email, otpCode);
     }
 
-    private async sendOTP() {
+    private emailSubject() {
+        return {
+            [OTPType.Verification]: "Email Verification",
+            [OTPType.Reset]: "Password Reset"
+        }[this.otpType];
+    }
+
+    private emailTemplate() {
+        return {
+            [OTPType.Verification]: path.join(__dirname, './../views', "email.ejs"),
+            [OTPType.Reset]: path.join(__dirname, './../views', "reset-password.ejs")
+        }[this.otpType];
+    }
+
+    private async sendOTP(templateData: any, templatePath: string) {
         const email = new Email();
-        const emailContent = await email.getEmailTemplate(this.templateData);
+        const emailContent = await email.getEmailTemplate(templateData, templatePath);
         const mailResult = await email.sendEmail(
             "Ecommerce Api",
             this.email,
-            "Email Verification",
+            this.emailSubject(),
             emailContent as string
         );
         return mailResult;
     }
 
-    private setOTP() {
-        this.otpCode = this.generateOTP();
-        this.templateData.otpCode = this.otpCode;
-    }
-
-    public async send() {
-        this.setOTP();
-        const storedOTP = await this.storeOTP();
+    public async send(userFullName: string) {
+        const otpCode = this.generateOTP();
+        const storedOTP = await this.storeOTP(otpCode);
 
         if (storedOTP) {
-            const sentOTP = await this.sendOTP();
+            const templateData = {
+                name: userFullName,
+                otpCode: otpCode
+            };
+            const sentOTP = await this.sendOTP(templateData, this.emailTemplate());
             const error: boolean = sentOTP ? false : true;
             const statusCode: number = sentOTP ? 200 : 500;
             const message: string = sentOTP ? "OTP has been sent successfully" : http("500")!;

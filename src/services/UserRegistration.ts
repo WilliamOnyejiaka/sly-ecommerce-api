@@ -30,7 +30,7 @@ export default class UserRegistration extends Authentication {
                 result as VendorDto
             );
             return cacheSuccessful ? super.responseData(statusCode, error, message, {
-                token: Token.createToken(env('tokenSecret')!, { id: result.id }, ["vendor"]),
+                token: Token.createToken(env('tokenSecret')!, { id: result.id }, ["vendor"]), // TODO: remove tokenSecret env from all methods
                 vendor: result
             }) : super.responseData(statusCode, error, message);
         }

@@ -8,7 +8,7 @@ export default class OTPCache implements Cache {
     private readonly expirationTime: number = 900;
 
     public constructor(partPreKey: string) {
-        this.preKey = partPreKey + this.preKey;
+        this.preKey = this.preKey + "-" + partPreKey;
     }
 
     public async set(email: string, otpCode: string) {
@@ -23,6 +23,8 @@ export default class OTPCache implements Cache {
 
     public async get(email: string) {
         try {
+            console.log(`${this.preKey}-${email}`);
+            
             const otpCode = await redisClient.get(`${this.preKey}-${email}`);
             return {
                 error: false,

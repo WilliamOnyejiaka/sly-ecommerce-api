@@ -62,6 +62,10 @@ export default class UserRepo extends Repo {
         return await this.updateWithIdOrEmail(userId, { active: activate });
     }
 
+    public async updatePassword(email: string, password: string) {
+        return await this.updateWithIdOrEmail(email, { password: password });
+    }
+
     public async updateVerifiedStatus(email: string) {
         return await super.update({ email: email }, { verified: true });
     }
