@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { Auth } from "../controllers";
 import asyncHandler from "express-async-handler";
-import { adminSignUp, customerSignUp, login, logOut, vendorSignUp } from "../middlewares/validators/auth";
+import { adminSignUp, customerSignUp, login, logOut, resetPassword, vendorSignUp } from "../middlewares/validators/auth";
 import { OTPType, UserType } from "../types/enums";
 import { validateBody } from "../middlewares";
 
@@ -42,33 +42,21 @@ auth.get("/admin/email-verification/:email/:otpCode", asyncHandler(Auth.emailVer
 auth.get("/vendor/forgot-password/:email", asyncHandler(Auth.sendUserOTP("vendor", OTPType.Reset)));
 auth.patch(
     "/vendor/reset-password",
-    validateBody([
-        'newPassword',
-        'otp',
-        'email'
-    ]),
+    resetPassword,
     asyncHandler(Auth.passwordReset(UserType.Vendor))
 );
 
 auth.get("/admin/forgot-password/:email", asyncHandler(Auth.sendUserOTP("admin", OTPType.Reset)));
 auth.patch(
     "/admin/reset-password",
-    validateBody([
-        'newPassword',
-        'otp',
-        'email'
-    ]),
+    resetPassword,
     asyncHandler(Auth.passwordReset(UserType.Admin))
 );
 
 auth.get("/customer/forgot-password/:email", asyncHandler(Auth.sendUserOTP("customer", OTPType.Reset)));
 auth.patch(
     "/customer/reset-password",
-    validateBody([
-        'newPassword',
-        'otp',
-        'email'
-    ]),
+    resetPassword,
     asyncHandler(Auth.passwordReset(UserType.Customer))
 );
 

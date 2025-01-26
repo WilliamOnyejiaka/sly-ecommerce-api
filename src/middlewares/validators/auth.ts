@@ -67,3 +67,12 @@ export const login = [
 export const logOut = [
     tokenIsPresent
 ]
+
+export const resetPassword = [
+    validateBody([
+        'password',
+        'otp',
+        'email'
+    ]),
+    passwordIsValid
+]

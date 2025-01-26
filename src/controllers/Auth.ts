@@ -52,8 +52,14 @@ export default class Auth { // ! TODO: change all constant strings to an Enum
 
     public static passwordReset(user: UserType) {
         return async (req: Request, res: Response) => {
-            const { otp, newPassword, email } = req.body;
-            const serviceResult = await Auth.facade.passwordReset(email, newPassword, otp, user);
+            const validationErrors = validationResult(req);
+            if (!validationErrors.isEmpty()) {
+                Controller.handleValidationErrors(res, validationErrors);
+                return;
+            }
+
+            const { otp, password, email } = req.body;
+            const serviceResult = await Auth.facade.passwordReset(email, password, otp, user);
             Controller.response(res, serviceResult);
         }
     }
