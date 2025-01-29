@@ -22,35 +22,35 @@ export default class Auth { // ! TODO: change all constant strings to an Enum
         Controller.response(res, serviceResult);
     }
 
-    public static login(user: string) {
+    public static login(userType: UserType) {
         return async (req: Request, res: Response) => {
             const { email, password } = req.body;
             const serviceResult = await Auth.facade.login(
                 email as string,
                 password as string,
-                user as UserType
+                userType
             );
 
             Controller.response(res, serviceResult);
         }
     }
 
-    public static sendUserOTP(userType: string, otpType: OTPType) {
+    public static sendUserOTP(userType: UserType, otpType: OTPType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Auth.facade.sendUserOTP(req.params.email, otpType, userType as UserType);
+            const serviceResult = await Auth.facade.sendUserOTP(req.params.email, otpType, userType);
             Controller.response(res, serviceResult);
         }
     }
 
-    public static emailVerification(user: string) {
+    public static emailVerification(userType: UserType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, user as UserType);
+            const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, userType);
             Controller.response(res, serviceResult);
         }
     }
 
 
-    public static passwordReset(user: UserType) {
+    public static passwordReset(userType: UserType) {
         return async (req: Request, res: Response) => {
             const validationErrors = validationResult(req);
             if (!validationErrors.isEmpty()) {
@@ -59,7 +59,7 @@ export default class Auth { // ! TODO: change all constant strings to an Enum
             }
 
             const { otp, password, email } = req.body;
-            const serviceResult = await Auth.facade.passwordReset(email, password, otp, user);
+            const serviceResult = await Auth.facade.passwordReset(email, password, otp, userType);
             Controller.response(res, serviceResult);
         }
     }
