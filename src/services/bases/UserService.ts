@@ -128,9 +128,24 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
         const repoResult = activate ? await this.repo!.updateActiveStatus(userId, true) : await this.repo!.updateActiveStatus(userId, false);
         const errorResponse = this.handleRepoError(repoResult);
         if (errorResponse) return errorResponse;
-        //Cache here
+
+        const user = repoResult.data;
+        delete user.Password;
+        const cacheResponse = await this.cache.get(String(userId));
+
+        if (cacheResponse.error) {
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        const cachedUser = cacheResponse.data
         const message = activate ? "Vendor was activated successfully" : "Vendor was deactivated successfully";
-        return super.responseData(200, false, message, repoResult.data);
+
+        if (cachedUser) {
+            cachedUser.active = user.active;
+            const successfulCache = await this.cache.set(String(userId), cachedUser);
+            return successfulCache ? super.responseData(HttpStatus.OK, false, message, user) : super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+        return super.responseData(200, false, message, user);
     }
 
     public async activateUser(userId: number) {

@@ -46,11 +46,11 @@ export default class CategoryManagement extends Category {
 
     public static override getCategoryWithName(category: CategoryType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Category.facade.adminGetCategory(req.params.categoryName, CategoryType.Main);
+            const serviceResult = await Category.facade.adminGetCategory(req.params.categoryName, category);
             Controller.response(res, serviceResult);
         };
     }
-    
+
     public static getAllCategories(category: CategoryType) {
         return async (req: Request, res: Response) => {
             const serviceResult = await Category.facade.adminGetCategories(category);

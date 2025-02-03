@@ -30,7 +30,7 @@ export default class BaseCache {
             );
             return success === "OK";
         } catch (error) {
-            console.error(`${constants("failedCache")}: ${error}`);
+            console.error(`${constants("failedCache")}: ${error}`); // ! TODO: use logger here and the other ones
             return false;
         }
     }
@@ -40,7 +40,7 @@ export default class BaseCache {
             const item = await redisClient.get(`${this.preKey}-${key}`);
             return {
                 error: false,
-                data: item ?? JSON.parse(item!),
+                data: item !== null ? JSON.parse(item!) : item,
             }
         } catch (error) {
             console.error("Failed to get cached item: ", error);

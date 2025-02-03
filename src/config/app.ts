@@ -42,7 +42,8 @@ function createApp() {
         validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
         vendor
     );
-    app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!) /* TODO: uncomment this and find the bugs,vendorIsActive*/, store);
+
+    app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), vendorIsActive, store);
     app.use("/api/v1/admin", validateJWT(["admin"], env("tokenSecret")!), admin);
     app.use("/api/v1/admin/role", validateJWT(["admin"], env("tokenSecret")!), role);
     app.use("/api/v1/admin/vendor", validateJWT(["admin"], env("tokenSecret")!), adminVendor);
