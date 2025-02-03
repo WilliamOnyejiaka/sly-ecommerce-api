@@ -17,6 +17,7 @@ import Auth from "./Auth";
 import UserOTP from "./UserOTP";
 import TwilioService from "./TwilioService";
 import PasswordReset from "./PasswordReset";
+import SubCategory from "./SubCategory";
 
 export {
     Token,
@@ -37,5 +38,6 @@ export {
     Auth,
     UserOTP,
     TwilioService,
-    PasswordReset
+    PasswordReset,
+    SubCategory
 };

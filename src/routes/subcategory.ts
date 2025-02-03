@@ -4,9 +4,9 @@ import asyncHandler from "express-async-handler";
 import { validateQueryParams } from "../validators";
 import { CategoryType } from "../types/enums";
 
-const category: Router = Router();
+const subcategory: Router = Router();
 
-category.get(
+subcategory.get(
     "/paginate-categories",
     validateQueryParams([
         {
@@ -18,23 +18,23 @@ category.get(
             type: "number"
         }
     ]),
-    asyncHandler(Category.paginateCategories(CategoryType.Main))
+    asyncHandler(Category.paginateCategories(CategoryType.SubMain))
 );
 
-category.get(
+subcategory.get(
     "/get-with-name/:categoryName",
-    asyncHandler(Category.getCategoryWithName(CategoryType.Main))
+    asyncHandler(Category.getCategoryWithName(CategoryType.SubMain))
 );
 
-category.get(
+subcategory.get(
     "/get-with-id/:categoryId",
-    asyncHandler(Category.getCategoryWithId(CategoryType.Main))
+    asyncHandler(Category.getCategoryWithId(CategoryType.SubMain))
 );
 
-category.get(
+subcategory.get(
     "/",
-    asyncHandler(Category.getAllCategories(CategoryType.Main))
+    asyncHandler(Category.getAllCategories(CategoryType.SubMain))
 );
 
 
-export default category;
+export default subcategory;

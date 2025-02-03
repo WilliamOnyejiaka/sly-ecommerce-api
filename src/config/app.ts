@@ -1,7 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { cloudinary, corsConfig, env, logger } from ".";
-import { auth, vendor, store, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory, customer, category } from "./../routes";
+import { auth, vendor, store, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory, customer, category, adminSubCategory, subcategory } from "./../routes";
 import { Cloudinary, Email, TwilioService } from "../services";
 import path from "path";
 import ejs from "ejs";
@@ -50,7 +50,10 @@ function createApp() {
     app.use("/api/v1/admin/admin-permission", validateJWT(["admin"], env("tokenSecret")!), adminPermission);
     app.use("/api/v1/admin/store", validateJWT(["admin"], env("tokenSecret")!), adminStore);
     app.use("/api/v1/admin/category", validateJWT(["admin"], env("tokenSecret")!), adminCategory);
-    app.use("/api/v1/category", validateJWT(["admin","vendor"], env("tokenSecret")!), category);
+    app.use("/api/v1/category", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), category);
+    app.use("/api/v1/admin/subcategory", validateJWT(["admin"], env("tokenSecret")!), adminSubCategory);
+    app.use("/api/v1/subcategory", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), subcategory);
+
 
     app.use(
         "/api/v1/customer",
@@ -68,7 +71,7 @@ function createApp() {
 
     app.post("/test1", async (req: Request, res: Response, next: NextFunction) => {
         const twilio = new TwilioService();
-        const serviceResult = await twilio.sendSMS(req.body.to,req.body.message);
+        const serviceResult = await twilio.sendSMS(req.body.to, req.body.message);
         res.status(serviceResult.statusCode).json(serviceResult.json)
     });
 

@@ -1,8 +1,7 @@
 import constants, { http } from "../constants";
-import { Category as CategoryRepo } from "../repos";
+import { Category as CategoryRepo, CategoryImage } from "../repos";
 import { CategoryDto } from "../types/dtos";
 import AssetService from "./bases/AssetService";
-import CategoryImage from "../repos/CategoryImage";
 
 export default class Category extends AssetService<CategoryRepo, CategoryImage> {
 
@@ -39,18 +38,31 @@ export default class Category extends AssetService<CategoryRepo, CategoryImage> 
     }
 
     public async getAllCategories(admin: boolean = false) {
-        const serviceResult = await super.getAllItems(constants('200Categories')!);
-        if (admin) return serviceResult;
-
-        if (serviceResult.json.data) {
-            this.sanitizeData(serviceResult.json.data, ['adminId']);
-        }
-
-        return serviceResult;
-        // return await super.getAllItems(constants('200Categories')!);
+        const message = constants('200Categories')!;
+        return admin ? super.getAllAssetItems(message) : super.getAllAssetItems(message, ['adminId']);
     }
 
-    public async update(categoryId: number, updateData: any) {
+    public async toggleActiveStatus(id: number, activate: boolean = true) {
+        const repoResult = await this.repo!.updateItem(id, { active: activate });
+        const errorResponse = this.handleRepoError(repoResult);
+        if (errorResponse) return errorResponse;
+        const message = activate ? "Category was activated successfully" : "Category was deactivated successfully";
+        return super.responseData(200, false, message, repoResult.data);
+    }
 
+    public async updateName(id: number, name: string) {
+        const repoResult = await this.repo!.updateItem(id, { name: name });
+        const errorResponse = this.handleRepoError(repoResult);
+        if (errorResponse) return errorResponse;
+        const message = "Category name has been updated successfully";
+        return super.responseData(200, false, message, repoResult.data);
+    }
+
+    public async updatePriority(id: number, priority: number) {
+        const repoResult = await this.repo!.updateItem(id, { priority: priority });
+        const errorResponse = this.handleRepoError(repoResult);
+        if (errorResponse) return errorResponse;
+        const message = "Category priority has been updated successfully";
+        return super.responseData(200, false, message, repoResult.data);
     }
 }

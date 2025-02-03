@@ -177,6 +177,7 @@ model Admin {
   profilePicture    AdminProfilePicture[]
   directPermissions AdminPermission[]
   Category          Category[]
+  Brand             Brand[]
 
   @@index([email])
   @@index([phoneNumber])
@@ -353,6 +354,8 @@ model Brand {
   name       String
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
+  adminId    Int?
+  admin      Admin?       @relation(fields: [adminId], references: [id], onDelete: SetNull)
   BrandImage BrandImage[]
 
   @@index([name])

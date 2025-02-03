@@ -2,6 +2,9 @@ import { Result, ValidationError } from "express-validator";
 import BaseService from "../../services/bases/BaseService";
 import { Request, Response } from "express";
 import { ImageService } from "../../services";
+import AssetService from "../../services/bases/AssetService";
+import AssetRepo from "../../repos/bases/AssetRepo";
+import ImageRepo from "../../repos/bases/ImageRepo";
 
 export default class Controller {
 
@@ -15,6 +18,15 @@ export default class Controller {
         return async (req: Request, res: Response) => {
             const { page, pageSize } = req.query;
             const serviceResult = await service.paginate(page as any, pageSize as any);
+            res.status(serviceResult.statusCode).json(serviceResult.json);
+        }
+    }
+
+    public static paginateAssetItems<T extends AssetService<AssetRepo,ImageRepo>>(service: T) {
+        return async (req: Request, res: Response) => {            
+            const { page, pageSize } = req.query;
+            const serviceResult = await service.paginate(page as any, pageSize as any);
+            service.sanitizeImageItems(serviceResult.json.data.data);
             res.status(serviceResult.statusCode).json(serviceResult.json);
         }
     }

@@ -76,6 +76,20 @@ const nameExists = <T extends Repo>(repo: T) => async (value: string) => {
     return true;
 }
 
+const idExists = <T extends Repo>(repo: T) => async (value: number) => {
+    const repoResult = await repo.getItemWithId(value);
+
+    if (repoResult.error) {
+        throw new Error(JSON.stringify({
+            message: repoResult.message,
+            statusCode: repoResult.type
+        }));
+    } else if (!repoResult.data) {
+        throw new Error(errorDetails(`Item with id - ${value} does not exists`, HttpStatus.BAD_REQUEST));
+    }
+    return true;
+}
+
 const isValidZipCode = (value: string) => {
     const isValid = zipCodeValidator(value);
     if (isValid.error) {
@@ -94,11 +108,11 @@ const isTokenPresent = (value: string, { req, location, path }: { req: any, loca
     return true;
 }
 
-const isValidNumber = (value: string) => {
+const isValidNumber = (message: string = "Param must be an integer") => (value: string) => {
     const idResult = numberValidator(value);
 
     if (idResult.error) {
-        throw new Error(errorDetails("Param must be an integer", HttpStatus.BAD_REQUEST));
+        throw new Error(errorDetails(message, HttpStatus.BAD_REQUEST));
     }
     return true;
 }
@@ -128,11 +142,11 @@ export const userEmailExists = <T extends UserRepo>(repo: T) => body('email').cu
 export const userPhoneNumberExists = <T extends UserRepo>(repo: T) => body('phoneNumber').custom(phoneNumberExists<T>(repo));
 export const zipCodeIsValid = body('zip').custom(isValidZipCode);
 export const tokenIsPresent = header('Authorization').custom(isTokenPresent);
-export const paramNumberIsValid = (paramName: string) => param(paramName).custom(isValidNumber);
-export const bodyNumberIsValid = (bodyName: string) => body(bodyName).custom(isValidNumber);
+export const paramNumberIsValid = (paramName: string) => param(paramName).custom(isValidNumber(`${paramName} must be an integer`));
+export const bodyNumberIsValid = (bodyName: string) => body(bodyName).custom(isValidNumber(`${bodyName} must be an integer`));
 export const itemNameExists = <T extends Repo>(repo: T, bodyName: string) => body(bodyName).custom(nameExists<T>(repo));
+export const itemIdExists = <T extends Repo>(repo: T, bodyName: string) => body(bodyName).custom(idExists<T>(repo));
 export const pageQueryIsValid = query('page').custom(validateQueryNumber('page'));
 export const pageSizeQueryIsValid = query('pageSize').custom(validateQueryNumber('pageSize'));
 export const queryIsValidNumber = (queryName: string) => query(queryName).custom(validateQueryNumber(queryName));
 export const bodyBooleanIsValid = (bodyName: string) => body(bodyName).custom(isValidBoolean(`${bodyName} must be a boolean`));
-    

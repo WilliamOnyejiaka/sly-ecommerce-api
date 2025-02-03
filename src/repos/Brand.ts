@@ -1,10 +1,14 @@
 import prisma from ".";
-import Repo from "./bases/Repo";
+import AssetRepo from "./bases/AssetRepo";
 
-export default class Brand extends Repo {
+export default class Brand extends AssetRepo {
 
     public constructor() {
-        super('brand');
+        super('brand','BrandImage');
+    }
+
+    public override async insert(data: any){
+        return await super.insert(data);
     }
 
 }

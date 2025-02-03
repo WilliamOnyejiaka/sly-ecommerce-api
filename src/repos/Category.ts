@@ -20,8 +20,4 @@ export default class Category extends AssetRepo {
     public async getCategoryWithName(name: string) {
         return await super.getItem({ name: name });
     }
-
-    public async updateCategory(id: number, updateData: any) {
-        return await super.update({ id: id }, updateData);
-    }
 }

@@ -22,7 +22,7 @@ export default class AssetRepo extends Repo {
         };
     }
 
-    public async getItemAndImageRelationWithId(itemId: number) {
+    public async getItemAndImageRelationWithId(itemId: number) { // ! TODO: merge this method with the one below it, use UserRepo as reference
         return await super.getItem({ id: itemId }, this.imageFilter);
     }
 
@@ -36,5 +36,9 @@ export default class AssetRepo extends Repo {
 
     public override async getAll(filter?: any) {
         return await super.getAll(this.imageFilter)
+    }
+
+    public async updateItem(id: number, updateData: any) {
+        return await super.update({ id: id }, updateData);
     }
 }

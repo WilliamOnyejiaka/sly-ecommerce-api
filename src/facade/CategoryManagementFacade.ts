@@ -1,11 +1,12 @@
-import { Category } from "../services";
-import { CategoryDto } from "../types/dtos";
+import { Category, SubCategory } from "../services";
+import { CategoryDto, SubCategoryDto } from "../types/dtos";
 import { CategoryType } from "../types/enums";
 import BaseFacade from "./bases/BaseFacade";
 
 export default class CategoryManagementFacade extends BaseFacade {
 
     private readonly categoryService = new Category();
+    private readonly subCategoryService = new SubCategory();
 
     public constructor() {
         super("Invalid category");
@@ -14,16 +15,16 @@ export default class CategoryManagementFacade extends BaseFacade {
     public getCategoryService(category: CategoryType) {
         const services = {
             [CategoryType.Main]: this.categoryService,
-            [CategoryType.SubMain]: this.categoryService,
+            [CategoryType.SubMain]: this.subCategoryService,
             [CategoryType.Sub]: this.categoryService,
         };
         return services[category] || null;
     }
 
-    public async createCategory(categoryData: CategoryDto, category: CategoryType) {
+    public async createCategory(categoryData: CategoryDto | SubCategoryDto, category: CategoryType) {
         const service = this.getCategoryService(category);
         if (!service) return this.invalidType();
-        return await service.createCategory(categoryData);
+        return await service.createCategory(categoryData as any);
     }
 
     public async getCategory(identifier: string | number, category: CategoryType, admin: boolean = false) {
@@ -56,5 +57,21 @@ export default class CategoryManagementFacade extends BaseFacade {
         const service = this.getCategoryService(category);
         if (!service) return this.invalidType();
         return await service.uploadImage(image, categoryId);
+    }
+
+    public async toggleActiveStatus(id: number, activate: boolean = true) {
+        return await this, this.categoryService.toggleActiveStatus(id, activate);
+    }
+
+    public async updateName(id: number, category: CategoryType, name: string) {
+        const service = this.getCategoryService(category);
+        if (!service) return this.invalidType();
+        return await service.updateName(id, name);
+    }
+
+    public async updatePriority(id: number, category: CategoryType, priority: number) {
+        const service = this.getCategoryService(category);
+        if (!service) return this.invalidType();
+        return await service.updatePriority(id, priority);
     }
 }

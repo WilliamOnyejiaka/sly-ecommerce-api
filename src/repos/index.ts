@@ -14,6 +14,9 @@ import Brand from "./Brand";
 import CustomerProfilePic from "./CustomerProfilePic";
 import SecondBanner from "./SecondBanner";
 import FirstBanner from "./FirstBanner";
+import SubCategory from "./SubCategory";
+import SubCategoryImage from "./SubCategoryImage";
+import CategoryImage from "./CategoryImage";
 
 const prisma: PrismaClient = new PrismaClient();
 
@@ -30,9 +33,12 @@ export {
     Permission,
     AdminPermission,
     Category,
+    CategoryImage,
     Brand,
     Customer,
     CustomerProfilePic,
     SecondBanner,
-    FirstBanner
+    FirstBanner,
+    SubCategory,
+    SubCategoryImage
 };

@@ -1,4 +1,3 @@
-import { env } from "../../config";
 import constants, { http, HttpStatus } from "../../constants";
 import AssetRepo from "../../repos/bases/AssetRepo";
 import ImageRepo from "../../repos/bases/ImageRepo";
@@ -37,7 +36,7 @@ export default class AssetService<T extends AssetRepo, U extends ImageRepo> exte
         return serviceResult;
     }
 
-    protected sanitizeImageItems(items: any[]) {
+    public sanitizeImageItems(items: any[]) {
         items.forEach((item: any) => {
             item.imageUrl = item[this.repo!.imageRelation].length != 0 ? item[this.repo!.imageRelation][0].imageUrl : null;
             delete item[this.repo!.imageRelation];
@@ -58,6 +57,20 @@ export default class AssetService<T extends AssetRepo, U extends ImageRepo> exte
         }
 
         return this.responseData(404, true, "Item was not found", data);
+    }
+
+    protected async getAllAssetItems(message200?: string, sanitizeData: any[] = []) {
+        const repoResult = await this.repo!.getAll();
+
+        if (repoResult.error) {
+            return this.responseData(repoResult.type, true, repoResult.message!);
+        }
+
+        const data = repoResult.data;
+        this.sanitizeImageItems(data);
+        this.sanitizeData(data, sanitizeData);
+        const message = message200 ?? "Items were retrieved successfully";
+        return super.responseData(200, false, message, data);
     }
 
 

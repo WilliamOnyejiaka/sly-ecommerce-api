@@ -71,6 +71,14 @@ export interface CategoryDto {
     adminId: number
 }
 
+export interface SubCategoryDto {
+    id?: number
+    name: string,
+    priority: number,
+    active: boolean,
+    categoryId: number
+}
+
 export interface CustomerAddressDto {
     id?: number,
     street: string,

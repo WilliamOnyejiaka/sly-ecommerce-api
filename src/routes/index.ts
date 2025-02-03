@@ -11,6 +11,8 @@ import adminStore from "./adminStore";
 import adminCategory from "./adminCategory";
 import customer from "./customer";
 import category from "./category";
+import adminSubCategory from "./adminSubCategory";
+import subcategory from "./subcategory";
 
 export {
     auth,
@@ -25,5 +27,7 @@ export {
     adminStore,
     adminCategory,
     customer,
-    category
+    category,
+    adminSubCategory,
+    subcategory
 };
