@@ -1,5 +1,5 @@
 import { Admin, Customer, Vendor } from "../../repos";
-import validateBody from "./validateBody";
+import validateBody from "../validateBody";
 import {
     emailIsValid,
     passwordIsValid,
@@ -8,7 +8,7 @@ import {
     userEmailExists,
     userPhoneNumberExists,
     zipCodeIsValid
-} from "./validators";
+} from "../validators";
 
 export const vendorSignUp = [
     validateBody([

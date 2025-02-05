@@ -13,6 +13,7 @@ import customer from "./customer";
 import category from "./category";
 import adminSubCategory from "./adminSubCategory";
 import subcategory from "./subcategory";
+import adBanner from "./adBanner";
 
 export {
     auth,
@@ -29,5 +30,6 @@ export {
     customer,
     category,
     adminSubCategory,
-    subcategory
+    subcategory,
+    adBanner
 };

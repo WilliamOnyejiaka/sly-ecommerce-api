@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { Auth } from "../controllers";
 import asyncHandler from "express-async-handler";
-import { adminSignUp, customerSignUp, login, logOut, resetPassword, vendorSignUp } from "../middlewares/validators/auth";
+import { adminSignUp, customerSignUp, login, logOut, resetPassword, vendorSignUp } from "../middlewares/routes/auth";
 import { OTPType, UserType } from "../types/enums";
 
 const auth: Router = Router();

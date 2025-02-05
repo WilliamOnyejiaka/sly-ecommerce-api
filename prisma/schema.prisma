@@ -378,7 +378,7 @@ model BrandImage {
 
 model AdBanner {
   id            Int             @id @default(autoincrement())
-  title         String
+  title         String // ! TODO: make this unique
   description   String
   cta           String
   link          String

@@ -26,7 +26,7 @@ export default class SubCategory extends AssetService<SubCategoryRepo, SubCatego
 
     public async getAllCategories(admin: boolean = false) {
         const message = constants('200Categories')!;
-        return super.getAllAssetItems(message);
+        return await super.getAllAssetItems(message);
     }
 
     public async updateName(id: number, name: string) {

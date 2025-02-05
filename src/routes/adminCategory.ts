@@ -3,7 +3,7 @@ import { CategoryManagement } from "../controllers";
 import { adminAuthorization, uploads } from "../middlewares";
 import asyncHandler from "express-async-handler";
 import { validateQueryParams } from "../validators";
-import { createCategory, toggleActiveStatus, updateCategoryName, updateCategoryPriority } from "../middlewares/validators/category";
+import { createCategory, toggleActiveStatus, updateCategoryName, updateCategoryPriority } from "../middlewares/routes/category";
 import { CategoryType } from "../types/enums";
 
 const adminCategory: Router = Router();

@@ -39,7 +39,7 @@ export default class Category extends AssetService<CategoryRepo, CategoryImage> 
 
     public async getAllCategories(admin: boolean = false) {
         const message = constants('200Categories')!;
-        return admin ? super.getAllAssetItems(message) : super.getAllAssetItems(message, ['adminId']);
+        return admin ? await super.getAllAssetItems(message) : await super.getAllAssetItems(message, ['adminId']);
     }
 
     public async toggleActiveStatus(id: number, activate: boolean = true) {

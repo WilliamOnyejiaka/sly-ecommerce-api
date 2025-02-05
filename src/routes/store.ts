@@ -3,7 +3,7 @@ import { Store } from "../controllers";
 import { bannerUploads, uploads, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
 import { storeImagesUploads } from "../middlewares/multer";
-import { paramNumberIsValid } from "../middlewares/validators/validators";
+import { paramNumberIsValid } from "../middlewares/validators";
 
 const store: Router = Router();
 

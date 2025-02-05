@@ -22,8 +22,8 @@ export default class Controller {
         }
     }
 
-    public static paginateAssetItems<T extends AssetService<AssetRepo,ImageRepo>>(service: T) {
-        return async (req: Request, res: Response) => {            
+    public static paginateAssetItems<T extends AssetService<AssetRepo, ImageRepo>>(service: T) {
+        return async (req: Request, res: Response) => {
             const { page, pageSize } = req.query;
             const serviceResult = await service.paginate(page as any, pageSize as any);
             service.sanitizeImageItems(serviceResult.json.data.data);

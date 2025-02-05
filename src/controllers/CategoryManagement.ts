@@ -58,11 +58,6 @@ export default class CategoryManagement extends Category {
         }
     }
 
-    // public static override async getAllCategories(req: Request, res: Response) {
-    //     const serviceResult = await Category.facade.adminGetCategories(CategoryType.Main);
-    //     Controller.response(res, serviceResult);
-    // }
-
     public static async toggleActiveStatus(req: Request, res: Response) {
         const validationErrors = validationResult(req);
 

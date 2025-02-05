@@ -14,6 +14,7 @@ export default function imageFolders(key: string) {
         'secondStoreBanner': store + "/banner/second-store-banner",
         'category': category + "/category",
         'subCategory': category + "/subcategory",
-        'subSubCategory': category + "/subsubcategory"
+        'subSubCategory': category + "/subsubcategory",
+        'adBanner': basePath + "/ad-banner"
     }[key];
 }

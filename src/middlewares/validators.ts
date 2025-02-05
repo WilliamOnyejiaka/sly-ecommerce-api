@@ -1,8 +1,8 @@
 import { body, header, param, query } from "express-validator";
-import { emailValidator, numberValidator, phoneNumberValidator, zipCodeValidator } from "../../validators";
-import constants, { HttpStatus } from "../../constants";
-import UserRepo from "../../repos/bases/UserRepo";
-import Repo from "../../repos/bases/Repo";
+import { emailValidator, numberValidator, phoneNumberValidator, zipCodeValidator } from "../validators";
+import constants, { HttpStatus } from "../constants";
+import UserRepo from "../repos/bases/UserRepo";
+import Repo from "../repos/bases/Repo";
 
 const errorDetails = (message: string, statusCode: number) => {
     return JSON.stringify({

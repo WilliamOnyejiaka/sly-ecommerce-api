@@ -18,6 +18,7 @@ import UserOTP from "./UserOTP";
 import TwilioService from "./TwilioService";
 import PasswordReset from "./PasswordReset";
 import SubCategory from "./SubCategory";
+import AdBanner from "./AdBanner";
 
 export {
     Token,
@@ -39,5 +40,6 @@ export {
     UserOTP,
     TwilioService,
     PasswordReset,
-    SubCategory
+    SubCategory,
+    AdBanner
 };

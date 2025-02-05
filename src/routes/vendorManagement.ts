@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { VendorManagement } from "../controllers";
 import { adminAuthorization, uploads, validateBody } from "../middlewares";
 import asyncHandler from "express-async-handler";
-import { adminAuth, anyAuth, deleteVendor, getVendor, paginateVendors, updateActiveStatus } from "../middlewares/validators/vendorManagement";
+import { adminAuth, anyAuth, deleteVendor, getVendor, paginateVendors, updateActiveStatus } from "../middlewares/routes/vendorManagement";
 import { UserType } from "../types/enums";
 
 const vendorManagement: Router = Router();

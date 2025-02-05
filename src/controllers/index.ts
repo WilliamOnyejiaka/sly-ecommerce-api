@@ -12,6 +12,7 @@ import CategoryManagement from "./CategoryManagement";
 import Controller from "./bases/Controller";
 import Customer from "./Customer";
 import Category from "./Category";
+import AdBanner from "./AdBanner";
 
 export {
     Auth,
@@ -27,5 +28,6 @@ export {
     CategoryManagement,
     Category,
     Controller,
-    Customer
+    Customer,
+    AdBanner
 };

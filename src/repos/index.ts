@@ -17,6 +17,8 @@ import FirstBanner from "./FirstBanner";
 import SubCategory from "./SubCategory";
 import SubCategoryImage from "./SubCategoryImage";
 import CategoryImage from "./CategoryImage";
+import AdBanner from "./AdBanner";
+import AdBannerImage from "./AdBannerImage";
 
 const prisma: PrismaClient = new PrismaClient();
 
@@ -40,5 +42,7 @@ export {
     SecondBanner,
     FirstBanner,
     SubCategory,
-    SubCategoryImage
+    SubCategoryImage,
+    AdBanner,
+    AdBannerImage
 };

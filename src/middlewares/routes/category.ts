@@ -1,7 +1,7 @@
 import { Category, SubCategory } from "../../repos";
-import adminAuthorization from "../adminAuthorize";
-import validateBody from "./validateBody";
-import { bodyBooleanIsValid, bodyNumberIsValid, itemIdExists, itemNameExists } from "./validators";
+import adminAuthorization from "../adminAuthorization";
+import validateBody from "../validateBody";
+import { bodyBooleanIsValid, bodyNumberIsValid, itemIdExists, itemNameExists } from "../validators";
 
 const categoryNameExists = itemNameExists<Category>(new Category(), "name");
 const adminAuth = adminAuthorization(['manage_all']);

@@ -21,11 +21,16 @@ export default class Store extends BaseService<StoreDetails> {
             return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
         }
 
-        const storeNameRepoResult = await this.repo!.getItemWithName(storeDetailsDto.name);
+        const storeNameRepoResult = await this.repo!.getItemWithName(storeDetailsDto.name); // ! TODO: check if the name exits properly
         const storeNameRepoResultError = this.handleRepoError(storeNameRepoResult);
 
         if (storeNameRepoResultError) {
             if (!(await this.imageService.deleteFiles(images))) return storeNameRepoResultError;
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }        
+
+        if (storeNameRepoResult.data) {
+            if (!(await this.imageService.deleteFiles(images))) return super.responseData(HttpStatus.BAD_REQUEST, true, "Store name already exists");
             return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
         }
 
