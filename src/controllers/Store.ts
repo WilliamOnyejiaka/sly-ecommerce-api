@@ -112,7 +112,6 @@ export default class Store {
 
     public static async deleteStore(req: Request, res: Response) {
         const vendorId = Number(res.locals.data.id);
-
         const serviceResult = await Store.service.delete(vendorId);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }

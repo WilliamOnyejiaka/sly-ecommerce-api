@@ -138,7 +138,7 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
         }
 
         const cachedUser = cacheResponse.data
-        const message = activate ? "Vendor was activated successfully" : "Vendor was deactivated successfully";
+        const message = activate ? "User was activated successfully" : "User was deactivated successfully";
 
         if (cachedUser) {
             cachedUser.active = user.active;

@@ -27,6 +27,12 @@ export default class CategoryManagementFacade extends BaseFacade {
         return await service.createCategory(categoryData as any);
     }
 
+    public async createCategoryAll(categoryData: CategoryDto | SubCategoryDto, image: Express.Multer.File, category: CategoryType) {
+        const service = this.getCategoryService(category);
+        if (!service) return this.invalidType();
+        return await service.createCategoryAll(categoryData as any, image);
+    }
+
     public async getCategory(identifier: string | number, category: CategoryType, admin: boolean = false) {
         const service = this.getCategoryService(category);
         if (!service) return this.invalidType();
@@ -73,5 +79,9 @@ export default class CategoryManagementFacade extends BaseFacade {
         const service = this.getCategoryService(category);
         if (!service) return this.invalidType();
         return await service.updatePriority(id, priority);
+    }
+
+    public async paginateSubCategoryWithCategoryId(page: number, pageSize: number, categoryId: number) {
+        return this.subCategoryService.paginateSubCategoryWithCategoryId(page, pageSize, categoryId);
     }
 }

@@ -12,6 +12,39 @@ export default class AssetService<T extends AssetRepo, U extends ImageRepo> exte
         super(repo);
     }
 
+    public async createAsset<T>(assetDto: T, image: Express.Multer.File) {
+        const uploadFolders: Record<string, string> = {
+            image: this.imageFolderName,
+        };
+
+        const uploadResults = await this.imageService.uploadImages([image], uploadFolders);
+        const itemImages = uploadResults.data;
+
+        if (itemImages) {
+            const repoResult = await this.repo!.insertWithRelations(
+                assetDto,
+                itemImages?.image,
+            );
+
+            if (!repoResult.error) {
+                const result = {
+                    ...repoResult.data,
+                    imageUrl: itemImages.image?.imageUrl ?? null,
+                };
+
+                return super.responseData(
+                    HttpStatus.CREATED,
+                    false,
+                    "Asset was created successfully",
+                    result
+                );
+            }
+        }
+
+        return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+    }
+
+
     public async uploadImage(image: Express.Multer.File, parentId: number) {
         const repoResult = await this.repo!.getItemAndImageRelationWithId(parentId);
         const repoResultError = this.handleRepoError(repoResult);

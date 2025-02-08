@@ -3,13 +3,13 @@ import { UserManagementFacade } from "../facade";
 import { UserType } from "../types/enums";
 import { validationResult } from "express-validator";
 import Controller from "./bases/Controller";
+import VendorDto, { AdminDto, CustomerAddressDto, CustomerDto } from "../types/dtos";
 
 export default class UserManagement {
 
     private static readonly facade: UserManagementFacade = new UserManagementFacade();
-    public static user: UserType;
 
-    public static async getVendor(req: Request, res: Response) {
+    public static async createCustomer(req: Request, res: Response) {
         const validationErrors = validationResult(req);
 
         if (!validationErrors.isEmpty()) {
@@ -17,52 +17,59 @@ export default class UserManagement {
             return;
         }
 
-        const userId = Number(req.params.userId);
-        console.log(UserManagement.user);
-        
-        const serviceResult = await UserManagement.facade.getUserProfileWithId(userId, UserManagement.user);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const addressDto: CustomerAddressDto = {
+            zip: req.body.zip,
+            street: req.body.street,
+            city: req.body.city
+        }
+
+        const serviceResult = await UserManagement.facade.createCustomer({
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            password: req.body.password,
+            email: req.body.email,
+            phoneNumber: req.body.phoneNumber
+        }, addressDto);
+        Controller.response(res, serviceResult);
     }
 
-    public static async delete(req: Request, res: Response) {
+    public static async createVendor(req: Request, res: Response) {
         const validationErrors = validationResult(req);
-
         if (!validationErrors.isEmpty()) {
             Controller.handleValidationErrors(res, validationErrors);
             return;
         }
 
-        const userId = Number(req.params.userId);
-        const serviceResult = await UserManagement.facade.deleteUser(userId, UserManagement.user);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const createData: VendorDto = req.body;
+        const serviceResult = await UserManagement.facade.createVendor(createData);
+        Controller.response(res, serviceResult);
     }
 
-    public static async paginateVendors(req: Request, res: Response) {
+    public static async createAdmin(req: Request, res: Response) {
         const validationErrors = validationResult(req);
-
         if (!validationErrors.isEmpty()) {
             Controller.handleValidationErrors(res, validationErrors);
             return;
         }
-
-        const page = Number(req.query.page);
-        const pageSize = Number(req.query.pageSize);
-
-        const serviceResult = await UserManagement.facade.paginateUsers(page, pageSize, UserManagement.user);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const createData: AdminDto = req.body;
+        const createdBy = Number(res.locals.data.id);
+        const serviceResult = await UserManagement.facade.createAdmin(createData, createdBy);
+        Controller.response(res, serviceResult);
     }
 
-    public static async getAllVendors(req: Request, res: Response) {
-        const serviceResult = await UserManagement.facade.getAllUsers(UserManagement.user);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+    public static async generateSignUpKey(req: Request, res: Response) {
+        const createdBy = Number(res.locals.data.id);
+        const validationErrors = validationResult(req);
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+        const roleId = Number(req.params.roleId);
+        const serviceResult = await UserManagement.facade.generateAdminSignUpKey(roleId, createdBy);
+        Controller.response(res, serviceResult);
     }
 
-    public static async totalRecords(req: Request, res: Response) {
-        const serviceResult = await UserManagement.facade.totalUsers(UserManagement.user);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
-    }
-
-    public static toggleActivate(activate: boolean = true) {
+    public static getUser(user: UserType) {
         return async (req: Request, res: Response) => {
             const validationErrors = validationResult(req);
 
@@ -71,17 +78,81 @@ export default class UserManagement {
                 return;
             }
 
-            const userId = Number(req.body.userId);
-            const serviceResult = activate ? await UserManagement.facade.activateUser(userId, UserManagement.user) : await UserManagement.facade.deactivateUser(userId, UserManagement.user);
-            res.status(serviceResult.statusCode).json(serviceResult.json);
+            const userId = Number(req.params.id);
+
+            console.log(userId);
+
+
+            const facadeResult = await UserManagement.facade.getUserProfileWithId(userId, user);
+            res.status(facadeResult.statusCode).json(facadeResult.json);
         }
     }
 
-    public static deactivateVendor() {
-        return UserManagement.toggleActivate(false);
+    public static delete(user: UserType) {
+        return async (req: Request, res: Response) => {
+            const validationErrors = validationResult(req);
+
+            if (!validationErrors.isEmpty()) {
+                Controller.handleValidationErrors(res, validationErrors);
+                return;
+            }
+
+            const userId = Number(req.params.userId);
+            const facadeResult = await UserManagement.facade.deleteUser(userId, user);
+            res.status(facadeResult.statusCode).json(facadeResult.json);
+        }
     }
 
-    public static activateVendor() {
-        return UserManagement.toggleActivate();
+    public static paginateUsers(user: UserType) {
+        return async (req: Request, res: Response) => {
+            const validationErrors = validationResult(req);
+
+            if (!validationErrors.isEmpty()) {
+                Controller.handleValidationErrors(res, validationErrors);
+                return;
+            }
+
+            const page = Number(req.query.page);
+            const pageSize = Number(req.query.pageSize);
+
+            const facadeResult = await UserManagement.facade.paginateUsers(page, pageSize, user);
+            res.status(facadeResult.statusCode).json(facadeResult.json);
+        };
+    }
+
+    public static getAllUsers(user: UserType) {
+        return async (req: Request, res: Response) => {
+            const facadeResult = await UserManagement.facade.getAllUsers(user);
+            res.status(facadeResult.statusCode).json(facadeResult.json);
+        };
+    }
+
+    public static totalRecords(user: UserType) {
+        return async (req: Request, res: Response) => {
+            const facadeResult = await UserManagement.facade.totalUsers(user);
+            res.status(facadeResult.statusCode).json(facadeResult.json);
+        };
+    }
+    public static toggleActivate(user: UserType, activate: boolean = true) {
+        return async (req: Request, res: Response) => {
+            const validationErrors = validationResult(req);
+
+            if (!validationErrors.isEmpty()) {
+                Controller.handleValidationErrors(res, validationErrors);
+                return;
+            }
+
+            const userId = Number(req.body.id);
+            const facadeResult = activate ? await UserManagement.facade.activateUser(userId, user) : await UserManagement.facade.deactivateUser(userId, user);
+            res.status(facadeResult.statusCode).json(facadeResult.json);
+        }
+    }
+
+    public static deactivateUser(user: UserType) {
+        return UserManagement.toggleActivate(user, false);
+    }
+
+    public static activateUser(user: UserType) {
+        return UserManagement.toggleActivate(user);
     }
 }

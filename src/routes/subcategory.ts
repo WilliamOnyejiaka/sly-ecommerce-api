@@ -7,6 +7,21 @@ import { CategoryType } from "../types/enums";
 const subcategory: Router = Router();
 
 subcategory.get(
+    "/paginate/:categoryId",
+    validateQueryParams([
+        {
+            name: "page",
+            type: "number"
+        },
+        {
+            name: "pageSize",
+            type: "number"
+        }
+    ]),
+    asyncHandler(Category.paginateSubCategoryWithCategoryId)
+);
+
+subcategory.get(
     "/paginate-categories",
     validateQueryParams([
         {

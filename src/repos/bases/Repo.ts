@@ -116,6 +116,23 @@ export default class Repo implements Repository {
         }
     }
 
+    public async paginate1(skip: number, take: number, filter: any = {}) {
+        try {
+            const items = await (prisma[this.tblName] as any).findMany({
+                skip,   // Skips the first 'skip' records
+                take,   // Fetches 'take' records
+                ...filter
+            });
+            const totalItems = await prisma.subCategory.count();
+            return this.repoResponse(false, 200, null, {
+                items: items,
+                totalItems: totalItems
+            })
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
+    }
+
     public async paginate(skip: number, take: number, filter: any = {}) {
         try {
             const items = await (prisma[this.tblName] as any).findMany({
@@ -123,7 +140,8 @@ export default class Repo implements Repository {
                 take,   // Fetches 'take' records
                 ...filter
             });
-            const totalItems = await (prisma[this.tblName] as any).count();
+            const where = filter.where;            
+            const totalItems = where ? await (prisma[this.tblName] as any).count({ where }) : await (prisma[this.tblName] as any).count();
             return this.repoResponse(false, 200, null, {
                 items: items,
                 totalItems: totalItems

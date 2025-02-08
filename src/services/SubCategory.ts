@@ -1,4 +1,4 @@
-import constants, { http } from "../constants";
+import constants, { http, HttpStatus } from "../constants";
 import { SubCategory as SubCategoryRepo, SubCategoryImage } from "../repos";
 import { SubCategoryDto } from "../types/dtos";
 import AssetService from "./bases/AssetService";
@@ -6,11 +6,23 @@ import AssetService from "./bases/AssetService";
 export default class SubCategory extends AssetService<SubCategoryRepo, SubCategoryImage> {
 
     public constructor() {
-        super(new SubCategoryRepo(), new SubCategoryImage(), 'category');
+        super(new SubCategoryRepo(), new SubCategoryImage(), 'subCategory');
     }
 
     public async createCategory(categoryData: SubCategoryDto) {
         return await super.create<SubCategoryDto>(categoryData, "SubCategory");
+    }
+
+    public async createCategoryAll(categoryDetailsDto: SubCategoryDto, image: Express.Multer.File) {
+        const categoryNameServiceResult = await super.getItemWithName(categoryDetailsDto.name);
+        if (categoryNameServiceResult.json.data) {
+            if (!(await this.imageService.deleteFiles([image]))) {
+                return super.responseData(HttpStatus.BAD_REQUEST, true, "SubCategory name already exists");
+            }
+            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
+        }
+
+        return await super.createAsset(categoryDetailsDto, image);
     }
 
     public async getCategory(identifier: string | number, admin: boolean = false) {
@@ -33,7 +45,7 @@ export default class SubCategory extends AssetService<SubCategoryRepo, SubCatego
         const repoResult = await this.repo!.updateItem(id, { name: name });
         const errorResponse = this.handleRepoError(repoResult);
         if (errorResponse) return errorResponse;
-        const message = "Category name has been updated successfully";
+        const message = "SubCategory name has been updated successfully";
         return super.responseData(200, false, message, repoResult.data);
     }
 
@@ -41,7 +53,16 @@ export default class SubCategory extends AssetService<SubCategoryRepo, SubCatego
         const repoResult = await this.repo!.updateItem(id, { priority: priority });
         const errorResponse = this.handleRepoError(repoResult);
         if (errorResponse) return errorResponse;
-        const message = "Category priority has been updated successfully";
+        const message = "SubCategory priority has been updated successfully";
         return super.responseData(200, false, message, repoResult.data);
     }
+
+    public async paginateSubCategoryWithCategoryId(page: number, pageSize: number, categoryId: number) {
+        const serviceResult = await super.paginate(page, pageSize, {
+            where: { categoryId: categoryId }
+        });
+        if (!serviceResult.json.error) super.sanitizeImageItems(serviceResult.json.data.data);
+        return serviceResult;
+    }
 }
+

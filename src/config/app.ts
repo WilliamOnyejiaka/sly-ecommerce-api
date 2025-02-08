@@ -1,7 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { cloudinary, corsConfig, env, logger } from ".";
-import { auth, vendor, store, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory, customer, category, adminSubCategory, subcategory, adBanner } from "./../routes";
+import { auth, vendor, store, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory, customer, category, adminSubCategory, subcategory, adBanner, user } from "./../routes";
 import { Cloudinary, Email, TwilioService } from "../services";
 import path from "path";
 import ejs from "ejs";
@@ -56,12 +56,13 @@ function createApp() {
     app.use("/api/v1/subcategory", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), subcategory);
     app.use("/api/v1/ad-banner", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), adBanner);
 
+    app.use("/api/v1/dashboard/user", validateJWT(["admin",], env("tokenSecret")!), user);
 
 
     app.use(
         "/api/v1/customer",
         validateJWT(["customer"], env("tokenSecret")!),
-        // validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
+        // validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo), // ! TODO: uncomment this
         customer
     );
 

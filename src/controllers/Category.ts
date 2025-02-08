@@ -13,17 +13,25 @@ export default abstract class Category {
         return Controller.paginateAssetItems<typeof service>(service);
     }
 
+    public static async paginateSubCategoryWithCategoryId(req: Request, res: Response) {
+        const { page, pageSize } = req.query;
+        const categoryId = Number(req.params.categoryId);
+
+        const facadeResult = await Category.facade.paginateSubCategoryWithCategoryId(page as any, pageSize as any, categoryId as any);
+        res.status(facadeResult.statusCode).json(facadeResult.json);
+    }
+    
     public static getAllCategories(category: CategoryType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Category.facade.getAllCategories(category);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Category.facade.getAllCategories(category);
+            Controller.response(res, facadeResult);
         }
     }
 
     public static getCategoryWithName(category: CategoryType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Category.facade.getCategory(req.params.categoryName, category);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Category.facade.getCategory(req.params.categoryName, category);
+            Controller.response(res, facadeResult);
         }
     }
 
@@ -36,8 +44,8 @@ export default abstract class Category {
                 return;
             }
 
-            const serviceResult = await Category.facade.getCategory(idResult.number, category);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Category.facade.getCategory(idResult.number, category);
+            Controller.response(res, facadeResult);
         }
     }
 }

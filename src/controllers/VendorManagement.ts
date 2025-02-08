@@ -18,8 +18,8 @@ export default class VendorManagement {
         }
 
         const vendorId = Number(req.params.vendorId);
-        const serviceResult = await VendorManagement.facade.getUserProfileWithId(vendorId, VendorManagement.user);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const facadeResult = await VendorManagement.facade.getUserProfileWithId(vendorId, VendorManagement.user);
+        res.status(facadeResult.statusCode).json(facadeResult.json);
     }
 
     public static async delete(req: Request, res: Response) {
@@ -31,8 +31,8 @@ export default class VendorManagement {
         }
 
         const vendorId = Number(req.params.vendorId);        
-        const serviceResult = await VendorManagement.facade.deleteUser(vendorId, VendorManagement.user);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const facadeResult = await VendorManagement.facade.deleteUser(vendorId, VendorManagement.user);
+        res.status(facadeResult.statusCode).json(facadeResult.json);
     }
 
     public static async paginateVendors(req: Request, res: Response) {
@@ -46,18 +46,18 @@ export default class VendorManagement {
         const page = Number(req.query.page);
         const pageSize = Number(req.query.pageSize);
 
-        const serviceResult = await VendorManagement.facade.paginateUsers(page, pageSize, VendorManagement.user);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const facadeResult = await VendorManagement.facade.paginateUsers(page, pageSize, VendorManagement.user);
+        res.status(facadeResult.statusCode).json(facadeResult.json);
     }
 
     public static async getAllVendors(req: Request, res: Response) {
-        const serviceResult = await VendorManagement.facade.getAllUsers(VendorManagement.user);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const facadeResult = await VendorManagement.facade.getAllUsers(VendorManagement.user);
+        res.status(facadeResult.statusCode).json(facadeResult.json);
     }
 
     public static async totalRecords(req: Request, res: Response) {
-        const serviceResult = await VendorManagement.facade.totalUsers(VendorManagement.user);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const facadeResult = await VendorManagement.facade.totalUsers(VendorManagement.user);
+        res.status(facadeResult.statusCode).json(facadeResult.json);
     }
 
     public static toggleActivate(activate: boolean = true) {
@@ -70,8 +70,8 @@ export default class VendorManagement {
             }
 
             const vendorId = Number(req.body.vendorId);
-            const serviceResult = activate ? await VendorManagement.facade.activateUser(vendorId, VendorManagement.user) : await VendorManagement.facade.deactivateUser(vendorId, VendorManagement.user);
-            res.status(serviceResult.statusCode).json(serviceResult.json);
+            const facadeResult = activate ? await VendorManagement.facade.activateUser(vendorId, VendorManagement.user) : await VendorManagement.facade.deactivateUser(vendorId, VendorManagement.user);
+            res.status(facadeResult.statusCode).json(facadeResult.json);
         }
     }
 

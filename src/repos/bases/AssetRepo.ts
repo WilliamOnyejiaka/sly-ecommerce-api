@@ -30,9 +30,40 @@ export default class AssetRepo extends Repo {
         return await super.getItem({ name: name }, this.imageFilter);
     }
 
-    public override async paginate(skip: number, take: number) {
-        return super.paginate(skip, take, this.imageFilter);
+    public override async paginate(skip: number, take: number, filter: any = {}) {
+
+        return super.paginate(skip, take, {
+            ...filter,
+            ...this.imageFilter
+        });
     }
+
+    public async insertWithRelations(
+        assetData: any,
+        assetImage: any,
+    ) {
+        try {
+            const data: any = {
+                ...assetData
+            };
+
+            assetImage && (data[this.imageRelation] = { create: assetImage });
+
+            const newAsset = await (prisma[this.tblName] as any).create({
+                data: data
+            });
+
+            return {
+                error: false,
+                data: newAsset,
+                type: 201,
+                message: null
+            };
+        } catch (error) {
+            return super.handleDatabaseError(error);
+        }
+    }
+
 
     public override async getAll(filter?: any) {
         return await super.getAll(this.imageFilter)

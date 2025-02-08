@@ -26,6 +26,41 @@ export default class CategoryManagement extends Category {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
+    public static async createCategoryAll(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+        const image = req.file!
+
+        if (!validationErrors.isEmpty()) {
+            Controller.deleteFiles([image]);
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+
+        let active;
+        let priority;
+
+        try {
+            active = req.body.active.toLowerCase() === "true";
+            priority = Number(req.body.priority);
+        } catch (error) {
+            Controller.deleteFiles([image]);
+            res.status(400).json({
+                error: true,
+                message: "Active or Priority type is invalid"
+            });
+            return;
+        }
+
+        const categoryData: CategoryDto = {
+            name: req.body.name,
+            active: active,
+            priority: priority,
+            adminId: res.locals.data.id
+        };
+        const serviceResult = await CategoryManagement.facade.createCategoryAll(categoryData, image, CategoryType.Main);
+        Controller.response(res, serviceResult);
+    }
+
     public static async createSubCategory(req: Request, res: Response) {
         const validationErrors = validationResult(req);
 
@@ -40,8 +75,38 @@ export default class CategoryManagement extends Category {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
-    public static async createCategoryAll(req: Request, res: Response) {
+    public static async createSubCategoryAll(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+        const image = req.file!
 
+        if (!validationErrors.isEmpty()) {
+            Controller.deleteFiles([image]);
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+
+        let priority;
+        let categoryId;
+
+        try {
+            categoryId = Number(req.body.categoryId)
+            priority = Number(req.body.priority);
+        } catch (error) {
+            Controller.deleteFiles([image]);
+            res.status(400).json({
+                error: true,
+                message: "Active or Priority type is invalid"
+            });
+            return;
+        }
+
+        const categoryData: SubCategoryDto = {
+            name: req.body.name,
+            priority: priority,
+            categoryId: categoryId
+        };
+        const serviceResult = await CategoryManagement.facade.createCategoryAll(categoryData, image, CategoryType.SubMain);
+        Controller.response(res, serviceResult);
     }
 
     public static override getCategoryWithName(category: CategoryType) {

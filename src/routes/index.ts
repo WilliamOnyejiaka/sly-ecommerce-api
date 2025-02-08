@@ -14,6 +14,7 @@ import category from "./category";
 import adminSubCategory from "./adminSubCategory";
 import subcategory from "./subcategory";
 import adBanner from "./adBanner";
+import user from "./dashboard/user";
 
 export {
     auth,
@@ -31,5 +32,6 @@ export {
     category,
     adminSubCategory,
     subcategory,
-    adBanner
+    adBanner,
+    user
 };

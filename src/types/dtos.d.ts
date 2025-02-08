@@ -75,7 +75,7 @@ export interface SubCategoryDto {
     id?: number
     name: string,
     priority: number,
-    active: boolean,
+    // active: boolean,
     categoryId: number
 }
 

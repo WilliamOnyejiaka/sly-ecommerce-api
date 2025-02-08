@@ -3,7 +3,7 @@ import { CategoryManagement } from "../controllers";
 import { adminAuthorization, uploads } from "../middlewares";
 import asyncHandler from "express-async-handler";
 import { validateQueryParams } from "../validators";
-import { createSubCategory, updateCategoryPriority, updateSubCategoryName } from "../middlewares/routes/category";
+import { createSubCategory, createSubCategoryAll, updateCategoryPriority, updateSubCategoryName } from "../middlewares/routes/category";
 import { CategoryType } from "../types/enums";
 
 const adminSubCategory: Router = Router();
@@ -25,10 +25,11 @@ adminSubCategory.get(
 );
 
 adminSubCategory.post(
-    "/create-category",
-    createSubCategory,
-    asyncHandler(CategoryManagement.createSubCategory)
+    "/all",
+    createSubCategoryAll,
+    asyncHandler(CategoryManagement.createSubCategoryAll)
 );
+
 
 adminSubCategory.get(
     "/get-with-name/:categoryName",
@@ -43,7 +44,7 @@ adminSubCategory.get(
 );
 
 adminSubCategory.post(
-    "/upload-category-image/:categoryId",
+    "/upload/:categoryId",
     adminAuthorization(['manage_all']),
     uploads.single("image"),
     asyncHandler(CategoryManagement.uploadCategoryImage(CategoryType.SubMain))
@@ -61,16 +62,23 @@ adminSubCategory.patch(
     asyncHandler(CategoryManagement.updatePriority(CategoryType.SubMain))
 );
 
-adminSubCategory.get(
-    "/",
-    adminAuthorization(['any']),
-    asyncHandler(CategoryManagement.getAllCategories(CategoryType.SubMain))
-);
-
 adminSubCategory.delete(
     "/:id",
     adminAuthorization(['manage_all']),
     asyncHandler(CategoryManagement.delete(CategoryType.SubMain))
+);
+
+adminSubCategory.post(
+    "/",
+    createSubCategory,
+    asyncHandler(CategoryManagement.createSubCategory)
+);
+
+
+adminSubCategory.get(
+    "/",
+    adminAuthorization(['any']),
+    asyncHandler(CategoryManagement.getAllCategories(CategoryType.SubMain))
 );
 
 export default adminSubCategory;

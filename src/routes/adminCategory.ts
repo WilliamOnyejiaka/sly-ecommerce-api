@@ -3,7 +3,7 @@ import { CategoryManagement } from "../controllers";
 import { adminAuthorization, uploads } from "../middlewares";
 import asyncHandler from "express-async-handler";
 import { validateQueryParams } from "../validators";
-import { createCategory, toggleActiveStatus, updateCategoryName, updateCategoryPriority } from "../middlewares/routes/category";
+import { createCategory, createCategoryAll, toggleActiveStatus, updateCategoryName, updateCategoryPriority } from "../middlewares/routes/category";
 import { CategoryType } from "../types/enums";
 
 const adminCategory: Router = Router();
@@ -25,9 +25,9 @@ adminCategory.get(
 );
 
 adminCategory.post(
-    "/create-category",
-    createCategory,
-    asyncHandler(CategoryManagement.createCategory)
+    "/all",
+    createCategoryAll,
+    asyncHandler(CategoryManagement.createCategoryAll)
 );
 
 adminCategory.get(
@@ -43,7 +43,7 @@ adminCategory.get(
 );
 
 adminCategory.post(
-    "/upload-category-image/:categoryId",
+    "/upload/:categoryId",
     adminAuthorization(['manage_all']),
     uploads.single("image"),
     asyncHandler(CategoryManagement.uploadCategoryImage(CategoryType.Main))
@@ -67,16 +67,22 @@ adminCategory.patch(
     asyncHandler(CategoryManagement.updatePriority(CategoryType.Main))
 );
 
-adminCategory.get(
-    "/",
-    adminAuthorization(['any']),
-    asyncHandler(CategoryManagement.getAllCategories(CategoryType.Main))
-);
-
 adminCategory.delete(
     "/:id",
     adminAuthorization(['manage_all']),
     asyncHandler(CategoryManagement.delete(CategoryType.Main))
+);
+
+adminCategory.post(
+    "/",
+    createCategory,
+    asyncHandler(CategoryManagement.createCategory)
+);
+
+adminCategory.get(
+    "/",
+    adminAuthorization(['any']),
+    asyncHandler(CategoryManagement.getAllCategories(CategoryType.Main))
 );
 
 export default adminCategory;

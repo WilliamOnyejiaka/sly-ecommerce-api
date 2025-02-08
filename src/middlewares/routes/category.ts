@@ -1,3 +1,4 @@
+import { uploads } from "..";
 import { Category, SubCategory } from "../../repos";
 import adminAuthorization from "../adminAuthorization";
 import validateBody from "../validateBody";
@@ -18,6 +19,18 @@ export const createCategory = [
     categoryNameExists
 ];
 
+export const createCategoryAll = [
+    adminAuth,
+    uploads.single("image"),
+    validateBody([
+        "name",
+        "priority",
+        // "active"
+    ]),
+    // bodyBooleanIsValid('active'),
+    bodyNumberIsValid('priority'),
+];
+
 export const createSubCategory = [
     adminAuth,
     validateBody([
@@ -28,6 +41,18 @@ export const createSubCategory = [
     bodyNumberIsValid('priority'),
     itemNameExists<SubCategory>(new SubCategory(), "name"),
     itemIdExists<Category>(new Category(), "categoryId")
+];
+
+export const createSubCategoryAll = [
+    adminAuth,
+    uploads.single("image"),
+    validateBody([
+        "name",
+        "priority",
+        "categoryId"
+    ]),
+    // bodyBooleanIsValid('active'),
+    bodyNumberIsValid('priority'),
 ];
 
 export const toggleActiveStatus = [
