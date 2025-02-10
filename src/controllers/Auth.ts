@@ -49,17 +49,20 @@ export default class Auth { // ! TODO: change all constant strings to an Enum
         }
     }
 
+    public static otpConfirmation(userType: UserType) {
+        return async (req: Request, res: Response) => {
+            const serviceResult = await Auth.facade.otpConfirmation(req.params.email, req.params.otpCode, userType);
+            Controller.response(res, serviceResult);
+        }
+    }
 
     public static passwordReset(userType: UserType) {
         return async (req: Request, res: Response) => {
-            const validationErrors = validationResult(req);
-            if (!validationErrors.isEmpty()) {
-                Controller.handleValidationErrors(res, validationErrors);
-                return;
-            }
-
-            const { otp, password, email } = req.body;
-            const serviceResult = await Auth.facade.passwordReset(email, password, otp, userType);
+            const email = res.locals.data.email;
+            console.log(email);
+            
+            const { password } = req.body;
+            const serviceResult = await Auth.facade.passwordReset(email, password, userType);
             Controller.response(res, serviceResult);
         }
     }

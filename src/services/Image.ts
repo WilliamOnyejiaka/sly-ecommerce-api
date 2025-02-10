@@ -175,4 +175,8 @@ export default class ImageService extends BaseService {
         return await this.cloudinary.delete(publicID);
     }
 
+    public async deleteCloudinaryImages(publicIDs: string[]) {
+        const deleteResults = await Promise.all(publicIDs.map(publicID => this.cloudinary.delete(publicID)));
+        return deleteResults;
+    }
 }

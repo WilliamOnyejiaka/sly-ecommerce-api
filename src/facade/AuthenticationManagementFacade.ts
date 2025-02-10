@@ -94,6 +94,18 @@ export default class AuthenticationManagementFacade extends BaseFacade {
         return verifyEmailMethod ? await verifyEmailMethod(email, otpCode) : this.service.responseData(500, true, "Invalid user type");
     }
 
+
+    /**
+     * Verifies email for the user based on their type and OTP code
+     * @param email User email
+     * @param otpCode OTP code
+     * @param user User type (customer, admin, or vendor)
+     */
+    public async otpConfirmation(email: string, otpCode: string, user: UserType) {
+        const serviceResult = await this.userOTPService.otpConfirmation(email, otpCode, user);
+        return serviceResult;
+    }
+
     /**
      * Verifies email for the user based on their type and OTP code
      * @param email User email
@@ -101,7 +113,7 @@ export default class AuthenticationManagementFacade extends BaseFacade {
      * @param password User's new password
      * @param user User type (customer, admin, or vendor)
      */
-    public async passwordReset(email: string, password: string, otpCode: string, user: UserType) {
+    public async passwordReset(email: string, password: string, user: UserType) {
         const verifyEmailMethods = {
             [UserType.Vendor]: this.userOTPService.vendorPasswordReset.bind(this.userOTPService),
             [UserType.Admin]: this.userOTPService.adminPasswordReset.bind(this.userOTPService),
@@ -109,7 +121,7 @@ export default class AuthenticationManagementFacade extends BaseFacade {
         };
 
         const verifyEmailMethod = verifyEmailMethods[user];
-        return verifyEmailMethod ? await verifyEmailMethod(email, password, otpCode) : this.service.responseData(500, true, "Invalid user type");
+        return verifyEmailMethod ? await verifyEmailMethod(email, password) : this.service.responseData(500, true, "Invalid user type");
     }
 
 }

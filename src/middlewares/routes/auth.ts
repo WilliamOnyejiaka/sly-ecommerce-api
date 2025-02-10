@@ -1,5 +1,8 @@
+import { env } from "../../config";
 import { Admin, Customer, Vendor } from "../../repos";
+import { UserType } from "../../types/enums";
 import validateBody from "../validateBody";
+import validateJWT from "../validateJWT";
 import {
     emailIsValid,
     passwordIsValid,
@@ -68,11 +71,21 @@ export const logOut = [
     tokenIsPresent
 ]
 
+// export const resetPassword = [
+//     validateBody([
+//         'password',
+//         'otp',
+//         'email'
+//     ]),
+//     passwordIsValid
+// ]
+
+
+
 export const resetPassword = [
+    validateJWT([UserType.Admin, UserType.Vendor, UserType.Customer], env("tokenSecret")!),
     validateBody([
         'password',
-        'otp',
-        'email'
     ]),
     passwordIsValid
-]
+];

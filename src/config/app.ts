@@ -1,27 +1,18 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { cloudinary, corsConfig, env, logger } from ".";
-import { auth, vendor, store, seed, admin, role, adminVendor, permission, adminPermission, adminStore, adminCategory, customer, category, adminSubCategory, subcategory, adBanner, user } from "./../routes";
+import { auth, vendor, store, seed, admin, role, adminVendor, permission, adminPermission, adminStore, dashboardCategory, customer, category, dashboardSubCategory, subcategory, adBanner, user } from "./../routes";
 import { Cloudinary, Email, TwilioService } from "../services";
-import path from "path";
-import ejs from "ejs";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, redisClientMiddleware, vendorIsActive, uploads } from "./../middlewares";
-import Redis from "ioredis";
 import asyncHandler from "express-async-handler";
 import { Admin } from "../controllers";
-import { VendorCache } from "../cache";
-import { Vendor as VendorRepo } from "../repos";
+import { CustomerCache, VendorCache } from "../cache";
+import { Vendor as VendorRepo, Customer as CustomerRepo } from "../repos";
 import cors from "cors";
-import { baseUrl } from "../utils";
-import { urls } from "../constants";
-import { validationResult } from "express-validator";
-import { passwordIsValid } from "../middlewares/validators";
 
 
 function createApp() {
     const app: Application = express();
-    const vendorRepo: VendorRepo = new VendorRepo();
-    const vendorCache: VendorCache = new VendorCache();
 
     const stream = {
         write: (message: string) => logger.http(message.trim()),
@@ -39,7 +30,7 @@ function createApp() {
     app.use(
         "/api/v1/vendor",
         validateJWT(["vendor"], env("tokenSecret")!),
-        validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo),
+        validateUser<VendorCache, VendorRepo>(new VendorCache(), new VendorRepo()),
         vendor
     );
 
@@ -50,19 +41,18 @@ function createApp() {
     app.use("/api/v1/admin/permission", validateJWT(["admin"], env("tokenSecret")!), permission);
     app.use("/api/v1/admin/admin-permission", validateJWT(["admin"], env("tokenSecret")!), adminPermission);
     app.use("/api/v1/admin/store", validateJWT(["admin"], env("tokenSecret")!), adminStore);
-    app.use("/api/v1/admin/category", validateJWT(["admin"], env("tokenSecret")!), adminCategory);
+    app.use("/api/v1/dashboard/category", validateJWT(["admin"], env("tokenSecret")!), dashboardCategory);
     app.use("/api/v1/category", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), category);
-    app.use("/api/v1/admin/subcategory", validateJWT(["admin"], env("tokenSecret")!), adminSubCategory);
+    app.use("/api/v1/dashboard/subcategory", validateJWT(["admin"], env("tokenSecret")!), dashboardSubCategory);
     app.use("/api/v1/subcategory", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), subcategory);
     app.use("/api/v1/ad-banner", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), adBanner);
-
     app.use("/api/v1/dashboard/user", validateJWT(["admin",], env("tokenSecret")!), user);
 
 
     app.use(
         "/api/v1/customer",
         validateJWT(["customer"], env("tokenSecret")!),
-        // validateUser<VendorCache, VendorRepo>(vendorCache, vendorRepo), // ! TODO: uncomment this
+        validateUser<CustomerCache, CustomerRepo>(new VendorCache(), new VendorRepo()),
         customer
     );
 

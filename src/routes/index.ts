@@ -8,10 +8,10 @@ import vendorManagement from "./vendorManagement";
 import permission from "./permission";
 import adminPermission from "./adminPermission";
 import adminStore from "./adminStore";
-import adminCategory from "./adminCategory";
+import dashboardCategory from "./dashboard/category";
 import customer from "./customer";
 import category from "./category";
-import adminSubCategory from "./adminSubCategory";
+import dashboardSubCategory from "./dashboard/subCategory";
 import subcategory from "./subcategory";
 import adBanner from "./adBanner";
 import user from "./dashboard/user";
@@ -27,10 +27,10 @@ export {
     permission,
     adminPermission,
     adminStore,
-    adminCategory,
+    dashboardCategory,
     customer,
     category,
-    adminSubCategory,
+    dashboardSubCategory,
     subcategory,
     adBanner,
     user

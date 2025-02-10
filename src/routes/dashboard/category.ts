@@ -1,14 +1,14 @@
 import { Router, Request, Response } from "express";
-import { CategoryManagement } from "../controllers";
-import { adminAuthorization, uploads } from "../middlewares";
+import { CategoryManagement } from "../../controllers";
+import { adminAuthorization, uploads } from "../../middlewares";
 import asyncHandler from "express-async-handler";
-import { validateQueryParams } from "../validators";
-import { createCategory, createCategoryAll, toggleActiveStatus, updateCategoryName, updateCategoryPriority } from "../middlewares/routes/category";
-import { CategoryType } from "../types/enums";
+import { validateQueryParams } from "../../validators";
+import { createCategory, createCategoryAll, toggleActiveStatus, updateCategoryName, updateCategoryPriority } from "../../middlewares/routes/category";
+import { CategoryType } from "../../types/enums";
 
-const adminCategory: Router = Router();
+const dashboardCategory: Router = Router();
 
-adminCategory.get(
+dashboardCategory.get(
     "/paginate-categories",
     adminAuthorization(['any']),
     validateQueryParams([
@@ -24,65 +24,65 @@ adminCategory.get(
     asyncHandler(CategoryManagement.paginateCategories(CategoryType.Main))
 );
 
-adminCategory.post(
+dashboardCategory.post(
     "/all",
     createCategoryAll,
     asyncHandler(CategoryManagement.createCategoryAll)
 );
 
-adminCategory.get(
+dashboardCategory.get(
     "/get-with-name/:categoryName",
     adminAuthorization(['any']),
     asyncHandler(CategoryManagement.getCategoryWithName(CategoryType.Main))
 );
 
-adminCategory.get(
+dashboardCategory.get(
     "/get-with-id/:categoryId",
     adminAuthorization(['any']),
     asyncHandler(CategoryManagement.getCategoryWithId(CategoryType.Main))
 );
 
-adminCategory.post(
+dashboardCategory.post(
     "/upload/:categoryId",
     adminAuthorization(['manage_all']),
     uploads.single("image"),
     asyncHandler(CategoryManagement.uploadCategoryImage(CategoryType.Main))
 );
 
-adminCategory.patch(
+dashboardCategory.patch(
     "/toggle-active-status",
     toggleActiveStatus,
     asyncHandler(CategoryManagement.toggleActiveStatus)
 );
 
-adminCategory.patch(
+dashboardCategory.patch(
     "/update-name",
     updateCategoryName,
     asyncHandler(CategoryManagement.updateName(CategoryType.Main))
 );
 
-adminCategory.patch(
+dashboardCategory.patch(
     "/update-priority",
     updateCategoryPriority,
     asyncHandler(CategoryManagement.updatePriority(CategoryType.Main))
 );
 
-adminCategory.delete(
+dashboardCategory.delete(
     "/:id",
     adminAuthorization(['manage_all']),
     asyncHandler(CategoryManagement.delete(CategoryType.Main))
 );
 
-adminCategory.post(
+dashboardCategory.post(
     "/",
     createCategory,
     asyncHandler(CategoryManagement.createCategory)
 );
 
-adminCategory.get(
+dashboardCategory.get(
     "/",
     adminAuthorization(['any']),
     asyncHandler(CategoryManagement.getAllCategories(CategoryType.Main))
 );
 
-export default adminCategory;
+export default dashboardCategory;

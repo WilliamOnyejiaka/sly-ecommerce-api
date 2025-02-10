@@ -72,7 +72,7 @@ export default class BaseService<T extends Repo = Repo> {
         return await this.getItem(name, message200);
     }
 
-    public async paginate(page: number, pageSize: number,filter: any = {}) {
+    public async paginate(page: number, pageSize: number, filter: any = {}) {
         const skip = (page - 1) * pageSize;
         const take = pageSize;
 
@@ -120,4 +120,14 @@ export default class BaseService<T extends Repo = Repo> {
 
     public getRepo() { return this.repo! }
 
+    public setImageUrls(items: any[], imageDatas: string[]) {
+        imageDatas.forEach(imageData => {
+            items.forEach((item: any) => {
+                const urlName = `${imageData}Url`;
+                const imageArray = item[imageData];
+                item[urlName] = (imageArray && imageArray.length > 0) ? imageArray[0].imageUrl : null;
+                delete item[imageData];
+            });
+        });
+    }
 }

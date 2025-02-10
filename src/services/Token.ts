@@ -47,11 +47,11 @@ export default class Token {
         }
     }
 
-    public static createToken(secretKey: string, data: any, types: string[] = ["access"]) {
+    public static createToken(secretKey: string, data: any, types: string[] = ["access"], expiresIn: string = "30d") {
         return jsonwebtoken.sign(
             { data: data, types: types },
             secretKey,
-            { expiresIn: "30d" }
+            { expiresIn: expiresIn }
         );
     }
 

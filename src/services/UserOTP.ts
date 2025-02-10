@@ -24,7 +24,7 @@ export default class UserOTP extends Authentication {
 
         if (userProfile) {
             const userName = userProfile.firstName + " " + userProfile.lastName;
-            const otpService = new OTP(userProfile.email, otpType, userType);            
+            const otpService = new OTP(userProfile.email, otpType, userType);
             const otpServiceResult = await otpService.send(userName);
             return otpServiceResult
         }
@@ -32,7 +32,7 @@ export default class UserOTP extends Authentication {
         return super.responseData(404, true, constants('404User')!);
     }
 
-    public async sendVendorOTP(email: string, otpType: OTPType) {        
+    public async sendVendorOTP(email: string, otpType: OTPType) {
         return await this.sendUserOTP<Vendor>(this.vendorRepo, email, otpType, UserType.Vendor);
     }
 
@@ -114,23 +114,19 @@ export default class UserOTP extends Authentication {
         );
     }
 
-    private async passwordReset<T extends UserRepo, U extends BaseCache>(repo: T, cache: U, email: string, password: string, otpCode: string, userType: UserType) {
+    public async otpConfirmation(email: string, otpCode: string, userType: UserType) {
         const otp = new OTP(email, OTPType.Reset, userType);
+
         const otpServiceResult = await otp.confirmOTP(otpCode);
-
         if (otpServiceResult.json.error) return otpServiceResult;
-
         const deletedOTPServiceResult = await otp.deleteOTP();
+        if (deletedOTPServiceResult.json.error) return deletedOTPServiceResult;
 
-        if (deletedOTPServiceResult.json.error) {
-            return deletedOTPServiceResult;
-        }
+        const token = this.generateOTPToken(email, userType);
+        return super.responseData(200, false, "OTP confirmation was successful", { token: token });
+    }
 
-        const hashedPassword = Password.hashPassword(password, env("storedSalt")!);
-        const updatedResult = await repo.updatePassword(email, hashedPassword);
-        const updatedResultError = this.handleRepoError(updatedResult);
-        if (updatedResultError) return updatedResultError;
-
+    private async passwordReset<T extends UserRepo>(repo: T, email: string, password: string, userType: UserType) {       
         const repoResult = userType === "admin" ? await this.adminRepo.getAdminAndRoleWithEmail(email) : await repo.getUserProfileWithEmail(email);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
@@ -138,44 +134,45 @@ export default class UserOTP extends Authentication {
         const userProfile = repoResult.data;
 
         if (userProfile) {
+            const hashedPassword = Password.hashPassword(password, this.storedSalt);
+            const updatedResult = await repo.updatePassword(email, hashedPassword);
+            const updatedResultError = this.handleRepoError(updatedResult);
+            if (updatedResultError) return updatedResultError;
             this.setUserProfilePicture<T>(userProfile, repo);
             delete userProfile.password;
             delete userProfile[repo.imageRelation];
 
-            return super.responseData(200, false, "Password has been reset successfully");
+            return super.responseData(200, false, "Password has been reset successfully", {
+                user: userProfile,
+                token: userType === "admin" ? super.generateAdminToken(userProfile) : super.generateUserToken(userProfile.id, userType)
+            });
         }
         return super.responseData(404, true, constants('404User')!);
     }
 
-    public async adminPasswordReset(email: string, password: string, otpCode: string) {
-        return await this.passwordReset<Admin, AdminCache>(
+    public async adminPasswordReset(email: string, password: string) {
+        return await this.passwordReset<Admin>(
             this.adminRepo,
-            this.adminCache,
             email,
             password,
-            otpCode,
             UserType.Admin
         );
     }
 
-    public async vendorPasswordReset(email: string, password: string, otpCode: string) {
-        return await this.passwordReset<Vendor, VendorCache>(
+    public async vendorPasswordReset(email: string, password: string) {
+        return await this.passwordReset<Vendor>(
             this.vendorRepo,
-            this.vendorCache,
             email,
             password,
-            otpCode,
             UserType.Vendor
         );
     }
 
-    public async customerPasswordReset(email: string, password: string, otpCode: string) {
-        return await this.passwordReset<Customer, CustomerCache>(
+    public async customerPasswordReset(email: string, password: string) {
+        return await this.passwordReset<Customer>(
             this.customerRepo,
-            this.customerCache,
             email,
             password,
-            otpCode,
             UserType.Customer
         );
     }

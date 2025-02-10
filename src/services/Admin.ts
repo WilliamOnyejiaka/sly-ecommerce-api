@@ -55,20 +55,17 @@ export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfi
     }
 
     public async getAdminWithEmail(email: string) {
-        const repoResult = await this.repo!.getUserProfileWithEmail(email);
-        if (repoResult.error) {
-            return super.responseData(500, true, http("500") as string);
-        }
+        const repoResult = await this.repo!.getAdminAndRoleWithEmail(email);
+        const repoResultError = super.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
 
         const admin = repoResult.data;
+        this.sanitizeUserImageItems([admin]);
         const statusCode = admin ? 200 : 404;
         const error: boolean = admin ? false : true;
         const message = error ? http("404")! : "Admin has been retrieved";
 
-        if (!error) {
-            delete (repoResult.data as any).password;
-        }
-
+        if (!error) delete admin.password;
         return super.responseData(statusCode, error, message, admin);
     }
 

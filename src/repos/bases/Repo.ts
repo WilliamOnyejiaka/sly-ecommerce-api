@@ -7,6 +7,13 @@ import { logger } from "../../config";
 export default class Repo implements Repository {
 
     protected tblName: any;
+    protected imageRows = {
+        select: {
+            imageUrl: true,
+            publicId: true,
+            mimeType: true
+        },
+    }
 
     public constructor(tblName: string) {
         this.tblName = tblName;

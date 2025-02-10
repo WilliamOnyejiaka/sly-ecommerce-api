@@ -8,6 +8,7 @@ import ImageService from "./Image";
 export default class Store extends BaseService<StoreDetails> {
 
     private readonly imageService: ImageService = new ImageService();
+    private readonly imageDatas: string[] = ['storeLogo', 'firstStoreBanner', 'secondStoreBanner'];
 
     public constructor() {
         super(new StoreDetails());
@@ -27,7 +28,7 @@ export default class Store extends BaseService<StoreDetails> {
         if (storeNameRepoResultError) {
             if (!(await this.imageService.deleteFiles(images))) return storeNameRepoResultError;
             return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }        
+        }
 
         if (storeNameRepoResult.data) {
             if (!(await this.imageService.deleteFiles(images))) return super.responseData(HttpStatus.BAD_REQUEST, true, "Store name already exists");
@@ -90,10 +91,9 @@ export default class Store extends BaseService<StoreDetails> {
 
     public async getStoreWithId(id: number) {
         const repoResult = await this.repo!.getItemWithId(id);
-
-        if (repoResult.error) {
-            super.responseData(repoResult.type, true, repoResult.message!);
-        }
+        const repoResultError = this.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+        super.setImageUrls([repoResult.data], this.imageDatas);
 
         const statusCode = repoResult.data ? 200 : 404;
         const error: boolean = repoResult.data ? false : true;
@@ -221,33 +221,48 @@ export default class Store extends BaseService<StoreDetails> {
         );
     }
 
-    public async getStoreAll(vendorId: number, baseUrl: string) {
+    public async getStoreAll(vendorId: number) {
         const repoResult = await this.repo!.getStoreAndRelationsWithVendorId(vendorId);
-        if (repoResult.error) {
-            super.responseData(repoResult.type, true, repoResult.message!);
-        }
+        const repoResultError = this.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
 
         const statusCode = repoResult.data ? 200 : 404;
         const error: boolean = repoResult.data ? false : true;
 
         if (repoResult.data) {
-            const baseImageUrl: string = urls("baseImageUrl")!;
-            const storeId = repoResult.data.id;
-            repoResult.data.storeLogoUrl = repoResult.data.storeLogo.length != 0 ? baseUrl + baseImageUrl + urls("storeLogo")!.split(":")[0] + storeId : null;
-            repoResult.data.firstStoreBannerUrl = repoResult.data.firstStoreBanner.length != 0 ? baseUrl + baseImageUrl + urls("firstBanner")!.split(":")[0] + storeId : null;
-            repoResult.data.secondBannerUrl = repoResult.data.secondStoreBanner.length != 0 ? baseUrl + baseImageUrl + urls("secondBanner")!.split(":")[0] + storeId : null;
-
-            delete repoResult.data.storeLogo;
-            delete repoResult.data.firstStoreBanner;
-            delete repoResult.data.secondStoreBanner;
-
+            super.setImageUrls([repoResult.data], this.imageDatas);
             return super.responseData(statusCode, error, "Store was retrieved successfully", repoResult.data);
         }
 
         return super.responseData(statusCode, error, "This vendor does not have a store", repoResult.data);
     }
 
-    public async delete(vendorId: number) {
+    public async paginateStores(page: number, pageSize: number) {
+        const skip = (page - 1) * pageSize;
+        const take = pageSize;
+        const repoResult = await this.repo!.paginateStore(skip, take);
+        const repoResultError = this.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+
+        const totalRecords = repoResult.data.totalItems!;
+        const pagination = getPagination(page, pageSize, totalRecords);
+        super.setImageUrls(repoResult.data.items, this.imageDatas);
+
+        return super.responseData(200, false, constants('200Stores')!, {
+            data: repoResult.data.items,
+            pagination
+        });
+    }
+
+    public async getAllStores() {
+        const repoResult = await this.repo!.getAllStoresAndRelations();
+        const repoResultError = this.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+        super.setImageUrls(repoResult.data, this.imageDatas);
+        return super.responseData(200, false, constants('200Stores')!, repoResult.data);
+    }
+
+    public async delete1(vendorId: number) {
         const repoResult = await this.repo!.delete(vendorId);
         if (repoResult.error) {
             return super.responseData(repoResult.type!, true, repoResult.message!);
@@ -256,48 +271,33 @@ export default class Store extends BaseService<StoreDetails> {
         return super.responseData(200, false, "Store was deleted successfully");
     }
 
-    private static setUrls(data: any, baseUrl: string): void {
-        for (const item of data) {
-            item.storeLogoUrl = item.storeLogo.length != 0 ? baseUrl + "baseImageUrl" + urls("storeLogo")!.split(":")[0] + item.id : null;
-            item.firstStoreBannerUrl = item.firstStoreBanner.length != 0 ? baseUrl + "baseImageUrl" + urls("firstBanner")!.split(":")[0] + item.id : null;
-            item.secondBannerUrl = item.secondStoreBanner.length != 0 ? baseUrl + "baseImageUrl" + urls("secondBanner")!.split(":")[0] + item.id : null;
+    public async delete(vendorId: number) {
+        const storeRepoResult = await this.repo!.getStoreAndRelationsWithVendorId(vendorId);
+        const storeRepoResultError = super.handleRepoError(storeRepoResult);
+        if (storeRepoResultError) return storeRepoResultError;
 
-            delete item.storeLogo;
-            delete item.firstStoreBanner;
-            delete item.secondStoreBanner;
-        }
-    }
+        const storeData = storeRepoResult.data;
+        if (!storeData) return super.responseData(404, true, "This vendor does not have a store");
 
-    public async paginateStores(page: number, pageSize: number, baseUrl: string) {
-        const skip = (page - 1) * pageSize;
-        const take = pageSize;
-        const repoResult = await this.repo!.paginateStore(skip, take);
+        const storeLogoDetails = storeData.storeLogo.length > 0 ? storeData.storeLogo[0] : null;
+        const firstStoreBannerDetails = storeData.firstStoreBanner.length > 0 ? storeData.firstStoreBanner[0] : null;
+        const secondStoreBannerDetails = storeData.secondStoreBanner.length > 0 ? storeData.secondStoreBanner[0] : null;
 
-        Store.setUrls(repoResult.data.items, baseUrl);
-
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message as string);
-        }
-
-        const totalRecords = repoResult.data.totalItems!;
-
-        const pagination = getPagination(page, pageSize, totalRecords);
-
-        return super.responseData(200, false, constants('200Stores')!, {
-            data: repoResult.data.items,
-            pagination
+        let publicIDs: string[] = [];
+        [storeLogoDetails, firstStoreBannerDetails, secondStoreBannerDetails].forEach(imageDetail => {
+            if (imageDetail) publicIDs.push(imageDetail.publicId);
         });
-    }
 
-    public async getAllStores(baseUrl: string) {
-        const repoResult = await this.repo!.getAllStoresAndRelations();
-
-        if (repoResult.error) {
-            return super.responseData(repoResult.type, true, repoResult.message as string);
+        if (publicIDs.length > 0) {
+            const cloudinaryResult = await this.imageService.deleteCloudinaryImages(publicIDs);
+            for (const result of cloudinaryResult) {
+                if (result.statusCode >= 500) return result;
+            }
         }
 
-        Store.setUrls(repoResult.data, baseUrl);
-
-        return super.responseData(200, false, constants('200Stores')!, repoResult.data);
+        const repoResult = await this.repo!.delete(vendorId);
+        const repoResultError = super.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+        return super.responseData(200, false, "Store was deleted successfully");
     }
 }

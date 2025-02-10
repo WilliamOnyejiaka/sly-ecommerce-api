@@ -22,8 +22,12 @@ export default class Authentication extends BaseService {
         super();
     }
 
-    private generateToken(data: any, role: string) {
-        return Token.createToken(this.tokenSecret, data, [role]);
+    private generateToken(data: any, role: string, expiresIn: string = "30d") {
+        return Token.createToken(this.tokenSecret, data, [role], expiresIn);
+    }
+
+    protected generateOTPToken(email: string, role: string, expiresIn: string = "5m") {
+        return this.generateToken({ email: email }, role, expiresIn);
     }
 
     protected generateUserToken(userId: number, role: string) {

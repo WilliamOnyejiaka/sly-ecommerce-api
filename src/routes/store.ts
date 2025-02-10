@@ -7,19 +7,7 @@ import { paramNumberIsValid } from "../middlewares/validators";
 
 const store: Router = Router();
 
-store.post(
-    "/create-store",
-    validateBody([
-        'name',
-        'address',
-        'city',
-        'description',
-        'tagLine'
-    ]),
-    asyncHandler(Store.createStore)
-);
-
-store.post("/create-vendor-store",
+store.post("/all",
     storeImagesUploads.any(),
     validateBody([
         'name',
@@ -68,6 +56,18 @@ store.post(
 );
 
 store.get("/", asyncHandler(Store.getStoreAll));
+
+store.post(
+    "/",
+    validateBody([
+        'name',
+        'address',
+        'city',
+        'description',
+        'tagLine'
+    ]),
+    asyncHandler(Store.createStore)
+);
 
 store.delete(
     "/",

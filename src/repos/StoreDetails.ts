@@ -61,55 +61,20 @@ export default class StoreDetails extends Repo {
         });
     }
 
-    public async sd(vendorId: number, filter?: any) {
-        return await super.getAll({
-            where: { vendorId: vendorId },
-            include: {
-                storeLogo: {
-                    select: {
-                        imageUrl: true
-                    }
-                },
-                firstStoreBanner: {
-                    select: {
-                        imageUrl: true
-                    }
-                },
-                secondStoreBanner: {
-                    select: {
-                        imageUrl: true
-                    }
-                }
-            }
+    public async getStoreAndRelations(where: any) {
+        return await super.getItemWithRelation(where, {
+            storeLogo: this.imageRows,
+            firstStoreBanner: this.imageRows,
+            secondStoreBanner: this.imageRows
         });
     }
 
+    public async getStoreAndRelationsWithId(id: number) {
+        return await this.getStoreAndRelations({ id: id });
+    }
+
     public async getStoreAndRelationsWithVendorId(vendorId: number) {
-        try {
-            const store = await prisma.storeDetails.findUnique({
-                where: { vendorId: vendorId },
-                include: {
-                    storeLogo: {
-                        select: {
-                            mimeType: true
-                        }
-                    },
-                    firstStoreBanner: {
-                        select: {
-                            mimeType: true
-                        }
-                    },
-                    secondStoreBanner: {
-                        select: {
-                            mimeType: true
-                        }
-                    }
-                }
-            });
-            return super.repoResponse(false, 200, null, store);
-        } catch (error) {
-            return super.handleDatabaseError(error);
-        }
+        return await this.getStoreAndRelations({ vendorId: vendorId });
     }
 
     public override async delete(vendorId: number) {
@@ -120,21 +85,9 @@ export default class StoreDetails extends Repo {
         try {
             const items = await prisma.storeDetails.findMany({
                 include: {
-                    storeLogo: {
-                        select: {
-                            mimeType: true
-                        }
-                    },
-                    firstStoreBanner: {
-                        select: {
-                            mimeType: true
-                        }
-                    },
-                    secondStoreBanner: {
-                        select: {
-                            mimeType: true
-                        }
-                    }
+                    storeLogo: this.imageRows,
+                    firstStoreBanner: this.imageRows,
+                    secondStoreBanner: this.imageRows
                 }
             });
             return super.repoResponse(false, 200, null, items);
@@ -149,21 +102,9 @@ export default class StoreDetails extends Repo {
                 skip,
                 take,
                 include: {
-                    storeLogo: {
-                        select: {
-                            mimeType: true
-                        }
-                    },
-                    firstStoreBanner: {
-                        select: {
-                            mimeType: true
-                        }
-                    },
-                    secondStoreBanner: {
-                        select: {
-                            mimeType: true
-                        }
-                    }
+                    storeLogo: this.imageRows,
+                    firstStoreBanner: this.imageRows,
+                    secondStoreBanner: this.imageRows
                 }
             });
             const totalItems = await prisma.storeDetails.count();

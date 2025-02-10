@@ -39,6 +39,7 @@ auth.get("/admin/otp/:email", asyncHandler(Auth.sendUserOTP(UserType.Admin, OTPT
 auth.get("/admin/email-verification/:email/:otpCode", asyncHandler(Auth.emailVerification(UserType.Admin)));
 
 auth.get("/vendor/forgot-password/:email", asyncHandler(Auth.sendUserOTP(UserType.Vendor, OTPType.Reset)));
+auth.get("/vendor/confirm-otp/:email/:otpCode", asyncHandler(Auth.otpConfirmation(UserType.Vendor)));
 auth.patch(
     "/vendor/reset-password",
     resetPassword,
@@ -46,6 +47,7 @@ auth.patch(
 );
 
 auth.get("/admin/forgot-password/:email", asyncHandler(Auth.sendUserOTP(UserType.Admin, OTPType.Reset)));
+auth.get("/admin/confirm-otp/:email/:otpCode", asyncHandler(Auth.otpConfirmation(UserType.Admin)));
 auth.patch(
     "/admin/reset-password",
     resetPassword,
@@ -53,6 +55,7 @@ auth.patch(
 );
 
 auth.get("/customer/forgot-password/:email", asyncHandler(Auth.sendUserOTP(UserType.Customer, OTPType.Reset)));
+auth.get("/customer/confirm-otp/:email/:otpCode", asyncHandler(Auth.otpConfirmation(UserType.Customer)));
 auth.patch(
     "/customer/reset-password",
     resetPassword,
