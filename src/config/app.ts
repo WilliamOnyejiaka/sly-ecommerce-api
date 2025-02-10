@@ -52,7 +52,7 @@ function createApp() {
     app.use(
         "/api/v1/customer",
         validateJWT(["customer"], env("tokenSecret")!),
-        validateUser<CustomerCache, CustomerRepo>(new CustomerCache(), new CustomerRepo-()),
+        validateUser<CustomerCache, CustomerRepo>(new CustomerCache(), new CustomerRepo()),
         customer
     );
 
