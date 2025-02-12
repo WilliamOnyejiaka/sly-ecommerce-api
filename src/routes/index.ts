@@ -1,5 +1,5 @@
 import auth from "./auth";
-import vendor from "./vendor";
+import vendor from "./users/vendor";
 import store from "./store";
 import admin from "./users/admin";
 import seed from "./seed";
@@ -8,7 +8,7 @@ import permission from "./permission";
 import adminPermission from "./adminPermission";
 import adminStore from "./adminStore";
 import dashboardCategory from "./dashboard/category";
-import customer from "./customer";
+import customer from "./users/customer";
 import category from "./category";
 import dashboardSubCategory from "./dashboard/subCategory";
 import subcategory from "./subcategory";

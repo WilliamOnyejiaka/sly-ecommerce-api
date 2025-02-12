@@ -1,7 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { cloudinary, corsConfig, env, logger } from ".";
-import { auth, vendor, store, seed, admin, role, adminVendor, permission, adminPermission, adminStore, dashboardCategory, customer, category, dashboardSubCategory, subcategory, adBanner, user } from "./../routes";
+import { auth, vendor, store, seed, admin, role, permission, adminPermission, adminStore, dashboardCategory, customer, category, dashboardSubCategory, subcategory, adBanner, user } from "./../routes";
 import { Cloudinary, Email, TwilioService } from "../services";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, redisClientMiddleware, vendorIsActive, uploads } from "./../middlewares";
 import asyncHandler from "express-async-handler";
@@ -37,7 +37,6 @@ function createApp() {
     app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), vendorIsActive, store);
     app.use("/api/v1/admin", validateJWT(["admin"], env("tokenSecret")!), admin);
     app.use("/api/v1/admin/role", validateJWT(["admin"], env("tokenSecret")!), role);
-    app.use("/api/v1/admin/vendor", validateJWT(["admin"], env("tokenSecret")!), adminVendor);
     app.use("/api/v1/admin/permission", validateJWT(["admin"], env("tokenSecret")!), permission);
     app.use("/api/v1/admin/admin-permission", validateJWT(["admin"], env("tokenSecret")!), adminPermission);
     app.use("/api/v1/admin/store", validateJWT(["admin"], env("tokenSecret")!), adminStore);
