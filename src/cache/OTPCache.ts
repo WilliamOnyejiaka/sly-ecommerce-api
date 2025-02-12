@@ -23,8 +23,6 @@ export default class OTPCache implements Cache {
 
     public async get(email: string) {
         try {
-            console.log(`${this.preKey}-${email}`);
-            
             const otpCode = await redisClient.get(`${this.preKey}-${email}`);
             return {
                 error: false,

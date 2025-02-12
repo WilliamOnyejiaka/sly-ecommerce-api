@@ -42,12 +42,6 @@ dashboardCategory.get(
     asyncHandler(CategoryManagement.getCategoryWithId(CategoryType.Main))
 );
 
-dashboardCategory.post(
-    "/upload/:categoryId",
-    adminAuthorization(['manage_all']),
-    uploads.single("image"),
-    asyncHandler(CategoryManagement.uploadCategoryImage(CategoryType.Main))
-);
 
 dashboardCategory.patch(
     "/toggle-active-status",

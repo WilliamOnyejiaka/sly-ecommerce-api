@@ -22,8 +22,8 @@ export default class CategoryManagement extends Category {
             adminId: adminId
         };
 
-        const serviceResult = await CategoryManagement.facade.createCategory(categoryData, CategoryType.Main);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const facadeResult = await CategoryManagement.facade.createCategory(categoryData, CategoryType.Main);
+        res.status(facadeResult.statusCode).json(facadeResult.json);
     }
 
     public static async createCategoryAll(req: Request, res: Response) {
@@ -57,8 +57,8 @@ export default class CategoryManagement extends Category {
             priority: priority,
             adminId: res.locals.data.id
         };
-        const serviceResult = await CategoryManagement.facade.createCategoryAll(categoryData, image, CategoryType.Main);
-        Controller.response(res, serviceResult);
+        const facadeResult = await CategoryManagement.facade.createCategoryAll(categoryData, image, CategoryType.Main);
+        Controller.response(res, facadeResult);
     }
 
     public static async createSubCategory(req: Request, res: Response) {
@@ -71,8 +71,8 @@ export default class CategoryManagement extends Category {
 
         const categoryData: SubCategoryDto = { ...req.body };
 
-        const serviceResult = await CategoryManagement.facade.createCategory(categoryData, CategoryType.SubMain);
-        res.status(serviceResult.statusCode).json(serviceResult.json);
+        const facadeResult = await CategoryManagement.facade.createCategory(categoryData, CategoryType.SubMain);
+        res.status(facadeResult.statusCode).json(facadeResult.json);
     }
 
     public static async createSubCategoryAll(req: Request, res: Response) {
@@ -105,21 +105,21 @@ export default class CategoryManagement extends Category {
             priority: priority,
             categoryId: categoryId
         };
-        const serviceResult = await CategoryManagement.facade.createCategoryAll(categoryData, image, CategoryType.SubMain);
-        Controller.response(res, serviceResult);
+        const facadeResult = await CategoryManagement.facade.createCategoryAll(categoryData, image, CategoryType.SubMain);
+        Controller.response(res, facadeResult);
     }
 
     public static override getCategoryWithName(category: CategoryType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Category.facade.adminGetCategory(req.params.categoryName, category);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Category.facade.adminGetCategory(req.params.categoryName, category);
+            Controller.response(res, facadeResult);
         };
     }
 
     public static getAllCategories(category: CategoryType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Category.facade.adminGetCategories(category);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Category.facade.adminGetCategories(category);
+            Controller.response(res, facadeResult);
         }
     }
 
@@ -132,8 +132,8 @@ export default class CategoryManagement extends Category {
         }
 
         const { id, activate } = req.body;
-        const serviceResult = await Category.facade.toggleActiveStatus(id, activate);
-        Controller.response(res, serviceResult);
+        const facadeResult = await Category.facade.toggleActiveStatus(id, activate);
+        Controller.response(res, facadeResult);
     }
 
     public static updateName(category: CategoryType) {
@@ -146,8 +146,8 @@ export default class CategoryManagement extends Category {
             }
 
             const { id, name } = req.body;
-            const serviceResult = await Category.facade.updateName(id, category, name);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Category.facade.updateName(id, category, name);
+            Controller.response(res, facadeResult);
         }
     }
 
@@ -161,8 +161,8 @@ export default class CategoryManagement extends Category {
             }
 
             const { id, priority } = req.body;
-            const serviceResult = await Category.facade.updatePriority(id, category, priority);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Category.facade.updatePriority(id, category, priority);
+            Controller.response(res, facadeResult);
         };
     }
 
@@ -185,8 +185,8 @@ export default class CategoryManagement extends Category {
             }
 
             const categoryId = Number(req.params.categoryId);
-            const serviceResult = await Category.facade.uploadImage(image, categoryId, category);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Category.facade.uploadImage(image, categoryId, category);
+            Controller.response(res, facadeResult);
         };
     }
 
@@ -200,8 +200,8 @@ export default class CategoryManagement extends Category {
             }
 
             const categoryId = Number(req.params.id)
-            const serviceResult = await Category.facade.deleteCategory(categoryId, category);
-            res.status(serviceResult.statusCode).json(serviceResult.json);
+            const facadeResult = await Category.facade.deleteCategory(categoryId, category);
+            res.status(facadeResult.statusCode).json(facadeResult.json);
         }
     }
 

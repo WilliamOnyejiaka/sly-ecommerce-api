@@ -5,7 +5,7 @@ import { Controller } from ".";
 import { AuthenticationManagementFacade } from "../facade";
 import { OTPType, UserType } from "../types/enums";
 
-export default class Auth { // ! TODO: change all constant strings to an Enum
+export default class Auth {
 
     private static readonly facade: AuthenticationManagementFacade = new AuthenticationManagementFacade();
 
@@ -18,52 +18,50 @@ export default class Auth { // ! TODO: change all constant strings to an Enum
             return;
         }
 
-        const serviceResult = await Auth.facade.vendorSignUp(vendorDto);
-        Controller.response(res, serviceResult);
+        const facadeResult = await Auth.facade.vendorSignUp(vendorDto);
+        Controller.response(res, facadeResult);
     }
 
     public static login(userType: UserType) {
         return async (req: Request, res: Response) => {
             const { email, password } = req.body;
-            const serviceResult = await Auth.facade.login(
+            const facadeResult = await Auth.facade.login(
                 email as string,
                 password as string,
                 userType
             );
 
-            Controller.response(res, serviceResult);
+            Controller.response(res, facadeResult);
         }
     }
 
     public static sendUserOTP(userType: UserType, otpType: OTPType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Auth.facade.sendUserOTP(req.params.email, otpType, userType);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Auth.facade.sendUserOTP(req.params.email, otpType, userType);
+            Controller.response(res, facadeResult);
         }
     }
 
     public static emailVerification(userType: UserType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, userType);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Auth.facade.emailVerification(req.params.email, req.params.otpCode, userType);
+            Controller.response(res, facadeResult);
         }
     }
 
     public static otpConfirmation(userType: UserType) {
         return async (req: Request, res: Response) => {
-            const serviceResult = await Auth.facade.otpConfirmation(req.params.email, req.params.otpCode, userType);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Auth.facade.otpConfirmation(req.params.email, req.params.otpCode, userType);
+            Controller.response(res, facadeResult);
         }
     }
 
     public static passwordReset(userType: UserType) {
         return async (req: Request, res: Response) => {
             const email = res.locals.data.email;
-            console.log(email);
-            
             const { password } = req.body;
-            const serviceResult = await Auth.facade.passwordReset(email, password, userType);
-            Controller.response(res, serviceResult);
+            const facadeResult = await Auth.facade.passwordReset(email, password, userType);
+            Controller.response(res, facadeResult);
         }
     }
 
@@ -81,14 +79,14 @@ export default class Auth { // ! TODO: change all constant strings to an Enum
             city: req.body.city
         }
 
-        const serviceResult = await Auth.facade.customerSignUp({
+        const facadeResult = await Auth.facade.customerSignUp({
             firstName: req.body.firstName,
             lastName: req.body.lastName,
             password: req.body.password,
             email: req.body.email,
             phoneNumber: req.body.phoneNumber
         }, addressDto);
-        Controller.response(res, serviceResult);
+        Controller.response(res, facadeResult);
     }
 
     public static async logOut(req: Request, res: Response) {
@@ -99,12 +97,12 @@ export default class Auth { // ! TODO: change all constant strings to an Enum
             return;
         }
         const token = req.headers.authorization!.split(' ')[1];
-        const serviceResult = await Auth.facade.logOut(token);
-        Controller.response(res, serviceResult);
+        const facadeResult = await Auth.facade.logOut(token);
+        Controller.response(res, facadeResult);
     }
 
     public static async adminSignUp(req: Request, res: Response) {
-        const serviceResult = await Auth.facade.adminSignUp(req.body);
-        Controller.response(res, serviceResult);
+        const facadeResult = await Auth.facade.adminSignUp(req.body);
+        Controller.response(res, facadeResult);
     }
 }

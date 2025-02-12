@@ -130,7 +130,7 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
         if (errorResponse) return errorResponse;
 
         const user = repoResult.data;
-        delete user.Password;
+        delete user.password;
         const cacheResponse = await this.cache.get(String(userId));
 
         if (cacheResponse.error) {

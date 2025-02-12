@@ -60,7 +60,6 @@ export default class AuthenticationManagementFacade extends BaseFacade {
         return await this.authService.logOut(token);
     }
 
-
     /**
      * Sends OTP to the user based on their type
      * @param email User email

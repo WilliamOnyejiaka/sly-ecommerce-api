@@ -14,7 +14,7 @@ model Vendor {
   password       String
   email          String                 @unique @db.VarChar(50)
   verified       Boolean?               @default(false)
-  active         Boolean                @default(false)
+  active         Boolean                @default(true)
   isOauth        Boolean                @default(false)
   oAuthDetails   String?
   phoneNumber    String                 @unique
@@ -167,7 +167,7 @@ model Admin {
   password          String
   email             String                @unique @db.VarChar(50)
   phoneNumber       String?               @unique
-  active            Boolean               @default(false)
+  active            Boolean               @default(true)
   verified          Boolean               @default(false)
   roleId            Int?
   role              Role?                 @relation(fields: [roleId], references: [id], onDelete: SetNull)

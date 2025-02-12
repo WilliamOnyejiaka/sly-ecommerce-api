@@ -22,7 +22,7 @@ export const vendorSignUp = [
         'phoneNumber'
     ]),
     emailIsValid,
-    passwordIsValid, // ! TODO: add a proper phone number validation check 
+    passwordIsValid, // TODO: add a proper phone number validation check 
     // phoneNumberIsValid,
     userPhoneNumberExists<Vendor>(new Vendor()),
     userEmailExists<Vendor>(new Vendor())
@@ -42,7 +42,7 @@ export const customerSignUp = [
     emailIsValid,
     passwordIsValid,
     // phoneNumberIsValid,
-    zipCodeIsValid,
+    // zipCodeIsValid, // TODO: add a proper zip code check
     userPhoneNumberExists<Customer>(new Customer()),
     userEmailExists<Customer>(new Customer())
 ];

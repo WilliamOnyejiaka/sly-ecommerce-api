@@ -4,7 +4,7 @@ import { UserType } from "../types/enums";
 import { validationResult } from "express-validator";
 import Controller from "./bases/Controller";
 
-export default class VendorManagement {
+export default class VendorManagement { // TODO: deprecated class
 
     private static readonly facade: UserManagementFacade = new UserManagementFacade();
     private static readonly user: UserType = UserType.Vendor;
