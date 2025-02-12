@@ -59,7 +59,7 @@ export default class AssetService<T extends AssetRepo, U extends ImageRepo> exte
             if (!(await this.imageService.deleteFiles([image]))) return super.responseData(400, true, "This item already has an image");
             return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
         }
-
+        
         const serviceResult = await this.imageService.uploadImage<U>(
             image,
             parentId,

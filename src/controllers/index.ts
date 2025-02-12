@@ -4,7 +4,6 @@ import Store from "./Store";
 import Admin from "./Admin";
 import Seed from "./Seed";
 import Role from "./Role";
-import VendorManagement from "./VendorManagement";
 import Permission from "./Permission";
 import AdminPermission from "./AdminPermission";
 import AdminStore from "./AdminStore";
@@ -22,7 +21,6 @@ export {
     Admin,
     Seed,
     Role,
-    VendorManagement,
     Permission,
     AdminPermission,
     AdminStore,

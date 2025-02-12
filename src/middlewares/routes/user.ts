@@ -35,6 +35,7 @@ export const updateActiveStatus = [
 ];
 
 export const createVendor = [
+    vendorAdminAuth,
     validateBody([
         'firstName',
         'lastName',
@@ -43,13 +44,14 @@ export const createVendor = [
         'phoneNumber'
     ]),
     emailIsValid,
-    passwordIsValid, // ! TODO: add a proper phone number validation check 
+    passwordIsValid, // TODO: add a proper phone number validation check 
     // phoneNumberIsValid,
     userPhoneNumberExists<Vendor>(new Vendor()),
     userEmailExists<Vendor>(new Vendor())
 ];
 
 export const createCustomer = [
+    customerAdminAuth,
     validateBody([
         'firstName',
         'lastName',
@@ -80,7 +82,7 @@ export const createAdmin = [
         "active"
     ]),
     emailIsValid,
-    passwordIsValid, // ! TODO: add a proper phone number validation check 
+    passwordIsValid, //  TODO: add a proper phone number validation check 
     // phoneNumberIsValid,
     userPhoneNumberExists<Admin>(new Admin()),
     userEmailExists<Admin>(new Admin())

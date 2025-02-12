@@ -1,9 +1,9 @@
 import { Router, Request, Response } from "express";
-import { Admin } from "../controllers";
-import { adminAuthorization, uploads, validateBody } from "../middlewares";
+import { Admin } from "../../controllers";
+import { adminAuthorization, uploads, validateBody } from "../../middlewares";
 import asyncHandler from "express-async-handler";
-import { bodyNumberIsValid, emailIsValid, paramNumberIsValid, passwordIsValid, phoneNumberIsValid, userEmailExists, userPhoneNumberExists } from "../middlewares/validators";
-import { Admin as AdminRepo } from "../repos";
+import { bodyNumberIsValid, emailIsValid, paramNumberIsValid, passwordIsValid, phoneNumberIsValid, userEmailExists, userPhoneNumberExists } from "../../middlewares/validators";
+import { Admin as AdminRepo } from "../../repos";
 
 const admin: Router = Router();
 

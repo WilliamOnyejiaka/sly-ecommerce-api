@@ -1,11 +1,14 @@
 import { uploads } from "..";
 import { Category, SubCategory } from "../../repos";
+import { AdminPermission } from "../../types/enums";
 import adminAuthorization from "../adminAuthorization";
 import validateBody from "../validateBody";
-import { bodyBooleanIsValid, bodyNumberIsValid, itemIdExists, itemNameExists } from "../validators";
+import { bodyBooleanIsValid, bodyNumberIsValid, itemIdExists, itemNameExists, paramItemIsPresent } from "../validators";
 
 const categoryNameExists = itemNameExists<Category>(new Category(), "name");
 const adminAuth = adminAuthorization(['manage_all']);
+const category = new Category();
+const subCategory = new SubCategory();
 
 export const createCategory = [
     adminAuth,
@@ -93,4 +96,16 @@ export const updateCategoryPriority = [
     ]),
     bodyNumberIsValid('id'),
     bodyNumberIsValid('priority')
+];
+
+export const uploadCategoryImage = [
+    adminAuthorization([AdminPermission.MANAGE_ALL]),
+    uploads.single("image"),
+    paramItemIsPresent<typeof category>(category, "categoryId")
+];
+
+export const uploadSubCategoryImage = [
+    adminAuthorization([AdminPermission.MANAGE_ALL]),
+    uploads.single("image"),
+    paramItemIsPresent<typeof subCategory>(subCategory, "categoryId")
 ];

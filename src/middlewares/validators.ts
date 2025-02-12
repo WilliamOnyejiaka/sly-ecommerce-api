@@ -76,6 +76,21 @@ const nameExists = <T extends Repo>(repo: T) => async (value: string) => {
     return true;
 }
 
+const itemWithIdExists = <T extends Repo>(repo: T) => async (id: string) => {
+    const repoResult = await repo.getItemWithId(Number(id));
+
+    if (repoResult.error) {
+        throw new Error(JSON.stringify({
+            message: repoResult.message,
+            statusCode: repoResult.type
+        }));
+    } else if (!repoResult.data) {
+        throw new Error(errorDetails("Item does exists", HttpStatus.BAD_REQUEST));
+    }
+    return true;
+}
+
+
 const idExists = <T extends Repo>(repo: T) => async (value: number) => {
     const repoResult = await repo.getItemWithId(value);
 
@@ -145,6 +160,7 @@ export const tokenIsPresent = header('Authorization').custom(isTokenPresent);
 export const paramNumberIsValid = (paramName: string) => param(paramName).custom(isValidNumber(`${paramName} must be an integer`));
 export const bodyNumberIsValid = (bodyName: string) => body(bodyName).custom(isValidNumber(`${bodyName} must be an integer`));
 export const itemNameExists = <T extends Repo>(repo: T, bodyName: string) => body(bodyName).custom(nameExists<T>(repo));
+export const paramItemIsPresent = <T extends Repo>(repo: T, paramName: string) => param(paramName).custom(itemWithIdExists<T>(repo));
 export const itemIdExists = <T extends Repo>(repo: T, bodyName: string) => body(bodyName).custom(idExists<T>(repo));
 export const pageQueryIsValid = query('page').custom(validateQueryNumber('page'));
 export const pageSizeQueryIsValid = query('pageSize').custom(validateQueryNumber('pageSize'));

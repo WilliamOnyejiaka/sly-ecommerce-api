@@ -1,10 +1,9 @@
 import auth from "./auth";
 import vendor from "./vendor";
 import store from "./store";
-import admin from "./admin";
+import admin from "./users/admin";
 import seed from "./seed";
 import role from "./role";
-import vendorManagement from "./vendorManagement";
 import permission from "./permission";
 import adminPermission from "./adminPermission";
 import adminStore from "./adminStore";
@@ -23,7 +22,6 @@ export {
     admin,
     seed,
     role,
-    vendorManagement as adminVendor,
     permission,
     adminPermission,
     adminStore,

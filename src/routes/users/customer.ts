@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
-import { Customer } from "../controllers";
-import { uploads, validateBody } from "../middlewares";
+import { Customer } from "../../controllers";
+import { uploads } from "../../middlewares";
 import asyncHandler from "express-async-handler";
 
 const customer: Router = Router();

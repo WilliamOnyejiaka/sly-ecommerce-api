@@ -3,7 +3,7 @@ import { CategoryManagement } from "../../controllers";
 import { adminAuthorization, uploads } from "../../middlewares";
 import asyncHandler from "express-async-handler";
 import { validateQueryParams } from "../../validators";
-import { createCategory, createCategoryAll, toggleActiveStatus, updateCategoryName, updateCategoryPriority } from "../../middlewares/routes/category";
+import { createCategory, createCategoryAll, toggleActiveStatus, updateCategoryName, updateCategoryPriority, uploadCategoryImage } from "../../middlewares/routes/category";
 import { CategoryType } from "../../types/enums";
 
 const dashboardCategory: Router = Router();
@@ -42,6 +42,11 @@ dashboardCategory.get(
     asyncHandler(CategoryManagement.getCategoryWithId(CategoryType.Main))
 );
 
+dashboardCategory.post(
+    "/upload/:categoryId",
+    uploadCategoryImage,
+    asyncHandler(CategoryManagement.uploadCategoryImage(CategoryType.Main))
+);
 
 dashboardCategory.patch(
     "/toggle-active-status",
