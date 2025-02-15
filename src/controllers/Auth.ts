@@ -102,6 +102,13 @@ export default class Auth {
     }
 
     public static async adminSignUp(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+
         const facadeResult = await Auth.facade.adminSignUp(req.body);
         Controller.response(res, facadeResult);
     }

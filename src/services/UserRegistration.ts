@@ -31,7 +31,7 @@ export default class UserRegistration extends Authentication {
             );
             return cacheSuccessful ? super.responseData(statusCode, error, message, {
                 token: Token.createToken(env('tokenSecret')!, { id: result.id }, ["vendor"]), // TODO: remove tokenSecret env from all methods
-                vendor: result
+                user: result
             }) : super.responseData(statusCode, error, message);
         }
         return super.responseData(statusCode, error, message);
@@ -65,7 +65,7 @@ export default class UserRegistration extends Authentication {
 
             return cacheSuccessful ? super.responseData(statusCode, error, message, {
                 token: Token.createToken(env('tokenSecret')!, { id: result.id }, ["customer"]),
-                customer: result
+                user: result
             }) : super.responseData(statusCode, error, message);
         }
         return super.responseData(statusCode, error, message, result);
@@ -105,7 +105,7 @@ export default class UserRegistration extends Authentication {
         delete signUpData.key;
         signUpData.roleId = keyDetails.roleId;
 
-        const serviceResult = await (new AdminService()).createAdmin(signUpData as any, keyDetails.createdBy);
+        const serviceResult = await (new AdminService()).createAdmin(signUpData as any, keyDetails.createdBy); //  TODO: create user token
         return serviceResult;
     }
 
