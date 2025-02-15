@@ -64,6 +64,19 @@ user.get(
 );
 
 user.get(
+    "/count-all-users",
+    totalRecords,
+    asyncHandler(UserManagement.countAllUsers)
+);
+
+user.get(
+    "/count",
+    totalRecords,
+    asyncHandler(UserManagement.countAllNonAdminUsers)
+);
+
+
+user.get(
     "/vendor/paginate",
     paginateUsers,
     asyncHandler(UserManagement.paginateUsers(UserType.Vendor))

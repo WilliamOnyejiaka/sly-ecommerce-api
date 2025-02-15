@@ -133,6 +133,17 @@ export default class UserManagement {
             res.status(facadeResult.statusCode).json(facadeResult.json);
         };
     }
+
+    public static async countAllUsers(req: Request, res: Response) {
+        const facadeResult = await UserManagement.facade.countAllUsers();
+        res.status(facadeResult.statusCode).json(facadeResult.json);
+    }
+
+    public static async countAllNonAdminUsers(req: Request, res: Response) {
+        const facadeResult = await UserManagement.facade.countAllNonAdminUsers();
+        res.status(facadeResult.statusCode).json(facadeResult.json);
+    }
+
     public static toggleActivate(user: UserType, activate: boolean = true) {
         return async (req: Request, res: Response) => {
             const validationErrors = validationResult(req);

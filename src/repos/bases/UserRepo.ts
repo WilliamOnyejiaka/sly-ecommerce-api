@@ -81,4 +81,32 @@ export default class UserRepo extends Repo {
             }
         });
     }
+
+    public async countAllUsers() {
+        try {
+            const [adminCount, vendorCount, customerCount] = await Promise.all([
+                prisma.admin.count(),
+                prisma.vendor.count(),
+                prisma.customer.count(),
+            ]);
+            const totalCount = adminCount + vendorCount + customerCount;
+            return this.repoResponse(false, 200, null, totalCount);
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
+    };
+
+    public async countAllNoAdminUsers() {
+        try {
+            const [vendorCount, customerCount] = await Promise.all([
+                prisma.vendor.count(),
+                prisma.customer.count(),
+            ]);
+            const totalCount = vendorCount + customerCount;
+            return this.repoResponse(false, 200, null, totalCount);
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
+    };
+
 }

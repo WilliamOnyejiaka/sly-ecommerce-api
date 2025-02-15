@@ -26,6 +26,22 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
         });
     }
 
+    public async countAllUsers() {
+        const repoResult = await this.repo!.countAllUsers();
+        const repoResultError = super.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+
+        return this.responseData(200, false, "Total records were counted successfully", { totalRecords: repoResult.data });
+    }
+
+    public async countAllNonAdminUsers() {
+        const repoResult = await this.repo!.countAllNoAdminUsers();
+        const repoResultError = super.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+
+        return this.responseData(200, false, "Total records were counted successfully", { totalRecords: repoResult.data });
+    }
+
     public async emailExists(email: string) {
         const emailExists = await this.repo!.getUserProfileWithEmail(email);
 

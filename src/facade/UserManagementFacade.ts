@@ -55,6 +55,14 @@ export default class UserManagementFacade extends BaseUserFacade {
         return await userService.totalRecords();
     }
 
+    public async countAllUsers() {
+        return await this.adminService.countAllUsers();
+    }
+
+    public async countAllNonAdminUsers() {
+        return await this.adminService.countAllNonAdminUsers();
+    }
+
     public async assignAdminRole(adminId: number, roleId: number) {
         return await this.adminService.assignRole(adminId, roleId);
     }
