@@ -23,7 +23,6 @@ const adminAuthorization = (requiredPermissions: string[]) => async (req: Reques
         return;
     }
 
-
     const rolePermissions = admin.json.data.role.RolePermission;
     const directPermissions = admin.json.data.directPermissions;
 

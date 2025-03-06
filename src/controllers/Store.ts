@@ -5,9 +5,9 @@ import { StoreDetailsDto } from "../types/dtos";
 import Controller from "./bases/Controller";
 import { validationResult } from "express-validator";
 
-export default class Store {
+export default abstract class Store {
 
-    private static readonly service: StoreService = new StoreService();
+    protected static readonly service: StoreService = new StoreService();
     public static readonly imageService: ImageService = new ImageService();
 
     public static async createAll(req: Request, res: Response) {
@@ -33,7 +33,7 @@ export default class Store {
             if (!(await Store.imageService.deleteFiles([image]))) {
                 Controller.handleValidationErrors(res, validationErrors);
                 return;
-            }
+            }   
             res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 error: true,
                 message: http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!,

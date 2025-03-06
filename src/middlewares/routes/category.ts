@@ -32,6 +32,7 @@ export const createCategoryAll = [
     ]),
     // bodyBooleanIsValid('active'),
     bodyNumberIsValid('priority'),
+    categoryNameExists // TODO: test these parts
 ];
 
 export const createSubCategory = [
@@ -56,6 +57,8 @@ export const createSubCategoryAll = [
     ]),
     // bodyBooleanIsValid('active'),
     bodyNumberIsValid('priority'),
+    itemNameExists<SubCategory>(new SubCategory(), "name"),
+    itemIdExists<Category>(new Category(), "categoryId")
 ];
 
 export const toggleActiveStatus = [

@@ -31,7 +31,7 @@ export default class CategoryManagement extends Category {
         const image = req.file!
 
         if (!validationErrors.isEmpty()) {
-            Controller.deleteFiles([image]);
+            Controller.deleteFiles([image]); // TODO: handle the error here properly, check Store Controllers
             Controller.handleValidationErrors(res, validationErrors);
             return;
         }

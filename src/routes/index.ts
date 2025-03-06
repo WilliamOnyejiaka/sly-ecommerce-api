@@ -6,7 +6,7 @@ import seed from "./seed";
 import role from "./role";
 import permission from "./permission";
 import adminPermission from "./adminPermission";
-import adminStore from "./adminStore";
+import dashboardStore from "./dashboard/store";
 import dashboardCategory from "./dashboard/category";
 import customer from "./users/customer";
 import category from "./category";
@@ -24,7 +24,7 @@ export {
     role,
     permission,
     adminPermission,
-    adminStore,
+    dashboardStore as adminStore,
     dashboardCategory,
     customer,
     category,

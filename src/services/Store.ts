@@ -80,7 +80,7 @@ export default class Store extends BaseService<StoreDetails> {
         const storeRepoResultError = this.handleRepoError(storeRepoResult);
         if (storeRepoResultError) return storeRepoResultError;
 
-        const storeNameRepoResult = await this.repo!.getItemWithName(storeDetailsDto.name);
+        const storeNameRepoResult = await this.repo!.getItemWithName(storeDetailsDto.name); // TODO: try to remove this part and check the top on too
         const storeNameRepoResultError = this.handleRepoError(storeNameRepoResult);
         if (storeNameRepoResultError) return storeNameRepoResultError;
 

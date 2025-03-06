@@ -9,7 +9,9 @@ import { Admin } from "../controllers";
 import { CustomerCache, VendorCache } from "../cache";
 import { Vendor as VendorRepo, Customer as CustomerRepo } from "../repos";
 import cors from "cors";
-
+import axios from 'axios';
+import { http } from "../constants";
+import { Admin as AdminService } from "../services";
 
 function createApp() {
     const app: Application = express();
@@ -55,11 +57,21 @@ function createApp() {
         customer
     );
 
-    app.post("/test2", async (req: Request, res: Response) => {
-        res.status(200).json({
-            'error': false,
-            'message': "result"
-        });
+    app.get("/test2", async (req: Request, res: Response) => {
+        try {
+            const test = await axios.get("http://localhost:4000/test");
+            console.log(test);
+
+            const data = test.data;
+            res.status(200).json({
+                'error': false,
+                'message': "result",
+                'data': data
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: 'Failed to fetch external data' });
+        }
     });
 
     app.post("/test1", async (req: Request, res: Response, next: NextFunction) => {
@@ -67,6 +79,74 @@ function createApp() {
         const serviceResult = await twilio.sendSMS(req.body.to, req.body.message);
         res.status(serviceResult.statusCode).json(serviceResult.json)
     });
+
+    async function check(data: any, requiredPermissions: string[]): Promise<{
+        error: Boolean,
+        message: string,
+        statusCode: number,
+        data: any
+    }> {
+        const active = data.active;
+
+        if (!active) {
+            return {
+                error: true,
+                message: http('401')!,
+                statusCode: 401,
+                data: {}
+            };
+        }
+
+        const adminId = data.id;
+        const admin = await (new AdminService()).getAdminAndRole(adminId);
+
+        if (!admin) {
+            return {
+                error: true,
+                message: "Admin not found",
+                statusCode: 404,
+                data: {}
+            };
+        }
+
+        const rolePermissions = admin.json.data.role.RolePermission;
+        const directPermissions = admin.json.data.directPermissions;
+
+        const rolePermissionsNames = rolePermissions.map((rp: any) => rp.permission.name);
+        const directPermissionsNames = directPermissions.map((rp: any) => rp.permission.name);
+
+        const allPermissions = new Set([...rolePermissionsNames, ...directPermissionsNames]);
+        const hasPermission = requiredPermissions.includes("any") ? true : requiredPermissions.some((perm: any) => allPermissions.has(perm));
+
+        if (!hasPermission) {
+            return {
+                error: true,
+                message: "Access denied",
+                statusCode: 403,
+                data: {}
+            };
+        }
+
+        return {
+            error: false,
+            message: "Access granted",
+            statusCode: 200,
+            data
+        };
+    }
+
+    app.post("/validate-admin", validateJWT(['admin'], env("tokenSecret")!), async (req: Request, res: Response, next: NextFunction) => {
+        const { requiredPermissions } = req.body;
+        const result = await check(res.locals.data, requiredPermissions);
+
+        res.status(result.statusCode).json({
+            error: result.error,
+            message: result.message,
+            data: result.data
+        });
+        return;
+    });
+
 
     app.use(handleMulterErrors);
     app.use((req: Request, res: Response, next: NextFunction) => {

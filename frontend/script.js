@@ -2,7 +2,7 @@
 async function testing(){
     const prodUrl = "https://sly-ecommerce-api.onrender.com";
     const testUrl = "http://localhost:3000"
-    const res = await fetch(prodUrl +"/api/v1/auth/vendor-sign-up",{
+    const res = await fetch(prodUrl +"/api/v1/auth/vendor/sign-up",{
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
@@ -13,7 +13,7 @@ async function testing(){
             "lastName": "Wonder",
             "email": "wjsdfjsd@gmail.com",
             "password": "password",
-            "phoneNumber": "+2348062528003"
+            "phoneNumber": "+sdjjfkadjklfjkdnj"
         })
     }) ;
 
