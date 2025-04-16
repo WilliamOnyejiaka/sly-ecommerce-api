@@ -1,12 +1,13 @@
 import constants, { http, HttpStatus } from "../constants";
 import { Category as CategoryRepo, CategoryImage } from "../repos";
 import { CategoryDto } from "../types/dtos";
+import { CdnFolders } from "../types/enums";
 import AssetService from "./bases/AssetService";
 
 export default class Category extends AssetService<CategoryRepo, CategoryImage> {
 
     public constructor() {
-        super(new CategoryRepo(), new CategoryImage(), 'category');
+        super(new CategoryRepo(), new CategoryImage(), CdnFolders.CATEGORY);
     }
 
     public async createCategory(categoryData: CategoryDto) {
@@ -15,13 +16,8 @@ export default class Category extends AssetService<CategoryRepo, CategoryImage> 
 
     public async createCategoryAll(categoryDetailsDto: CategoryDto, image: Express.Multer.File) {
         const categoryNameServiceResult = await super.getItemWithName(categoryDetailsDto.name);
-        if (categoryNameServiceResult.json.data) {
-            if (!(await this.imageService.deleteFiles([image]))) {
-                return super.responseData(HttpStatus.BAD_REQUEST, true, "Category name already exists");
-            }
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
-
+        if(categoryNameServiceResult.json.error) return categoryNameServiceResult;
+        if (categoryNameServiceResult.json.data) return super.responseData(HttpStatus.BAD_REQUEST, true, "Category name already exists");
         return await super.createAsset(categoryDetailsDto, image);
     }
 

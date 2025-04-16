@@ -4,11 +4,12 @@ import { VendorCache } from "../cache";
 import UserService from "./bases/UserService";
 import { Password } from "../utils";
 import VendorDto from "../types/dtos";
+import { CdnFolders } from "../types/enums";
 
 export default class Vendor extends UserService<VendorRepo, VendorCache, VendorProfilePicture> {
 
     public constructor() {
-        super(new VendorRepo(), new VendorCache(), new VendorProfilePicture(), 'vendorProfilePic');
+        super(new VendorRepo(), new VendorCache(), new VendorProfilePicture(), CdnFolders.VENDOR_PROFILE_PIC);
     }
 
     public async createVendor(vendorDto: VendorDto) {

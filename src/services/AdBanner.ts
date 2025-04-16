@@ -1,28 +1,23 @@
 import constants, { http, HttpStatus } from "../constants";
 import { AdBanner as AdBannerRepo, AdBannerImage } from "../repos";
+import { CdnFolders } from "../types/enums";
 import AssetService from "./bases/AssetService";
 
 export default class AdBanner extends AssetService<AdBannerRepo, AdBannerImage> {
 
     public constructor() {
-        super(new AdBannerRepo(), new AdBannerImage(), 'adBanner');
+        super(new AdBannerRepo(), new AdBannerImage(), CdnFolders.AD_BANNER);
     }
 
     public async createAdBannerAll(bannerDetails: any, image: Express.Multer.File) {
         const adBannerTitleResult = await this.repo!.getItemWithTitle(bannerDetails.title);
         const adBannerTitleResultError = this.handleRepoError(adBannerTitleResult);
 
-        if (adBannerTitleResultError) {
-            if (!(await this.imageService.deleteFiles([image]))) return adBannerTitleResultError;
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (adBannerTitleResultError) return adBannerTitleResultError;
 
-        if (adBannerTitleResult.data) {
-            if (!(await this.imageService.deleteFiles([image]))) return super.responseData(HttpStatus.BAD_REQUEST, true, "Title already exists");
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (adBannerTitleResult.data) return super.responseData(HttpStatus.BAD_REQUEST, true, "Title already exists");
 
-        const uploadFolder: Record<string, string> = { adBanner: "adBanner" };
+        const uploadFolder: Record<string, CdnFolders> = { adBanner: this.imageFolderName };
         const uploadResults = await this.imageService.uploadImages([image], uploadFolder);
         const bannerImage = uploadResults.data;
 

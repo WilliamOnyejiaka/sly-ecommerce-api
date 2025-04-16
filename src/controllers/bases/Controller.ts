@@ -10,9 +10,9 @@ export default class Controller {
 
     private static readonly imageService = new ImageService();
 
-    public static async deleteFiles(files: Express.Multer.File[]) {
-        return await Controller.imageService.deleteFiles(files);
-    }
+    // public static async deleteFiles(files: Express.Multer.File[]) {
+    //     return await Controller.imageService.deleteFiles(files);
+    // }
 
     public static paginate<T extends BaseService>(service: T) {
         return async (req: Request, res: Response) => {

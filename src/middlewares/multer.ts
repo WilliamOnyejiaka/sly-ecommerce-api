@@ -1,23 +1,16 @@
 
 import multer, { FileFilterCallback } from "multer";
-import * as path from "path"
-import { Request, Express } from "express";
+import { Request } from "express";
+import { ImageUploadType } from "../types/enums";
 
 const allowedMimeTypes: string[] = ['image/jpeg', 'image/jpg', 'image/png'];
 const bannerFields: string[] = ['firstBanner', 'secondBanner'];
 const storeImagesFields: string[] = ['firstBanner', 'secondBanner', 'storeLogo', 'name', 'address'];
 const fileSize: number = 3.0 * 1024 * 1024;
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/");
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
+const storage = multer.memoryStorage(); // Using memory storage
 
-const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+const imageFileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
     const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png']; // ! TODO: use the global one
     if (!allowedMimeTypes.includes(file.mimetype)) {
         return cb(new Error("LIMIT_INVALID_FILE_TYPE"));
@@ -25,12 +18,26 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallb
     return cb(null, true);
 }
 
+export const imageUploads = (type: ImageUploadType) => {
+    let imageFilter = imageFileFilter;
+    if (type == "banner") imageFilter = bannerFilter;
+    if (type == "storeImages") imageFilter = storeImagesFilter;
+
+    return multer({
+        storage: storage,
+        limits: {
+            fileSize: 3.0 * 1024 * 1024 // ! TODO: use the global one
+        },
+        fileFilter: imageFilter
+    });
+}
+
 const uploads = multer({
     storage: storage,
     limits: {
         fileSize: 3.0 * 1024 * 1024 // ! TODO: use the global one
     },
-    fileFilter: fileFilter
+    fileFilter: imageFileFilter
 });
 
 const bannerFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {

@@ -147,7 +147,7 @@ export default class Repo implements Repository {
                 take,   // Fetches 'take' records
                 ...filter
             });
-            const where = filter.where;            
+            const where = filter.where;
             const totalItems = where ? await (prisma[this.tblName] as any).count({ where }) : await (prisma[this.tblName] as any).count();
             return this.repoResponse(false, 200, null, {
                 items: items,
@@ -177,6 +177,8 @@ export default class Repo implements Repository {
     }
 
     protected handleDatabaseError(error: any) {
+
+        console.log(error);
 
         if (error.code === "P2002") {
             // Unique constraint violation

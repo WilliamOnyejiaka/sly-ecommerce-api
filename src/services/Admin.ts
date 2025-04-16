@@ -6,12 +6,13 @@ import { env } from "../config";
 import { AdminDto } from "../types/dtos";
 import UserService from "./bases/UserService";
 import { AdminCache, AdminKey } from "../cache";
+import { CdnFolders } from "../types/enums";
 export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfilePicture> {
 
     private readonly roleService: Role = new Role();
 
     public constructor() {
-        super(new AdminRepo(), new AdminCache(), new AdminProfilePicture(), 'adminProfilePic');
+        super(new AdminRepo(), new AdminCache(), new AdminProfilePicture(), CdnFolders.ADMIN_PROFILE_PIC);
     }
 
     public async defaultAdmin(roleId: number) {

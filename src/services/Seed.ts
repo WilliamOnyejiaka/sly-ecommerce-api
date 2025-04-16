@@ -1,9 +1,7 @@
 import BaseService from "./bases/BaseService";
 import Repo from "../repos/bases/Repo";
-import { http } from "../constants";
 import jsonRoles from "./../seeds/roles.json";
 import jsonPermissions from "./../seeds/permissions.json";
-
 
 export default class Seed extends BaseService {
 

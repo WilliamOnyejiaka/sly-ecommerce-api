@@ -4,11 +4,12 @@ import { CustomerCache } from "../cache";
 import UserService from "./bases/UserService";
 import { Password } from "../utils";
 import { CustomerAddressDto } from "../types/dtos";
+import { CdnFolders } from "../types/enums";
 
 export default class Customer extends UserService<CustomerRepo, CustomerCache, CustomerProfilePic> {
 
     public constructor() {
-        super(new CustomerRepo(), new CustomerCache(), new CustomerProfilePic(), 'customerProfilePic');
+        super(new CustomerRepo(), new CustomerCache(), new CustomerProfilePic(), CdnFolders.CUSTOMER_PROFILE_PIC);
     }
 
     public async createCustomer(

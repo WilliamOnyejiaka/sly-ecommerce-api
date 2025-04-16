@@ -31,7 +31,6 @@ export default class CategoryManagement extends Category {
         const image = req.file!
 
         if (!validationErrors.isEmpty()) {
-            Controller.deleteFiles([image]); // TODO: handle the error here properly, check Store Controllers
             Controller.handleValidationErrors(res, validationErrors);
             return;
         }
@@ -43,7 +42,6 @@ export default class CategoryManagement extends Category {
             active = req.body.active.toLowerCase() === "true";
             priority = Number(req.body.priority);
         } catch (error) {
-            Controller.deleteFiles([image]);
             res.status(400).json({
                 error: true,
                 message: "Active or Priority type is invalid"
@@ -80,7 +78,6 @@ export default class CategoryManagement extends Category {
         const image = req.file!
 
         if (!validationErrors.isEmpty()) {
-            Controller.deleteFiles([image]);
             Controller.handleValidationErrors(res, validationErrors);
             return;
         }
@@ -92,7 +89,6 @@ export default class CategoryManagement extends Category {
             categoryId = Number(req.body.categoryId)
             priority = Number(req.body.priority);
         } catch (error) {
-            Controller.deleteFiles([image]);
             res.status(400).json({
                 error: true,
                 message: "Active or Priority type is invalid"
@@ -172,15 +168,7 @@ export default class CategoryManagement extends Category {
             const validationErrors = validationResult(req);
 
             if (!validationErrors.isEmpty()) {
-                if (!(await Controller.deleteFiles([image]))) {
-                    Controller.handleValidationErrors(res, validationErrors);
-                    return;
-                }
-                res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                    error: true,
-                    message: http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!,
-                    data: {}
-                });
+                Controller.handleValidationErrors(res, validationErrors);
                 return;
             }
 

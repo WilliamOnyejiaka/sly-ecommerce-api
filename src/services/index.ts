@@ -11,7 +11,6 @@ import Permission from "./Permission";
 import AdminPermission from "./AdminPermission";
 import Category from "./Category";
 import Customer from "./Customer";
-import Cloudinary from "./Cloudinary";
 import UserRegistration from "./UserRegistration";
 import Auth from "./Auth";
 import UserOTP from "./UserOTP";
@@ -19,6 +18,7 @@ import TwilioService from "./TwilioService";
 import PasswordReset from "./PasswordReset";
 import SubCategory from "./SubCategory";
 import AdBanner from "./AdBanner";
+import Cloudinary from "./Cloudinary";
 
 export {
     Token,
@@ -34,12 +34,12 @@ export {
     AdminPermission,
     Category,
     Customer,
-    Cloudinary,
     UserRegistration,
     Auth,
     UserOTP,
     TwilioService,
     PasswordReset,
     SubCategory,
-    AdBanner
+    AdBanner,
+    Cloudinary
 };

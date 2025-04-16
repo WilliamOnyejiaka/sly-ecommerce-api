@@ -4,6 +4,7 @@ import { getPagination } from "../utils";
 import { FirstBanner, SecondBanner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
 import ImageService from "./Image";
+import { CdnFolders } from "../types/enums";
 
 export default class Store extends BaseService<StoreDetails> {
 
@@ -17,36 +18,23 @@ export default class Store extends BaseService<StoreDetails> {
     public async createStoreAll(storeDetailsDto: StoreDetailsDto, images: Express.Multer.File[]) {
         const storeRepoResult = await this.repo!.getStoreWithVendorId(storeDetailsDto.vendorId!);
         const storeRepoResultError = this.handleRepoError(storeRepoResult);
-        if (storeRepoResultError || storeRepoResult.data) {
-            if (!(await this.imageService.deleteFiles(images))) return storeRepoResultError ?? super.responseData(HttpStatus.BAD_REQUEST, true, "This vendor already has a store");
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (storeRepoResultError || storeRepoResult.data) return storeRepoResultError ?? super.responseData(HttpStatus.BAD_REQUEST, true, "This vendor already has a store");
 
-        const storeNameRepoResult = await this.repo!.getItemWithName(storeDetailsDto.name); // ! TODO: check if the name exits properly
+        const storeNameRepoResult = await this.repo!.getItemWithName(storeDetailsDto.name); // TODO: check if the name exits properly
         const storeNameRepoResultError = this.handleRepoError(storeNameRepoResult);
 
-        if (storeNameRepoResultError) {
-            if (!(await this.imageService.deleteFiles(images))) return storeNameRepoResultError;
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (storeNameRepoResultError || storeNameRepoResult.data) return storeNameRepoResultError ?? super.responseData(HttpStatus.BAD_REQUEST, true, "Store name already exists");
 
-        if (storeNameRepoResult.data) {
-            if (!(await this.imageService.deleteFiles(images))) return super.responseData(HttpStatus.BAD_REQUEST, true, "Store name already exists");
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
-
-        const uploadFolders: Record<string, string> = {
-            storeLogo: "storeLogo",
-            firstBanner: "firstStoreBanner",
-            secondBanner: "secondStoreBanner",
+        const uploadFolders: Record<string, CdnFolders> = {
+            storeLogo: CdnFolders.STORE_LOGO,
+            firstBanner: CdnFolders.FIRST_STORE_BANNER,
+            secondBanner: CdnFolders.SECOND_STORE_BANNER,
         };
-
 
         const uploadResults = await this.imageService.uploadImages(images, uploadFolders);
         const storeImages = uploadResults.data;
 
         if (storeImages) {
-
             const repoResult = await this.repo!.insertWithRelations(
                 storeDetailsDto,
                 storeImages?.storeLogo,
@@ -69,7 +57,7 @@ export default class Store extends BaseService<StoreDetails> {
                     result
                 );
             }
-
+            const deleted = await this.imageService.deleteImages(uploadResults.publicIds!)
             return super.responseData(repoResult.type, true, repoResult.message!);
         }
         return super.responseData(500, true, "Error processing images");
@@ -108,18 +96,13 @@ export default class Store extends BaseService<StoreDetails> {
 
     public async uploadBanners(banners: Express.Multer.File[], storeId: number) {
         const checkStoreImages = await this.checkStoreImages(storeId);
-        if (checkStoreImages.json.error) {
-            if (!(await this.imageService.deleteFiles(banners))) return checkStoreImages;
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
-        if (checkStoreImages.json.data.hasFirstBanner || checkStoreImages.json.data.hasSecondBanner) {
-            if (!(await this.imageService.deleteFiles(banners))) return super.responseData(400, true, "A banner already exists");
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (checkStoreImages.json.error) return checkStoreImages;
 
-        const uploadFolders: Record<string, string> = {
-            firstBanner: "firstStoreBanner",
-            secondBanner: "secondStoreBanner"
+        if (checkStoreImages.json.data.hasFirstBanner || checkStoreImages.json.data.hasSecondBanner) return super.responseData(400, true, "A banner already exists");
+
+        const uploadFolders: Record<string, CdnFolders> = {
+            firstBanner: CdnFolders.FIRST_STORE_BANNER,
+            secondBanner: CdnFolders.SECOND_STORE_BANNER
         };
 
         const uploadResults = await this.imageService.uploadImages(banners, uploadFolders);
@@ -131,7 +114,10 @@ export default class Store extends BaseService<StoreDetails> {
             const secondStoreBannerUrl = storeBanners?.secondBanner?.imageUrl ?? null;
 
             const error = this.handleRepoError(repoResult);
-            if (error) return error;
+            if (error) {
+                const deleted = await this.imageService.deleteImages(uploadResults.publicIds!);
+                return error;
+            }
 
             return super.responseData(
                 201,
@@ -165,59 +151,40 @@ export default class Store extends BaseService<StoreDetails> {
 
     public async uploadStoreLogo(image: Express.Multer.File, storeId: number) {
         const checkStoreImages = await this.checkStoreImages(storeId);
-        if (checkStoreImages.json.error) {
-            if (!(await this.imageService.deleteFiles([image]))) return checkStoreImages;
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
-
-        if (checkStoreImages.json.data.hasStoreLogo) {
-            if (!(await this.imageService.deleteFiles([image]))) return super.responseData(400, true, "A store logo already exists");
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (checkStoreImages.json.error) return checkStoreImages;
+        if (checkStoreImages.json.data.hasStoreLogo) return super.responseData(400, true, "A store logo already exists");
 
         return await this.imageService.uploadImage<StoreLogo>(
             image,
             storeId,
             new StoreLogo(),
-            'storeLogo'
+            CdnFolders.STORE_LOGO
         );
     }
 
     public async uploadFirstBanner(image: Express.Multer.File, storeId: number) {
         const checkStoreImages = await this.checkStoreImages(storeId);
-        if (checkStoreImages.json.error) {
-            if (!(await this.imageService.deleteFiles([image]))) return checkStoreImages;
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
-        if (checkStoreImages.json.data.hasFirstBanner) {
-            if (!(await this.imageService.deleteFiles([image]))) return super.responseData(400, true, "A banner already exists");
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (checkStoreImages.json.error) return checkStoreImages;
+        if (checkStoreImages.json.data.hasFirstBanner) return super.responseData(400, true, "A banner already exists");
 
         return await this.imageService.uploadImage<FirstBanner>(
             image,
             storeId,
             new FirstBanner(),
-            'firstStoreBanner'
+            CdnFolders.FIRST_STORE_BANNER
         );
     }
 
     public async uploadSecondBanner(image: Express.Multer.File, storeId: number) {
         const checkStoreImages = await this.checkStoreImages(storeId);
-        if (checkStoreImages.json.error) {
-            if (!(await this.imageService.deleteFiles([image]))) return checkStoreImages;
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
-        if (checkStoreImages.json.data.hasSecondBanner) {
-            if (!(await this.imageService.deleteFiles([image]))) return super.responseData(400, true, "A banner already exists");
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (checkStoreImages.json.error) return checkStoreImages;
+        if (checkStoreImages.json.data.hasSecondBanner) return super.responseData(400, true, "A banner already exists");
 
         return await this.imageService.uploadImage<SecondBanner>(
             image,
             storeId,
             new SecondBanner(),
-            'secondStoreBanner'
+            CdnFolders.SECOND_STORE_BANNER
         );
     }
 
@@ -262,15 +229,6 @@ export default class Store extends BaseService<StoreDetails> {
         return super.responseData(200, false, constants('200Stores')!, repoResult.data);
     }
 
-    public async delete1(vendorId: number) {
-        const repoResult = await this.repo!.delete(vendorId);
-        if (repoResult.error) {
-            return super.responseData(repoResult.type!, true, repoResult.message!);
-        }
-
-        return super.responseData(200, false, "Store was deleted successfully");
-    }
-
     public async delete(vendorId: number) {
         const storeRepoResult = await this.repo!.getStoreAndRelationsWithVendorId(vendorId);
         const storeRepoResultError = super.handleRepoError(storeRepoResult);
@@ -288,12 +246,8 @@ export default class Store extends BaseService<StoreDetails> {
             if (imageDetail) publicIDs.push(imageDetail.publicId);
         });
 
-        if (publicIDs.length > 0) {
-            const cloudinaryResult = await this.imageService.deleteCloudinaryImages(publicIDs);
-            for (const result of cloudinaryResult) {
-                if (result.statusCode >= 500) return result;
-            }
-        }
+        const deletedResult = await this.imageService.deleteImages(publicIDs);
+        if (deletedResult.json.error) return deletedResult;
 
         const repoResult = await this.repo!.delete(vendorId);
         const repoResultError = super.handleRepoError(repoResult);

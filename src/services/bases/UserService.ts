@@ -6,14 +6,17 @@ import UserRepo from "../../repos/bases/UserRepo";
 import { getPagination } from "../../utils";
 import ImageService from "../Image";
 import BaseService from "./BaseService";
+import Cloudinary from "../Cloudinary";
+import { CdnFolders, ResourceType } from "../../types/enums";
 
 export default class UserService<T extends UserRepo, U extends BaseCache, V extends ImageRepo> extends BaseService<T> {
 
     protected readonly cache: U;
     protected readonly imageService: ImageService = new ImageService();
     protected readonly storedSalt: string = env("storedSalt")!;
+    protected readonly cloudinary = new Cloudinary();
 
-    public constructor(repo: T, cache: U, protected readonly profilePicRepo: V, protected readonly imageFolderName: string) {
+    public constructor(repo: T, cache: U, protected readonly profilePicRepo: V, protected readonly imageFolderName: CdnFolders) {
         super(repo);
         this.cache = cache;
     }
@@ -119,23 +122,18 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
     public async uploadProfilePicture(image: Express.Multer.File, userId: number) {
         const repoResult = await this.repo!.getUserProfileWithId(userId);
         const repoResultError = this.handleRepoError(repoResult);
-        if (repoResultError) {
-            if (!(await this.imageService.deleteFiles([image]))) return repoResultError;
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (repoResultError) return repoResultError;
 
         const userProfile = repoResult.data;
         const hasProfilePic = userProfile[this.repo!.imageRelation].length > 0;
-        if (hasProfilePic) {
-            if (!(await this.imageService.deleteFiles([image]))) return super.responseData(400, true, "This user already has a profile picture");
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (hasProfilePic) return super.responseData(400, true, "This user already has a profile picture");
 
         const serviceResult = await this.imageService.uploadImage<V>(
             image,
             userId,
             this.profilePicRepo,
-            this.imageFolderName
+            this.imageFolderName,
+            true
         );
         return serviceResult;
     }
@@ -183,10 +181,8 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
         const profilePictureDetails = userProfile[this.repo!.imageRelation].length > 0 ? userProfile[this.repo!.imageRelation][0] : null;
 
         if (profilePictureDetails) {
-            const cloudinaryResult = await this.imageService.deleteCloudinaryImage(profilePictureDetails.publicId);
-            if (cloudinaryResult.statusCode >= 500) {
-                return cloudinaryResult;
-            }
+            const deletedResult = await this.imageService.deleteImages([profilePictureDetails.publicId]);
+            if (deletedResult.json.error) return deletedResult;
         }
 
         const repoResult = await this.repo!.deleteWithId(userId);

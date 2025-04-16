@@ -1,12 +1,13 @@
 import constants, { http, HttpStatus } from "../constants";
 import { SubCategory as SubCategoryRepo, SubCategoryImage } from "../repos";
 import { SubCategoryDto } from "../types/dtos";
+import { CdnFolders } from "../types/enums";
 import AssetService from "./bases/AssetService";
 
 export default class SubCategory extends AssetService<SubCategoryRepo, SubCategoryImage> {
 
     public constructor() {
-        super(new SubCategoryRepo(), new SubCategoryImage(), 'subCategory');
+        super(new SubCategoryRepo(), new SubCategoryImage(), CdnFolders.SUB_CATEGORY);
     }
 
     public async createCategory(categoryData: SubCategoryDto) {
@@ -15,12 +16,8 @@ export default class SubCategory extends AssetService<SubCategoryRepo, SubCatego
 
     public async createCategoryAll(categoryDetailsDto: SubCategoryDto, image: Express.Multer.File) {
         const categoryNameServiceResult = await super.getItemWithName(categoryDetailsDto.name);
-        if (categoryNameServiceResult.json.data) {
-            if (!(await this.imageService.deleteFiles([image]))) {
-                return super.responseData(HttpStatus.BAD_REQUEST, true, "SubCategory name already exists");
-            }
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (categoryNameServiceResult.json.error) return categoryNameServiceResult;
+        if (categoryNameServiceResult.json.data) return super.responseData(HttpStatus.BAD_REQUEST, true, "SubCategory name already exists");
 
         return await super.createAsset(categoryDetailsDto, image);
     }

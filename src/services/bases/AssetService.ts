@@ -1,6 +1,7 @@
 import constants, { http, HttpStatus } from "../../constants";
 import AssetRepo from "../../repos/bases/AssetRepo";
 import ImageRepo from "../../repos/bases/ImageRepo";
+import { CdnFolders } from "../../types/enums";
 import ImageService from "../Image";
 import BaseService from "./BaseService";
 
@@ -8,37 +9,40 @@ export default class AssetService<T extends AssetRepo, U extends ImageRepo> exte
 
     protected readonly imageService: ImageService = new ImageService();
 
-    public constructor(repo: T, protected readonly imageRepo: U, protected readonly imageFolderName: string) {
+    public constructor(repo: T, protected readonly imageRepo: U, protected readonly imageFolderName: CdnFolders) {
         super(repo);
     }
 
     public async createAsset<T>(assetDto: T, image: Express.Multer.File) {
-        const uploadFolders: Record<string, string> = {
-            image: this.imageFolderName,
+        const uploadFolders: Record<string, CdnFolders> = {
+            image: this.imageFolderName as any,
         };
 
         const uploadResults = await this.imageService.uploadImages([image], uploadFolders);
-        const itemImages = uploadResults.data;
+        const assetImage = uploadResults.data;
 
-        if (itemImages) {
+        if (assetImage) {
             const repoResult = await this.repo!.insertWithRelations(
                 assetDto,
-                itemImages?.image,
+                assetImage?.image,
             );
-
-            if (!repoResult.error) {
-                const result = {
-                    ...repoResult.data,
-                    imageUrl: itemImages.image?.imageUrl ?? null,
-                };
-
-                return super.responseData(
-                    HttpStatus.CREATED,
-                    false,
-                    "Asset was created successfully",
-                    result
-                );
+            const repoResultError = this.handleRepoError(repoResult);
+            if (repoResultError) {
+                const deleted = await this.imageService.deleteImages([assetImage?.image.publicId]);
+                return repoResultError;
             }
+
+            const result = {
+                ...repoResult.data,
+                imageUrl: assetImage.image?.imageUrl,
+            };
+
+            return super.responseData(
+                HttpStatus.CREATED,
+                false,
+                "Asset was created successfully",
+                result
+            );
         }
 
         return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
@@ -48,18 +52,11 @@ export default class AssetService<T extends AssetRepo, U extends ImageRepo> exte
     public async uploadImage(image: Express.Multer.File, parentId: number) {
         const repoResult = await this.repo!.getItemAndImageRelationWithId(parentId);
         const repoResultError = this.handleRepoError(repoResult);
-        if (repoResultError) {
-            if (!(await this.imageService.deleteFiles([image]))) return repoResultError;
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
+        if (repoResultError) return repoResultError;
 
         const item = repoResult.data;
         const hasImage = item[this.repo!.imageRelation].length > 0;
-        if (hasImage) {
-            if (!(await this.imageService.deleteFiles([image]))) return super.responseData(400, true, "This item already has an image");
-            return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
-        }
-        
+        if (hasImage) return super.responseData(400, true, "This item already has an image");
         const serviceResult = await this.imageService.uploadImage<U>(
             image,
             parentId,
@@ -118,10 +115,8 @@ export default class AssetService<T extends AssetRepo, U extends ImageRepo> exte
         const imageDetails = itemDetails[this.repo!.imageRelation].length > 0 ? itemDetails[this.repo!.imageRelation][0] : null;
 
         if (imageDetails) {
-            const cloudinaryResult = await this.imageService.deleteCloudinaryImage(imageDetails.publicId);
-            if (cloudinaryResult.statusCode >= 500) {
-                return cloudinaryResult;
-            }
+            const deletedResult = await this.imageService.deleteImages([imageDetails.publicId]);
+            if (deletedResult.json.error) return deletedResult;
         }
 
         const repoResult = await this.repo!.deleteWithId(itemId);

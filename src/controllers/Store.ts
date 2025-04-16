@@ -30,15 +30,7 @@ export default abstract class Store {
         const validationErrors = validationResult(req);
 
         if (!validationErrors.isEmpty()) {
-            if (!(await Store.imageService.deleteFiles([image]))) {
-                Controller.handleValidationErrors(res, validationErrors);
-                return;
-            }   
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                error: true,
-                message: http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!,
-                data: {}
-            });
+            Controller.handleValidationErrors(res, validationErrors);
             return;
         }
 
@@ -52,17 +44,8 @@ export default abstract class Store {
             const validationErrors = validationResult(req);
             const image = req.file!;
 
-
             if (!validationErrors.isEmpty()) {
-                if (!(await Store.imageService.deleteFiles([image]))) {
-                    Controller.handleValidationErrors(res, validationErrors);
-                    return;
-                }
-                res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                    error: true,
-                    message: http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!,
-                    data: {}
-                });
+                Controller.handleValidationErrors(res, validationErrors);
                 return;
             }
 
@@ -85,15 +68,7 @@ export default abstract class Store {
         const images = req.files! as Express.Multer.File[];
 
         if (!validationErrors.isEmpty()) {
-            if (!(await Store.imageService.deleteFiles(images))) {
-                Controller.handleValidationErrors(res, validationErrors);
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                error: true,
-                message: http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!,
-                data: {}
-            });
+            Controller.handleValidationErrors(res, validationErrors);
             return;
         }
 
