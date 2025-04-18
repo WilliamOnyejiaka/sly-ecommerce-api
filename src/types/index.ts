@@ -26,3 +26,14 @@ export type FailedFiles = {
     filename: string,
     error: string
 };
+
+
+export interface EventHandler {
+    (event: any, stream: string, id: string, io?: any): Promise<void>;
+}
+
+export interface StreamGroup {
+    stream: string; // e.g., 'stream:profile'
+    consumerGroup: string; // e.g., 'profile-consumers'
+    handlers: Map<string, EventHandler>; // e.g., 'ProfileUpdated' -> handler
+}

@@ -81,4 +81,14 @@ export enum CdnFolders {
     AD_BANNER = `${basePath}/ad-banner`,
 }
 
+
+export enum StreamGroups {
+    USER = "user"
+};
+
+export enum StreamEvents {
+    USER_CREATE = 'create',
+    UPLOAD_PROFILE_PIC = 'upload:profile-pic'
+};
+
 export type ImageUploadType = "banner" | "image" | "storeImages";

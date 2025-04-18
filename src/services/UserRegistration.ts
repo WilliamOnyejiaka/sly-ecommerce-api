@@ -1,10 +1,11 @@
 import { AdminCache, AdminKey, CustomerCache, VendorCache } from "../cache";
-import { env } from "../config";
+import { env, streamRouter } from "../config";
 import { http, HttpStatus } from "../constants";
 import VendorDto, { CustomerAddressDto } from "../types/dtos";
 import { CipherUtility, parseJson, Password } from "../utils";
 import { Admin as AdminService, Token } from ".";
 import Authentication from "./bases/Authentication";
+import { StreamGroups } from "../types/enums";
 
 export default class UserRegistration extends Authentication {
 
@@ -29,6 +30,11 @@ export default class UserRegistration extends Authentication {
                 String((result as VendorDto).id),
                 result as VendorDto
             );
+            await streamRouter.addEvent(StreamGroups.USER, {
+                type: 'vendor:create',
+                data: result,
+            });
+
             return cacheSuccessful ? super.responseData(statusCode, error, message, {
                 token: Token.createToken(env('tokenSecret')!, { id: result.id }, ["vendor"]), // TODO: remove tokenSecret env from all methods
                 user: result
@@ -62,6 +68,10 @@ export default class UserRegistration extends Authentication {
                 String(result.id),
                 result
             );
+            await streamRouter.addEvent(StreamGroups.USER, {
+                type: 'customer:create',
+                data: result,
+            });
 
             return cacheSuccessful ? super.responseData(statusCode, error, message, {
                 token: Token.createToken(env('tokenSecret')!, { id: result.id }, ["customer"]),

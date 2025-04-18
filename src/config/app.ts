@@ -1,6 +1,6 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
-import { cloudinary, corsConfig, env, logger } from ".";
+import { cloudinary, corsConfig, env, logger, redisClient } from ".";
 import { auth, vendor, store, seed, admin, role, permission, adminPermission, adminStore, dashboardCategory, customer, category, dashboardSubCategory, subcategory, adBanner, user } from "./../routes";
 import { TwilioService } from "../services";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
@@ -12,6 +12,8 @@ import cors from "cors";
 import axios from 'axios';
 import { http } from "../constants";
 import { Admin as AdminService } from "../services";
+import { StreamRouter } from "../utils";
+import streamRouter from "./redisStream";
 
 function createApp() {
     const app: Application = express();
@@ -74,10 +76,31 @@ function createApp() {
         }
     });
 
-    app.post("/test1", async (req: Request, res: Response, next: NextFunction) => {
-        const twilio = new TwilioService();
-        const serviceResult = await twilio.sendSMS(req.body.to, req.body.message);
-        res.status(serviceResult.statusCode).json(serviceResult.json)
+    app.get("/test1", async (req: Request, res: Response, next: NextFunction) => {
+        // Publish event to Redis channel 'order:created'
+        const event = {
+            orderId: 22,
+            userId: 2,
+            total: 1000,
+            createdAt: new Date().toISOString(),
+        };
+        // await redisClient.publish('events:order:created', JSON.stringify(event));
+        // await redisClient.publish('events:test:jest', JSON.stringify({ greet: "Hello World" }));
+        await streamRouter.addEvent('order', {
+            type: 'Created',
+            data: event,
+        });
+
+        await streamRouter.addEvent('user', {
+            type: 'customer:signup',
+            data: { update: "order" },
+        });
+
+        await streamRouter.addEvent('test', {
+            type: 'Jest',
+            data: { greet: "Hello" },
+        });
+        res.status(200).json(event)
     });
 
     async function check(data: any, requiredPermissions: string[]): Promise<{

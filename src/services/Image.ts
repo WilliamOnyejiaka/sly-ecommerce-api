@@ -42,7 +42,7 @@ export default class ImageService extends BaseService {
                 if (deletedResult.json.error) return deletedResult;
                 return repoResultError
             };
-            return super.responseData(201, true, "Image was uploaded successfully", { imageUrl: uploadedFile.url });
+            return super.responseData(201, false, "Image was uploaded successfully", { imageUrl: uploadedFile.url });
         }
         return super.responseData(500, true, "Something went wrong", failedFiles);
     }

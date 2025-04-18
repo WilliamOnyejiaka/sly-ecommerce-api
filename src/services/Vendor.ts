@@ -4,12 +4,13 @@ import { VendorCache } from "../cache";
 import UserService from "./bases/UserService";
 import { Password } from "../utils";
 import VendorDto from "../types/dtos";
-import { CdnFolders } from "../types/enums";
+import { CdnFolders, StreamGroups, UserType } from "../types/enums";
+import { streamRouter } from "../config";
 
 export default class Vendor extends UserService<VendorRepo, VendorCache, VendorProfilePicture> {
 
     public constructor() {
-        super(new VendorRepo(), new VendorCache(), new VendorProfilePicture(), CdnFolders.VENDOR_PROFILE_PIC);
+        super(new VendorRepo(), new VendorCache(), new VendorProfilePicture(), UserType.Vendor, CdnFolders.VENDOR_PROFILE_PIC);
     }
 
     public async createVendor(vendorDto: VendorDto) {
@@ -22,7 +23,11 @@ export default class Vendor extends UserService<VendorRepo, VendorCache, VendorP
 
         const vendor = repoResult.data!;
         delete vendor.password;
-        return super.responseData(201, false, "Vendor has been created successfully");
+        await streamRouter.addEvent(StreamGroups.USER, {
+            type: 'vendor:create',
+            data: vendor,
+        });
+        return super.responseData(201, false, "Vendor has been created successfully", vendor);
     }
 
     public async updateFirstName(id: number, firstName: string) {

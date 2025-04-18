@@ -2,17 +2,17 @@ import { Role } from ".";
 import constants, { http, HttpStatus } from "../constants";
 import { Admin as AdminRepo, AdminProfilePicture } from "../repos";
 import { CipherUtility, Password } from "../utils";
-import { env } from "../config";
+import { env, streamRouter } from "../config";
 import { AdminDto } from "../types/dtos";
 import UserService from "./bases/UserService";
 import { AdminCache, AdminKey } from "../cache";
-import { CdnFolders } from "../types/enums";
+import { CdnFolders, StreamGroups, UserType } from "../types/enums";
 export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfilePicture> {
 
     private readonly roleService: Role = new Role();
 
     public constructor() {
-        super(new AdminRepo(), new AdminCache(), new AdminProfilePicture(), CdnFolders.ADMIN_PROFILE_PIC);
+        super(new AdminRepo(), new AdminCache(), new AdminProfilePicture(), UserType.Admin, CdnFolders.ADMIN_PROFILE_PIC);
     }
 
     public async defaultAdmin(roleId: number) {
@@ -108,6 +108,10 @@ export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfi
 
             if (!error) {
                 delete result.password;
+                await streamRouter.addEvent(StreamGroups.USER, {
+                    type: 'admin:create',
+                    data: result,
+                });
                 return super.responseData(statusCode, error, message, result);
             }
             return super.responseData(statusCode, error, message, result);

@@ -1,5 +1,5 @@
 import BaseCache from "../../cache/BaseCache";
-import { env } from "../../config";
+import { env, streamRouter } from "../../config";
 import constants, { http, HttpStatus } from "../../constants";
 import ImageRepo from "../../repos/bases/ImageRepo";
 import UserRepo from "../../repos/bases/UserRepo";
@@ -7,7 +7,7 @@ import { getPagination } from "../../utils";
 import ImageService from "../Image";
 import BaseService from "./BaseService";
 import Cloudinary from "../Cloudinary";
-import { CdnFolders, ResourceType } from "../../types/enums";
+import { CdnFolders, ResourceType, StreamGroups, StreamEvents, UserType } from "../../types/enums";
 
 export default class UserService<T extends UserRepo, U extends BaseCache, V extends ImageRepo> extends BaseService<T> {
 
@@ -16,7 +16,7 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
     protected readonly storedSalt: string = env("storedSalt")!;
     protected readonly cloudinary = new Cloudinary();
 
-    public constructor(repo: T, cache: U, protected readonly profilePicRepo: V, protected readonly imageFolderName: CdnFolders) {
+    public constructor(repo: T, cache: U, protected readonly profilePicRepo: V, protected readonly userType: UserType, protected readonly imageFolderName: CdnFolders) {
         super(repo);
         this.cache = cache;
     }
@@ -135,6 +135,16 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
             this.imageFolderName,
             true
         );
+        if (!serviceResult.json.error) {
+            await streamRouter.addEvent(StreamGroups.USER, {
+                type: StreamEvents.UPLOAD_PROFILE_PIC,
+                data: {
+                    userId,
+                    userType: this.userType,
+                    imageUrl: serviceResult.json.data.imageUrl
+                },
+            });
+        }
         return serviceResult;
     }
 

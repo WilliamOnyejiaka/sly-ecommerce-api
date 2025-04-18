@@ -4,12 +4,13 @@ import { CustomerCache } from "../cache";
 import UserService from "./bases/UserService";
 import { Password } from "../utils";
 import { CustomerAddressDto } from "../types/dtos";
-import { CdnFolders } from "../types/enums";
+import { CdnFolders, StreamGroups, UserType } from "../types/enums";
+import { streamRouter } from "../config";
 
 export default class Customer extends UserService<CustomerRepo, CustomerCache, CustomerProfilePic> {
 
     public constructor() {
-        super(new CustomerRepo(), new CustomerCache(), new CustomerProfilePic(), CdnFolders.CUSTOMER_PROFILE_PIC);
+        super(new CustomerRepo(), new CustomerCache(), new CustomerProfilePic(), UserType.Customer, CdnFolders.CUSTOMER_PROFILE_PIC);
     }
 
     public async createCustomer(
@@ -30,7 +31,11 @@ export default class Customer extends UserService<CustomerRepo, CustomerCache, C
 
         const customer = repoResult.data!;
         delete customer.password;
-        return super.responseData(201, false, "Customer has been created successfully");
+        await streamRouter.addEvent(StreamGroups.USER, {
+            type: 'customer:create',
+            data: customer,
+        });
+        return super.responseData(201, false, "Customer has been created successfully", customer);
     }
 
     public async delete(customerId: number) {

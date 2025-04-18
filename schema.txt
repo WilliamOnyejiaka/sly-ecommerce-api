@@ -1,80 +1,235 @@
-model Product {
-  id              Int        @id @default(autoincrement())
-  name            String
-  description     String?    @db.Text
-  price           Decimal    @db.Decimal(10, 2)
-  discountPrice   Decimal?   @db.Decimal(10, 2)
-  isAvailable     Boolean    @default(true)
-  soldCount       Int        @default(0)
-  attributes      Json?
-  stock           Int @default(1)
-  additionalInfo Json?
-  metaData Json?
-  averageRating   Float      @default(0)
-  reviewCount     Int        @default(0)
-  isFeatured      Boolean    @default(false)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+import Redis from 'ioredis';
+import { PrismaClient } from '@prisma/client';
+import { env } from '../config';
 
-  // Relations
-  storeId        Int
-  store          Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  categoryId      Int
-  category        Category   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  images          Image[]
-  inventory       Inventory[]
-
-  @@index([name])
-  @@index([categoryId])
-  @@index([storeId])
+interface EventHandler {
+    (event: any, stream: string, id: string): Promise<void>;
 }
 
-model Comment {
-  id          Int       @id @default(autoincrement())
-  content     String    @db.Text
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  reviewId    Int?      // Optional, links to a specific review
-  review      Review?   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-
-  productId   Int?      // Optional, links to a specific product
-  product     Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  parentId    Int?      // Self-referencing field for parent comment
-  parent      Comment?  @relation("ParentComment", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Comment[] @relation("ParentComment")
+interface StreamGroup {
+    stream: string; // e.g., 'stream:order'
+    consumerGroup: string; // e.g., 'order-consumers'
+    handlers: Map<string, EventHandler>; // e.g., 'OrderPlaced' -> handler
 }
 
+export class StreamRouter {
+    private redis: Redis;
+    private groups: Map<string, StreamGroup> = new Map();
+    // private prisma: PrismaClient;
+    // private io: Server;
+    private consumerName: string;
 
+    constructor(consumerName: string) {
+        this.redis = new Redis(env('redisURL')!, {
+            maxRetriesPerRequest: 10,
+            retryStrategy: (times) => Math.min(times * 50, 2000),
+        });
+        // this.prisma = prisma;
+        // this.io = io;
+        this.consumerName = consumerName;
 
-model Review {
-  id               Int       @id @default(autoincrement())
-  rating           Int       @default(0) // e.g., 1-5 stars
-  comment          String?   @db.Text
-  title            String?   @db.VarChar(255) // Optional title for the review
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+        this.redis.on('error', (err) => console.error('Redis error:', err));
+    }
 
-  productId        Int
-  product          Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+    group(groupName: string) {
+        const stream = `stream:${groupName} `;
+        const consumerGroup = `${groupName} -consumers`;
+        const group: StreamGroup = { stream, consumerGroup, handlers: new Map() };
+        this.groups.set(stream, group);
+        return group
+    }
 
-  userId           Int
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+    on(group: StreamGroup, eventType: string, handler: EventHandler) {
+        group.handlers.set(eventType, handler);
+    }
 
-model Inventory {
-  id               Int        @id @default(autoincrement())
-  stock            Int        @default(0)
-    soldCount       Int        @default(0)
-  lowStockThreshold Int       @default(10) // Alert threshold for low stock
-  productId        Int
-  product          Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-      storeId        Int
-  store          Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
-createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+    async addEvent(groupName: string, event: any, maxLen: number = 1000) {
+        const stream = `stream:${groupName} `;
+        try {
+            // Validate event before publishing
+            if (!event || typeof event !== 'object') {
+                throw new Error('Event must be a non-null object');
+            }
+            // const serializedEvent = JSON.stringify(event);
+            await this.redis.xadd(stream, 'MAXLEN', '~', maxLen, '*', 'data', event);
+            console.log(`Added event to ${stream}: `, event);
+        } catch (err) {
+            console.error(`Error adding event to ${stream}: `, err);
+            throw err;
+        }
+    }
+
+    async listen() {
+        for (const [stream, group] of this.groups) {
+            try {
+                await this.redis.xgroup('CREATE', stream, group.consumerGroup, '0', 'MKSTREAM');
+            } catch (err: any) {
+                if (!err.message.includes('BUSYGROUP')) {
+                    console.error(`Failed to create group for ${stream}: `, err);
+                }
+            }
+            this.consumeStream(stream, group);
+        }
+    }
+
+    private async consumeStream(stream: string, group: StreamGroup) {
+        while (true) {
+            try {
+                const results: any = await this.redis.xreadgroup(
+                    'GROUP',
+                    group.consumerGroup,
+                    this.consumerName,
+                    'COUNT',
+                    10,
+                    'BLOCK',
+                    2000,
+                    'STREAMS',
+                    stream,
+                    '>'
+                );
+
+                if (results) {
+                    for (const [streamName, entries] of results) {
+                        for (const [id, fields] of entries) {
+                            try {
+                                // Validate fields.data before parsing
+                                if (!fields.data || typeof fields.data !== 'string') {
+                                    console.error(`Invalid data in ${streamName} (ID: ${id}): `, fields);
+                                    // Move to dead-letter queue
+                                    await this.redis.xadd(
+                                        'stream:dead-letter',
+                                        '*',
+                                        'data',
+                                        JSON.stringify({
+                                            stream: streamName,
+                                            id,
+                                            error: 'Invalid or missing data field',
+                                            fields,
+                                        })
+                                    );
+                                    // Acknowledge to remove from pending list
+                                    await this.redis.xack(stream, group.consumerGroup, id);
+                                    continue;
+                                }
+
+                                // Parse JSON safely
+                                let event;
+                                try {
+                                    event = JSON.parse(fields.data);
+                                } catch (parseErr) {
+                                    console.error(`Failed to parse JSON in ${streamName} (ID: ${id}): `, parseErr);
+                                    await this.redis.xadd(
+                                        'stream:dead-letter',
+                                        '*',
+                                        'data',
+                                        JSON.stringify({
+                                            stream: streamName,
+                                            id,
+                                            error: 'JSON parse error',
+                                            rawData: fields.data,
+                                        })
+                                    );
+                                    await this.redis.xack(stream, group.consumerGroup, id);
+                                    continue;
+                                }
+
+                                // Validate event structure
+                                if (!event.type) {
+                                    console.error(`Missing event type in ${streamName} (ID: ${id}): `, event);
+                                    await this.redis.xadd(
+                                        'stream:dead-letter',
+                                        '*',
+                                        'data',
+                                        JSON.stringify({
+                                            stream: streamName,
+                                            id,
+                                            error: 'Missing event type',
+                                            event,
+                                        })
+                                    );
+                                    await this.redis.xack(stream, group.consumerGroup, id);
+                                    continue;
+                                }
+
+                                const handler = group.handlers.get(event.type);
+                                if (handler) {
+                                    try {
+                                        await handler(event, streamName, id);
+                                        await this.redis.xack(stream, group.consumerGroup, id);
+                                        // Optional: Delete event to free space
+                                        // await this.redis.xdel(stream, id);
+                                    } catch (handlerErr: any) {
+                                        console.error(`Error handling event ${id} on ${stream}: `, handlerErr);
+                                        await this.redis.xadd(
+                                            'stream:dead-letter',
+                                            '*',
+                                            'data',
+                                            JSON.stringify({
+                                                stream: streamName,
+                                                id,
+                                                error: handlerErr.message,
+                                                event,
+                                            })
+                                        );
+                                        await this.redis.xack(stream, group.consumerGroup, id);
+                                    }
+                                } else {
+                                    console.warn(`No handler for event type ${event.type} in ${streamName} (ID: ${id})`);
+                                    await this.redis.xack(stream, group.consumerGroup, id);
+                                }
+                            } catch (err) {
+                                console.error(`Unexpected error processing entry ${id} in ${stream}: `, err);
+                                await this.redis.xack(stream, group.consumerGroup, id);
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(`Error reading stream ${stream}: `, err);
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
+        }
+    }
+
+    async startStreamCleanup(intervalMs: number, maxLen: number) {
+        setInterval(async () => {
+            for (const [stream] of this.groups) {
+                try {
+                    await this.redis.xtrim(stream, 'MAXLEN', maxLen);
+                    console.log(`Trimmed ${stream} to ${maxLen} entries`);
+                } catch (err) {
+                    console.error(`Error trimming ${stream}: `, err);
+                }
+            }
+        }, intervalMs);
+    }
+
+    async getStreamMemoryInfo() {
+        try {
+            const memoryInfo = await this.redis.info('memory');
+            return memoryInfo;
+        } catch (err) {
+            console.error('Error fetching memory info:', err);
+            throw err;
+        }
+    }
+
+    // Debug method to inspect stream entries
+    async inspectStream(stream: string, count: number = 10) {
+        try {
+            const entries = await this.redis.xrange(stream, '-', '+', 'COUNT', count);
+            return entries.map(([id, fields]) => ({
+                id,
+                data: (fields as any).data ? JSON.parse((fields as any).data) : null,
+                rawFields: fields,
+            }));
+        } catch (err) {
+            console.error(`Error inspecting stream ${stream}: `, err);
+            throw err;
+        }
+    }
+
+    async disconnect() {
+        await this.redis.quit();
+    }
 }
