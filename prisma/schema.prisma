@@ -465,3 +465,16 @@ model Inventory {
   @@index([productId])
   @@index([storeId])
 }
+
+model BlogPost {
+  id        String          @id @default(auto()) @map("_id") @db.ObjectId 
+  title     String
+  published Boolean         @default(false)
+  tags      BlogPostTag[]
+}
+
+model Tag {
+  id    String         @id @default(auto()) @map("_id") @db.ObjectId 
+  name  String         @unique
+  posts BlogPostTag[]
+}
