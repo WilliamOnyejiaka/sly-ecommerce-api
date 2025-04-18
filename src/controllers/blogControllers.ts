@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import BlogService from "../services/blogServices";
+import { AuthRequest } from "../middlewares/authmiddleWare";
+
+
+  // now no TypeScript error!
 
 class BlogController {
   async getAll(req: Request, res: Response) {
@@ -13,9 +17,14 @@ class BlogController {
     res.json(blog);
   }
 
-  async create(req: Request, res: Response) {
+  async create(req: AuthRequest, res: Response) {
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
     const { title, content } = req.body;
-    const blog = await BlogService.createBlog(title, content);
+    const userId = req.user?.userId
+    const blog = await BlogService.createBlog(title, content, userId);
     res.status(201).json(blog);
   }
 

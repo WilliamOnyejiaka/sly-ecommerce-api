@@ -12,8 +12,9 @@ import cors from "cors";
 import axios from 'axios';
 import { http } from "../constants";
 import { Admin as AdminService } from "../services";
-import blogRoutes from "../routes/blogRoutes"
-import dotenv from "dotenv"
+import blogRoutes from "../routes/blogRoutes";
+import authRoutes from "../routes/authRoutes";
+import dotenv from "dotenv";
 
 dotenv.config()
 function createApp() {
@@ -51,7 +52,8 @@ function createApp() {
     app.use("/api/v1/subcategory", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), subcategory);
     app.use("/api/v1/ad-banner", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), adBanner);
     app.use("/api/v1/dashboard/user", validateJWT(["admin",], env("tokenSecret")!), user);
-    app.use("/api/blogs", blogRoutes)
+    app.use("/api/blogs", blogRoutes);
+    app.use("/api/auth", authRoutes);
 
     app.use(
         "/api/v1/customer",

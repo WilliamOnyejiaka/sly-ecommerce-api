@@ -478,3 +478,36 @@ model Tag {
   name  String         @unique
   posts BlogPostTag[]
 }
+
+model BlogPostTag {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId 
+  blogPost   BlogPost   @relation(fields: [blogPostId], references: [id])
+  blogPostId String
+  tag        Tag        @relation(fields: [tagId], references: [id])
+  tagId      String
+
+  @@unique([blogPostId, tagId]) // Prevent duplicate links
+}
+
+model User {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  email    String   @unique
+  password String
+  role     Role     @default(CUSTOMER) // roles: ADMIN, VENDOR, CUSTOMER
+  posts    Post[]   @relation(fields: [], references: []) // manual relation (MongoDB-style)
+}
+
+model Post {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  VENDOR
+  CUSTOMER
+}

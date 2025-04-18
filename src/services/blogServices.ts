@@ -17,8 +17,8 @@ class BlogService {
     return BlogModel.findById(id);
   }
 
-  async createBlog(title: string, content: string) {
-    const newPost = await BlogModel.create({ title, content });
+  async createBlog(title: string, content: string, userId: string ) {
+    const newPost = await BlogModel.create({ title, content, userId });
     await redis.del("blogs"); // clear cache
     return newPost;
   }

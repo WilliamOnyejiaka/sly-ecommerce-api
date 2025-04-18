@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 class BlogModel {
-  async create(data: { title: string; content: string }) {
+  async create(data: { title: string; content: string; userId: string}) {
     return prisma.blog.create({ data });
   }
 
