@@ -1,6 +1,6 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
-import { cloudinary, corsConfig, env, logger, redisClient } from ".";
+import { cloudinary, corsConfig, env, logger, redisClient, cronJobs } from ".";
 import { auth, vendor, store, seed, admin, role, permission, adminPermission, adminStore, dashboardCategory, customer, category, dashboardSubCategory, subcategory, adBanner, user } from "./../routes";
 import { TwilioService } from "../services";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
@@ -12,8 +12,8 @@ import cors from "cors";
 import axios from 'axios';
 import { http } from "../constants";
 import { Admin as AdminService } from "../services";
-import { StreamRouter } from "../utils";
 import streamRouter from "./redisStream";
+import cluster from "cluster";
 
 function createApp() {
     const app: Application = express();
@@ -84,19 +84,8 @@ function createApp() {
             total: 1000,
             createdAt: new Date().toISOString(),
         };
-        // await redisClient.publish('events:order:created', JSON.stringify(event));
-        // await redisClient.publish('events:test:jest', JSON.stringify({ greet: "Hello World" }));
-        await streamRouter.addEvent('order', {
-            type: 'Created',
-            data: event,
-        });
 
         await streamRouter.addEvent('user', {
-            type: 'customer:signup',
-            data: { update: "order" },
-        });
-
-        await streamRouter.addEvent('test', {
             type: 'Jest',
             data: { greet: "Hello" },
         });
@@ -170,6 +159,9 @@ function createApp() {
         return;
     });
 
+    if (cluster.isPrimary) {
+        cronJobs.start();
+    }
 
     app.use(handleMulterErrors);
     app.use((req: Request, res: Response, next: NextFunction) => {

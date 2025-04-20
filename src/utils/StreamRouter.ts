@@ -1,11 +1,38 @@
 import Redis from 'ioredis';
-import { redisClient } from '../config';
+import { logger, redisClient } from '../config';
 import { StreamGroup, EventHandler } from '../types';
 import { Streamer } from ".";
+import { Gauge } from 'prom-client';
 
 export default class StreamRouter {
     public redis: Redis;
     private groups: Map<string, StreamGroup> = new Map();
+    private config = {
+        batchSize: 50, // Configurable batch size for xreadgroup
+        maxLen: 100, // Default stream length cap
+        dlqMaxLen: 500, // DLQ size cap
+        // cleanupIntervalMs: 300000, // 5 minutes
+        retryMaxAttempts: 2, // Retry failed events twice
+        retryBaseDelayMs: 1000, // Initial retry delay
+        retryMaxDelayMs: 60000, // Max retry delay (1 minute)
+        deleteAfterAck: true, // Delete events after ACK to save memory
+    };
+    private metrics = {
+        streamLength: new Gauge({
+            name: 'stream_length',
+            help: 'Current length of each stream',
+            labelNames: ['stream'],
+        }),
+        dlqLength: new Gauge({
+            name: 'dlq_length',
+            help: 'Current length of dead-letter queue',
+        }),
+        processingErrors: new Gauge({
+            name: 'processing_errors_total',
+            help: 'Total event processing errors',
+            labelNames: ['stream'],
+        }),
+    };
 
     public constructor() {
         this.redis = redisClient;
@@ -32,11 +59,15 @@ export default class StreamRouter {
         group.handlers.set(eventType, handler);
     }
 
-    // Add an event to a stream with MAXLEN to cap size
-    public async addEvent(groupName: string, event: any, maxLen: number = 1000) {
+    // Add an event to a stream with aggressive trimming
+    public async addEvent(groupName: string, event: any, maxLen: number = this.config.maxLen) {
         const stream = `stream:${groupName}`;
         try {
-            await this.redis.xadd(stream, 'MAXLEN', '~', maxLen, '*', 'data', JSON.stringify(event));
+            await this.redis.pipeline()
+                .xadd(stream, 'MAXLEN', '~', maxLen, '*', 'data', JSON.stringify(event))
+                .xtrim(stream, 'MAXLEN', '~', maxLen)
+                .exec();
+            this.metrics.streamLength.set({ stream }, await this.redis.xlen(stream));
         } catch (err) {
             console.error(`Error adding event to ${stream}:`, err);
             throw err;
@@ -46,7 +77,6 @@ export default class StreamRouter {
     // Initialize consumer groups and start consuming
     public async listen(consumerName: string, io?: any) {
         for (const [stream, group] of this.groups) {
-            // Create consumer group if it doesn't exist
             try {
                 await this.redis.xgroup('CREATE', stream, group.consumerGroup, '0', 'MKSTREAM');
             } catch (err: any) {
@@ -54,62 +84,77 @@ export default class StreamRouter {
                     console.error(`Failed to create group for ${stream}:`, err);
                 }
             }
-
-            // Start reading events
             this.consumeStream(stream, group, consumerName, io);
         }
     }
 
     private async consumeStream(stream: string, group: StreamGroup, consumerName: string, io?: any) {
+        let retryDelay = this.config.retryBaseDelayMs;
+        let retryCounts = new Map<string, number>(); // Track retries per event ID
+
         while (true) {
             try {
-                // Read events from the consumer group
+                const streamLen = await this.redis.xlen(stream);
+                this.metrics.streamLength.set({ stream }, streamLen);
+                if (streamLen === 0) {
+                    await new Promise((resolve) => setTimeout(resolve, 5000));
+                    continue;
+                }
+
                 const results: any = await this.redis.xreadgroup(
                     'GROUP',
                     group.consumerGroup,
                     consumerName,
                     'COUNT',
-                    10, // Batch size
+                    this.config.batchSize,
                     'BLOCK',
-                    2000, // Wait up to 2s
+                    2000,
                     'STREAMS',
                     stream,
-                    '>' // Get new events
+                    '>'
                 );
 
                 if (results) {
+                    const pipeline = this.redis.pipeline();
                     for (const [streamName, entries] of results) {
                         for (const [id, fields] of entries) {
                             const event = JSON.parse(fields[1]);
                             const handler = group.handlers.get(event.type);
                             if (handler) {
                                 try {
+                                    // TODO: Offload to worker pool for parallel processing
                                     await handler(event, streamName, id, io);
-                                    // Acknowledge event
-                                    await this.redis.xack(stream, group.consumerGroup, id);
-                                    // Optionally delete event to free space (uncomment if needed)
-                                    // await this.redis.xdel(stream, id);
+                                    pipeline.xack(stream, group.consumerGroup, id);
+                                    if (this.config.deleteAfterAck) {
+                                        pipeline.xdel(stream, id);
+                                    }
+                                    retryCounts.delete(id);
                                 } catch (err: any) {
                                     console.error(`Error handling event ${id} on ${stream}:`, err);
-                                    // Move to dead-letter queue
-                                    try {
-                                        await this.redis.xadd(
+                                    this.metrics.processingErrors.inc({ stream });
+                                    const retries = (retryCounts.get(id) || 0) + 1;
+                                    retryCounts.set(id, retries);
+                                    if (retries >= this.config.retryMaxAttempts) {
+                                        pipeline.xadd(
                                             'stream:dead-letter',
+                                            'MAXLEN', '~', this.config.dlqMaxLen,
                                             '*',
                                             'data',
-                                            JSON.stringify({ event, error: err.message })
+                                            JSON.stringify({ event, error: err.message, originalStream: stream })
                                         );
-                                    } catch (dlqErr) {
-                                        console.error(`Error adding to dead-letter queue:`, dlqErr);
+                                        retryCounts.delete(id);
                                     }
                                 }
                             }
                         }
                     }
+                    await pipeline.exec();
                 }
+                retryDelay = this.config.retryBaseDelayMs;
             } catch (err) {
                 console.error(`Error reading stream ${stream}:`, err);
-                await new Promise((resolve) => setTimeout(resolve, 1000)); // Retry after delay
+                await new Promise((resolve) => setTimeout(resolve, retryDelay));
+                retryDelay = Math.min(retryDelay * 2, this.config.retryMaxDelayMs);
             }
         }
     }
@@ -117,59 +162,50 @@ export default class StreamRouter {
     public async reprocessDeadLetter(maxEvents: number = 100, deleteOnSuccess: boolean = true) {
         const dlqStream = 'stream:dead-letter';
         try {
-            // Read up to maxEvents from the dead-letter queue
             const results = await this.redis.xrange(dlqStream, '-', '+', 'COUNT', maxEvents);
             const processedIds: string[] = [];
+            const pipeline = this.redis.pipeline();
 
             for (const [id, fields] of results) {
                 try {
                     const { event, error, originalStream } = JSON.parse(fields[1]);
                     const group = this.groups.get(originalStream);
-
                     if (!group) {
-                        console.log(`No group found for original stream ${originalStream}, deleting event ${id}`);
-                        processedIds.push(id); // Mark for deletion
+                        logger.info(`No group found for stream ${originalStream}, deleting event ${id}`);
+                        processedIds.push(id);
                         continue;
                     }
-
                     const handler = group.handlers.get(event.type);
                     if (!handler) {
-                        console.warn(`No handler found for event type ${event.type} in stream ${originalStream}, skipping event ${id}`);
-                        processedIds.push(id); // Mark for deletion
+                        logger.warn(`No handler for event type ${event.type}, skipping ${id}`);
+                        processedIds.push(id);
                         continue;
                     }
-
-                    // Attempt to reprocess the event
                     await handler(event, originalStream, id);
                     processedIds.push(id);
-                    console.log(`Successfully reprocessed event ${id} from ${dlqStream}`);
                 } catch (err: any) {
-                    console.error(`Failed to reprocess event ${id} from ${dlqStream}:`, err);
-                    // Optionally move to a permanent failure stream
-                    try {
-                        await this.redis.xadd(
-                            'stream:permanent-failures',
-                            '*',
-                            'data',
-                            JSON.stringify({
-                                event: JSON.parse(fields[1]).event,
-                                error: err.message,
-                                originalStream: JSON.parse(fields[1]).originalStream,
-                                originalError: JSON.parse(fields[1]).error
-                            })
-                        );
-                    } catch (permErr) {
-                        console.error(`Error moving event ${id} to permanent-failures:`, permErr);
-                    }
+                    logger.error(`Failed to reprocess event ${id}:`, err);
+                    pipeline.xadd(
+                        'stream:permanent-failures',
+                        'MAXLEN', '~', this.config.dlqMaxLen,
+                        '*',
+                        'data',
+                        JSON.stringify({
+                            event: JSON.parse(fields[1]).event,
+                            error: err.message,
+                            originalStream: JSON.parse(fields[1]).originalStream,
+                            originalError: JSON.parse(fields[1]).error
+                        })
+                    );
                 }
             }
 
-            // Delete successfully processed or invalid (no group) events if requested
             if (deleteOnSuccess && processedIds.length > 0) {
-                await this.redis.xdel(dlqStream, ...processedIds);
-                console.log(`Deleted ${processedIds.length} processed or invalid events from ${dlqStream}`);
+                pipeline.xdel(dlqStream, ...processedIds);
             }
-
+            pipeline.xtrim(dlqStream, 'MAXLEN', '~', this.config.dlqMaxLen);
+            await pipeline.exec();
+            this.metrics.dlqLength.set(await this.redis.xlen(dlqStream));
             return { processed: processedIds.length, total: results.length };
         } catch (err) {
             console.error(`Error reprocessing dead-letter queue:`, err);
@@ -177,27 +213,44 @@ export default class StreamRouter {
         }
     }
 
-    // Periodically trim streams to manage data retention
-    async startStreamCleanup(intervalMs: number, maxLen: number) {
-        setInterval(async () => {
-            for (const [stream] of this.groups) {
-                try {
-                    await this.redis.xtrim(stream, 'MAXLEN', maxLen);
-                    console.log(`Trimmed ${stream} to ${maxLen} entries`);
-                } catch (err) {
-                    console.error(`Error trimming ${stream}:`, err);
-                }
+    public async startDlqReprocessing() {
+        const dlqStream = 'stream:dead-letter';
+        try {
+            const dlqLen = await this.redis.xlen(dlqStream);
+            this.metrics.dlqLength.set(dlqLen);
+            if (dlqLen > 0) {
+                const result = await this.reprocessDeadLetter(100, true);
+                console.log(`Reprocessed ${result.processed} of ${result.total} DLQ events`);
             }
-        }, intervalMs);
+        } catch (err) {
+            console.error('Error in DLQ reprocessing cron:', err);
+        }
     }
 
-    // Get stream memory usage for monitoring
+    public async startDlqCleanup() {
+        try {
+            await this.redis.xtrim('stream:dead-letter', 'MAXLEN', '~', this.config.dlqMaxLen);
+            await this.redis.xtrim('stream:permanent-failures', 'MAXLEN', '~', this.config.dlqMaxLen);
+            this.metrics.dlqLength.set(await this.redis.xlen('stream:dead-letter'));
+            console.log('Trimmed DLQ and permanent failures');
+        } catch (err) {
+            logger.error('Error during DLQ cleanup:', err);
+        }
+    }
+
     async getStreamMemoryInfo() {
         try {
-            const memoryInfo = await this.redis.info('memory');
-            return memoryInfo;
+            const streamInfo: Record<string, number> = {};
+            for (const [stream] of this.groups) {
+                streamInfo[stream] = await this.redis.xlen(stream);
+                this.metrics.streamLength.set({ stream }, streamInfo[stream]);
+            }
+            streamInfo['dead-letter'] = await this.redis.xlen('stream:dead-letter');
+            streamInfo['permanent-failures'] = await this.redis.xlen('stream:permanent-failures');
+            this.metrics.dlqLength.set(streamInfo['dead-letter']);
+            return streamInfo;
         } catch (err) {
-            console.error('Error fetching memory info:', err);
+            console.error('Error fetching stream info:', err);
             throw err;
         }
     }
