@@ -22,6 +22,7 @@ model Vendor {
   updatedAt      DateTime               @updatedAt
   profilePicture VendorProfilePicture[]
   storeDetails   StoreDetails[]
+  StoreFollower  StoreFollower[]
 
   @@index([email])
   @@index([phoneNumber])
@@ -58,6 +59,7 @@ model StoreDetails {
   secondStoreBanner SecondStoreBanner[]
   Product           Product[]
   Inventory         Inventory[]
+  StoreFollower     StoreFollower[]
 
   @@index([name])
   @@index([vendorId])
@@ -224,6 +226,7 @@ model Customer {
   updatedAt          DateTime             @updatedAt
   Address            CustomerAddress[]
   CustomerProfilePic CustomerProfilePic[]
+  StoreFollower      StoreFollower[]
 
   @@index([email])
   @@index([phoneNumber])
@@ -378,7 +381,7 @@ model BrandImage {
 
 model AdBanner {
   id            Int             @id @default(autoincrement())
-  title         String // ! TODO: make this unique
+  title         String // TODO: make this unique
   description   String
   cta           String
   link          String
@@ -464,4 +467,63 @@ model Inventory {
 
   @@index([productId])
   @@index([storeId])
+}
+
+model StoreFollower {
+  id         Int          @id @default(autoincrement())
+  storeId    Int
+  store      StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  vendorId   Int? // Optional, as follower can be Vendor OR Customer
+  customerId Int? // Optional, as follower can be Vendor OR Customer
+  vendor     Vendor?      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  customer   Customer?    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, vendorId]) // Ensure a Vendor can only follow a store once
+  @@unique([storeId, customerId]) // Ensure a Customer can only follow a store once
+}
+
+enum UserType {
+  VENDOR
+  CUSTOMER
+  ADMIN
+}
+
+model ProductComment {
+  id          Int              @id @default(autoincrement())
+  content     String
+  productId   Int              @unique
+  // userId    String    @db.ObjectId
+  // authorId      String      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  userType    UserType
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  parentId    Int
+  parent      ProductComment?  @relation("ProductCommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies     ProductComment[] @relation("ProductCommentReplies")
+  // User      User      @relation(fields: [userId], references: [id])
+  CommentLike CommentLike[]
+}
+
+model CommentLike {
+  id        Int             @id @default(autoincrement())
+  userId    Int
+  userType  UserType
+  commentId Int
+  comment   ProductComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([userId, commentId, userType])
+}
+
+model ProductLike {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  userType  UserType
+  productId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId, userType])
 }

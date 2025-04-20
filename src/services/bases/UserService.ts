@@ -108,10 +108,12 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
         const errorResponse = this.handleRepoError(repoResult);
         if (errorResponse) return errorResponse;
 
-        const totalRecords = repoResult.data.totalItems;
+        const data: { items: any, totalItems: any } = repoResult.data as any;
+
+        const totalRecords = data.totalItems;
         const pagination = getPagination(page, pageSize, totalRecords);
 
-        this.sanitizeUserImageItems(repoResult.data.items);
+        this.sanitizeUserImageItems(data.items);
 
         return super.responseData(HttpStatus.OK, false, constants('200Users')!, {
             data: repoResult.data,

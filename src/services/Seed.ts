@@ -2,6 +2,7 @@ import BaseService from "./bases/BaseService";
 import Repo from "../repos/bases/Repo";
 import jsonRoles from "./../seeds/roles.json";
 import jsonPermissions from "./../seeds/permissions.json";
+import { PrismaClient } from "@prisma/client";
 
 export default class Seed extends BaseService {
 
@@ -9,7 +10,7 @@ export default class Seed extends BaseService {
         super();
     }
 
-    private async defaultData(tblName: string, data: any[]) {
+    private async defaultData(tblName: keyof PrismaClient, data: any[]) {
         const repo = new Repo(tblName);
         const hasDataResult = await repo.checkIfTblHasData();
 

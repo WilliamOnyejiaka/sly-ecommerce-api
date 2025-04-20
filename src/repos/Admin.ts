@@ -68,7 +68,7 @@ export default class Admin extends UserRepo {
                     roleId: null,
                 },
             });
-            return super.repoResponse(false, 200);
+            return super.repoResponse(false, 200, null, {});
         } catch (error) {
             return super.handleDatabaseError(error);
         }

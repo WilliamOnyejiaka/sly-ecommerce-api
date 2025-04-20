@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `Admin` MODIFY `createdBy` INTEGER NOT NULL DEFAULT 0;

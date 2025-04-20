@@ -137,7 +137,7 @@ export default class Store extends BaseService<StoreDetails> {
         const storeDetailsRepoResultError = this.handleRepoError(storeDetailsRepoResult);
         if (storeDetailsRepoResultError) return storeDetailsRepoResultError;
 
-        const storeDetails = storeDetailsRepoResult.data;
+        const storeDetails = storeDetailsRepoResult.data as any ;
         if (!storeDetails) return super.responseData(HttpStatus.NOT_FOUND, true, "Store was not found");
 
         const data = {
@@ -211,12 +211,13 @@ export default class Store extends BaseService<StoreDetails> {
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
 
-        const totalRecords = repoResult.data.totalItems!;
+        const data: { items: any, totalItems: any } = repoResult.data as any;
+        const totalRecords = data.totalItems!;
         const pagination = getPagination(page, pageSize, totalRecords);
-        super.setImageUrls(repoResult.data.items, this.imageDatas);
+        super.setImageUrls(data.items, this.imageDatas);
 
         return super.responseData(200, false, constants('200Stores')!, {
-            data: repoResult.data.items,
+            data: data.items,
             pagination
         });
     }
@@ -225,7 +226,7 @@ export default class Store extends BaseService<StoreDetails> {
         const repoResult = await this.repo!.getAllStoresAndRelations();
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
-        super.setImageUrls(repoResult.data, this.imageDatas);
+        super.setImageUrls(repoResult.data as any, this.imageDatas);
         return super.responseData(200, false, constants('200Stores')!, repoResult.data);
     }
 

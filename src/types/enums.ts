@@ -83,12 +83,14 @@ export enum CdnFolders {
 
 
 export enum StreamGroups {
-    USER = "user"
+    USER = "user",
+    STORE = "store"
 };
 
 export enum StreamEvents {
     USER_CREATE = 'create',
-    UPLOAD_PROFILE_PIC = 'upload:profile-pic'
+    UPLOAD_PROFILE_PIC = 'upload:profile-pic',
+    STORE_CREATE = "create"
 };
 
 export type ImageUploadType = "banner" | "image" | "storeImages";

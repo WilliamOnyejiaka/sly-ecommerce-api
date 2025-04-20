@@ -1,3 +1,4 @@
+import { PrismaClient } from "@prisma/client";
 import prisma from "..";
 import Repo from "./Repo";
 
@@ -6,7 +7,7 @@ export default class AssetRepo extends Repo {
     public imageRelation: string;
     private readonly imageFilter: any;
 
-    public constructor(tblName: string, imageRelation: string) {
+    public constructor(tblName: keyof PrismaClient, imageRelation: string) {
         super(tblName);
         this.imageRelation = imageRelation;
         this.imageFilter = {

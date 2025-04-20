@@ -1,3 +1,4 @@
+import { PrismaClient } from "@prisma/client";
 import prisma from "..";
 import Repo from "./Repo";
 
@@ -5,7 +6,7 @@ export default class UserRepo extends Repo {
 
     public imageRelation: string;
 
-    public constructor(tblName: string, imageRelation: string) {
+    public constructor(tblName: keyof PrismaClient, imageRelation: string) {
         super(tblName);
         this.imageRelation = imageRelation;
     }
@@ -41,7 +42,7 @@ export default class UserRepo extends Repo {
         return await this.getUserProfile(userEmail);
     }
 
-    public async getAll(filter?: any): Promise<{ error: boolean; message: string | null; type: number; data: any; } | { error: boolean; message: string | undefined; type: number; data: {}; }> {
+    public async getAll(filter?: any) {
         return await super.getAll({
             include: {
                 [this.imageRelation]: {

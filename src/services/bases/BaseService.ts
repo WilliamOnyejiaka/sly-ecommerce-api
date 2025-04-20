@@ -82,12 +82,14 @@ export default class BaseService<T extends Repo = Repo> {
             return this.responseData(repoResult.type, true, repoResult.message!);
         }
 
-        const totalRecords = repoResult.data.totalItems;
+        const data: { items: any, totalItems: any } = repoResult.data as any;
+
+        const totalRecords = data.totalItems;
 
         const pagination = getPagination(page, pageSize, totalRecords);
 
         return this.responseData(200, false, `Items were retrieved successfully`, { // TODO: make this more specific
-            data: repoResult.data.items,
+            data: data.items,
             pagination
         });
     }
