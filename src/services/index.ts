@@ -19,6 +19,8 @@ import PasswordReset from "./PasswordReset";
 import SubCategory from "./SubCategory";
 import AdBanner from "./AdBanner";
 import Cloudinary from "./Cloudinary";
+import ProductComment from "./ProductComment";
+import StoreFollower from "./StoreFollower";
 
 export {
     Token,
@@ -41,5 +43,7 @@ export {
     PasswordReset,
     SubCategory,
     AdBanner,
-    Cloudinary
+    Cloudinary,
+    ProductComment,
+    StoreFollower
 };

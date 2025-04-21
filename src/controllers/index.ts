@@ -13,6 +13,8 @@ import Customer from "./Customer";
 import Category from "./Category";
 import AdBanner from "./AdBanner";
 import UserManagement from "./UserManagement";
+import Comment from "./Comment";
+import StoreFollower from "./StoreFollower";
 
 export {
     Auth,
@@ -29,5 +31,7 @@ export {
     Controller,
     Customer,
     UserManagement,
-    AdBanner
+    AdBanner,
+    Comment,
+    StoreFollower
 };

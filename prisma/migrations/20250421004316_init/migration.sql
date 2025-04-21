@@ -431,9 +431,7 @@ CREATE TABLE `Product` (
     `price` DECIMAL(10, 2) NOT NULL,
     `discountPrice` DECIMAL(10, 2) NULL,
     `isAvailable` BOOLEAN NOT NULL DEFAULT true,
-    `soldCount` INTEGER NOT NULL DEFAULT 0,
     `attributes` JSON NULL,
-    `stock` INTEGER NOT NULL DEFAULT 1,
     `additionalInfo` JSON NULL,
     `metaData` JSON NULL,
     `averageRating` DOUBLE NOT NULL DEFAULT 0,
@@ -462,6 +460,8 @@ CREATE TABLE `Inventory` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `Inventory_productId_key`(`productId`),
+    UNIQUE INDEX `Inventory_storeId_key`(`storeId`),
     INDEX `Inventory_productId_idx`(`productId`),
     INDEX `Inventory_storeId_idx`(`storeId`),
     PRIMARY KEY (`id`)
@@ -471,11 +471,48 @@ CREATE TABLE `Inventory` (
 CREATE TABLE `StoreFollower` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `storeId` INTEGER NOT NULL,
-    `vendorId` INTEGER NULL,
-    `customerId` INTEGER NULL,
+    `customerId` INTEGER NOT NULL,
 
-    UNIQUE INDEX `StoreFollower_storeId_vendorId_key`(`storeId`, `vendorId`),
     UNIQUE INDEX `StoreFollower_storeId_customerId_key`(`storeId`, `customerId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ProductComment` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `content` VARCHAR(191) NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `userId` INTEGER NOT NULL,
+    `userType` ENUM('VENDOR', 'CUSTOMER', 'ADMIN') NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `parentId` INTEGER NOT NULL,
+
+    UNIQUE INDEX `ProductComment_productId_key`(`productId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `CommentLike` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `commentId` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `CommentLike_userId_commentId_key`(`userId`, `commentId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ProductLike` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `ProductLike_userId_productId_key`(`userId`, `productId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -564,10 +601,13 @@ ALTER TABLE `Inventory` ADD CONSTRAINT `Inventory_productId_fkey` FOREIGN KEY (`
 ALTER TABLE `Inventory` ADD CONSTRAINT `Inventory_storeId_fkey` FOREIGN KEY (`storeId`) REFERENCES `StoreDetails`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `StoreFollower` ADD CONSTRAINT `StoreFollower_storeId_fkey` FOREIGN KEY (`storeId`) REFERENCES `StoreDetails`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `StoreFollower` ADD CONSTRAINT `StoreFollower_vendorId_fkey` FOREIGN KEY (`vendorId`) REFERENCES `Vendor`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `StoreFollower` ADD CONSTRAINT `StoreFollower_storeId_fkey` FOREIGN KEY (`storeId`) REFERENCES `StoreDetails`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `StoreFollower` ADD CONSTRAINT `StoreFollower_customerId_fkey` FOREIGN KEY (`customerId`) REFERENCES `Customer`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProductComment` ADD CONSTRAINT `ProductComment_parentId_fkey` FOREIGN KEY (`parentId`) REFERENCES `ProductComment`(`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE `CommentLike` ADD CONSTRAINT `CommentLike_commentId_fkey` FOREIGN KEY (`commentId`) REFERENCES `ProductComment`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

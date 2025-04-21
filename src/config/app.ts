@@ -1,7 +1,25 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import { cloudinary, corsConfig, env, logger, redisClient, cronJobs } from ".";
-import { auth, vendor, store, seed, admin, role, permission, adminPermission, adminStore, dashboardCategory, customer, category, dashboardSubCategory, subcategory, adBanner, user } from "./../routes";
+import {
+    auth,
+    vendor,
+    store,
+    seed,
+    admin,
+    role,
+    permission,
+    adminPermission,
+    adminStore,
+    dashboardCategory,
+    customer,
+    category,
+    dashboardSubCategory,
+    subcategory,
+    adBanner,
+    user,
+    storeFollower
+} from "./../routes";
 import { TwilioService } from "../services";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
 import asyncHandler from "express-async-handler";
@@ -38,6 +56,7 @@ function createApp() {
         vendor
     );
 
+    app.use("/api/v1/store/follow", storeFollower);
     app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), vendorIsActive, store);
     app.use("/api/v1/admin", validateJWT(["admin"], env("tokenSecret")!), admin);
     app.use("/api/v1/admin/role", validateJWT(["admin"], env("tokenSecret")!), role);
@@ -50,6 +69,7 @@ function createApp() {
     app.use("/api/v1/subcategory", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), subcategory);
     app.use("/api/v1/ad-banner", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), adBanner);
     app.use("/api/v1/dashboard/user", validateJWT(["admin",], env("tokenSecret")!), user);
+
 
 
     app.use(

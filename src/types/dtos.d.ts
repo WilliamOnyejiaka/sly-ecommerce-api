@@ -96,3 +96,45 @@ export interface CustomerDto {
     address?: CustomerAddressDto
 }
 
+export interface ProductCommentDto {
+    id?: string,
+    content: string,
+    userId: number,
+    productId: number,
+    userType: string,
+    parentId?: string | null,
+    replies?: any[],
+    createdAt?: Date,
+    updatedAt?: Date,
+}
+
+export interface InventoryDto {
+    id?: number,
+    stock?: number,
+    soldCount?: number,
+    lowStockThreshold?: number,
+    productId: number,
+    storeId: number,
+    createdAt?: Date,
+    updatedAt?: Date
+};
+
+export interface ProductDto {
+    id?: number,
+    name: string,
+    description: string,
+    price: number,
+    discountPrice?: number,
+    isAvailable?: boolean,
+    additionalInfo?: any,
+    attributes?: any,
+    metaData?: any,
+    averageRating?: number,
+    reviewCount?: number,
+    isFeatured?: boolean,
+    createdAt?: Date,
+    updatedAt?: Date,
+    storeId: number,
+    categoryId?: number,
+    subcategoryId?: number
+}

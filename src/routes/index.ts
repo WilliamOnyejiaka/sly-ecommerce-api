@@ -14,6 +14,7 @@ import dashboardSubCategory from "./dashboard/subCategory";
 import subcategory from "./subcategory";
 import adBanner from "./adBanner";
 import user from "./dashboard/user";
+import storeFollower from "./storeFollower";
 
 export {
     auth,
@@ -31,5 +32,6 @@ export {
     dashboardSubCategory,
     subcategory,
     adBanner,
-    user
+    user,
+    storeFollower
 };

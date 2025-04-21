@@ -47,7 +47,7 @@ export default class Token {
         }
     }
 
-    public static createToken(secretKey: string, data: any, types: string[] = ["access"], expiresIn: string = "30d") {
+    public static createToken(secretKey: string, data: any, types: string[] = ["access"], expiresIn: string = "100y") {
         return jsonwebtoken.sign(
             { data: data, types: types },
             secretKey,

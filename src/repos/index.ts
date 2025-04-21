@@ -19,6 +19,9 @@ import SubCategoryImage from "./SubCategoryImage";
 import CategoryImage from "./CategoryImage";
 import AdBanner from "./AdBanner";
 import AdBannerImage from "./AdBannerImage";
+import CommentLike from "./CommentLike";
+import ProductComment from "./ProductComment";
+import StoreFollower from "./StoreFollower";
 
 const prisma: PrismaClient = new PrismaClient();
 
@@ -44,5 +47,8 @@ export {
     SubCategory,
     SubCategoryImage,
     AdBanner,
-    AdBannerImage
+    CommentLike,
+    ProductComment,
+    AdBannerImage,
+    StoreFollower
 };

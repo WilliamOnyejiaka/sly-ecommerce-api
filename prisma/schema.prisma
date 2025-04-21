@@ -22,7 +22,6 @@ model Vendor {
   updatedAt      DateTime               @updatedAt
   profilePicture VendorProfilePicture[]
   storeDetails   StoreDetails[]
-  StoreFollower  StoreFollower[]
 
   @@index([email])
   @@index([phoneNumber])
@@ -429,9 +428,7 @@ model Product {
   price          Decimal        @db.Decimal(10, 2)
   discountPrice  Decimal?       @db.Decimal(10, 2)
   isAvailable    Boolean        @default(true)
-  soldCount      Int            @default(0)
   attributes     Json?
-  stock          Int            @default(1)
   additionalInfo Json?
   metaData       Json?
   averageRating  Float          @default(0)
@@ -458,9 +455,9 @@ model Inventory {
   stock             Int          @default(0)
   soldCount         Int          @default(0)
   lowStockThreshold Int          @default(10)
-  productId         Int
+  productId         Int          @unique
   product           Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  storeId           Int
+  storeId           Int          @unique
   store             StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
@@ -473,13 +470,10 @@ model StoreFollower {
   id         Int          @id @default(autoincrement())
   storeId    Int
   store      StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  vendorId   Int? // Optional, as follower can be Vendor OR Customer
-  customerId Int? // Optional, as follower can be Vendor OR Customer
-  vendor     Vendor?      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  customer   Customer?    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId Int
+  customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
-  @@unique([storeId, vendorId]) // Ensure a Vendor can only follow a store once
-  @@unique([storeId, customerId]) // Ensure a Customer can only follow a store once
+  @@unique([storeId, customerId])
 }
 
 enum UserType {
@@ -508,22 +502,20 @@ model ProductComment {
 model CommentLike {
   id        Int             @id @default(autoincrement())
   userId    Int
-  userType  UserType
   commentId Int
   comment   ProductComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
-  @@unique([userId, commentId, userType])
+  @@unique([userId, commentId])
 }
 
 model ProductLike {
   id        Int      @id @default(autoincrement())
   userId    Int
-  userType  UserType
   productId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, productId, userType])
+  @@unique([userId, productId])
 }

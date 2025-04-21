@@ -90,7 +90,10 @@ export enum StreamGroups {
 export enum StreamEvents {
     USER_CREATE = 'create',
     UPLOAD_PROFILE_PIC = 'upload:profile-pic',
-    STORE_CREATE = "create"
+    STORE_CREATE = "create",
+    DELETE = "delete",
+    UPLOAD = "upload",
+    FOLLOW = "follow"
 };
 
 export type ImageUploadType = "banner" | "image" | "storeImages";

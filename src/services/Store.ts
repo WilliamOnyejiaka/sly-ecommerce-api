@@ -4,7 +4,8 @@ import { getPagination } from "../utils";
 import { FirstBanner, SecondBanner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
 import ImageService from "./Image";
-import { CdnFolders } from "../types/enums";
+import { CdnFolders, StreamEvents, StreamGroups } from "../types/enums";
+import { streamRouter } from "../config";
 
 export default class Store extends BaseService<StoreDetails> {
 
@@ -50,6 +51,11 @@ export default class Store extends BaseService<StoreDetails> {
                     secondBannerUrl: storeImages.secondBanner?.imageUrl ?? null,
                 };
 
+                await streamRouter.addEvent(StreamGroups.STORE, {
+                    type: StreamEvents.STORE_CREATE,
+                    data: result,
+                });
+
                 return super.responseData(
                     201,
                     false,
@@ -73,8 +79,16 @@ export default class Store extends BaseService<StoreDetails> {
         if (storeNameRepoResultError) return storeNameRepoResultError;
 
         const repoResult = await this.repo!.insert(storeDetailsDto);
-        return !repoResult.error ? super.responseData(201, false, "Store was created successfully", repoResult) :
-            super.responseData(repoResult.type, true, repoResult.message!);
+        const repoResultError = this.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+
+        const result = repoResult.data;
+        await streamRouter.addEvent(StreamGroups.STORE, {
+            type: StreamEvents.STORE_CREATE,
+            data: result,
+        });
+
+        return super.responseData(201, false, "Store was created successfully", result);
     }
 
     public async getStoreWithId(id: number) {
@@ -137,7 +151,7 @@ export default class Store extends BaseService<StoreDetails> {
         const storeDetailsRepoResultError = this.handleRepoError(storeDetailsRepoResult);
         if (storeDetailsRepoResultError) return storeDetailsRepoResultError;
 
-        const storeDetails = storeDetailsRepoResult.data as any ;
+        const storeDetails = storeDetailsRepoResult.data as any;
         if (!storeDetails) return super.responseData(HttpStatus.NOT_FOUND, true, "Store was not found");
 
         const data = {
@@ -154,12 +168,24 @@ export default class Store extends BaseService<StoreDetails> {
         if (checkStoreImages.json.error) return checkStoreImages;
         if (checkStoreImages.json.data.hasStoreLogo) return super.responseData(400, true, "A store logo already exists");
 
-        return await this.imageService.uploadImage<StoreLogo>(
+        const serviceResult = await this.imageService.uploadImage<StoreLogo>(
             image,
             storeId,
             new StoreLogo(),
             CdnFolders.STORE_LOGO
         );
+
+        if (!serviceResult.json.error) {
+            await streamRouter.addEvent(StreamGroups.STORE, {
+                type: StreamEvents.UPLOAD,
+                data: {
+                    storeId,
+                    imageUrl: serviceResult.json.data.imageUrl
+                },
+            });
+        }
+
+        return serviceResult;
     }
 
     public async uploadFirstBanner(image: Express.Multer.File, storeId: number) {
@@ -247,12 +273,20 @@ export default class Store extends BaseService<StoreDetails> {
             if (imageDetail) publicIDs.push(imageDetail.publicId);
         });
 
-        const deletedResult = await this.imageService.deleteImages(publicIDs);
-        if (deletedResult.json.error) return deletedResult;
+        if (publicIDs.length > 0) {
+            const deletedResult = await this.imageService.deleteImages(publicIDs);
+            if (deletedResult.json.error) return deletedResult;
+        }
 
         const repoResult = await this.repo!.delete(vendorId);
         const repoResultError = super.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
+
+        await streamRouter.addEvent(StreamGroups.STORE, {
+            type: StreamEvents.DELETE,
+            data: { vendorId },
+        });
+
         return super.responseData(200, false, "Store was deleted successfully");
     }
 }
