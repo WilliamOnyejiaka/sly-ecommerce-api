@@ -28,9 +28,9 @@ export default class Repo<T = any> implements Repository {
         this.tblName = tblName;
     }
 
-    public async insert<T = any>(data: T): Promise<RepoResponse<T | any>> {
+    public async insert<T = any>(data: T, include: any = {}): Promise<RepoResponse<T | any>> {
         try {
-            const newItem = await (prisma[this.tblName] as any).create({ data: data });
+            const newItem = await (prisma[this.tblName] as any).create({ data: data, include: include });
             return this.repoResponse(false, 201, null, newItem);
         } catch (error) {
             return this.handleDatabaseError(error);

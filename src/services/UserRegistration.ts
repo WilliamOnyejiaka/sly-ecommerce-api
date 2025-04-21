@@ -61,7 +61,6 @@ export default class UserRegistration extends Authentication {
         const message: string = !error ? "Customer has been created successfully" : repoResult.message!;
         const result = repoResult.data;
 
-
         if (!error) {
             delete result.password;
             const cacheSuccessful = await this.customerCache.set(

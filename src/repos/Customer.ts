@@ -15,6 +15,15 @@ export default class Customer extends UserRepo {
                 create: data.addressData
             }
         };
-        return await super.insert(insertData);
+        const customerAddress = {
+            Address: {
+                select: {
+                    street: true,
+                    city: true,
+                    zip: true
+                }
+            },
+        };
+        return await super.insert(insertData, customerAddress);
     }
 }
