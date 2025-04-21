@@ -21,8 +21,18 @@ export default class UserRepo extends Repo {
 
     public async getUserProfile(userIdOrEmail: number | string) {
         const where = typeof userIdOrEmail == "number" ? { id: userIdOrEmail } : { email: userIdOrEmail };
+        const customerAddress = this.tblName === "customer" ? {
+            Address: {
+                select: {
+                    street: true,
+                    city: true,
+                    zip: true
+                }
+            },
+        } : {};
         return await super.getItem(where, {
             include: {
+                ...customerAddress,
                 [this.imageRelation]: {
                     select: {
                         imageUrl: true,

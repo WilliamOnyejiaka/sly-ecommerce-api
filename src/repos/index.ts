@@ -22,6 +22,7 @@ import AdBannerImage from "./AdBannerImage";
 import CommentLike from "./CommentLike";
 import ProductComment from "./ProductComment";
 import StoreFollower from "./StoreFollower";
+import Product from "./Product";
 
 const prisma: PrismaClient = new PrismaClient();
 
@@ -50,5 +51,6 @@ export {
     CommentLike,
     ProductComment,
     AdBannerImage,
-    StoreFollower
+    StoreFollower,
+    Product
 };
