@@ -27,7 +27,7 @@ const options = {
 // Create and start HTTP/2 server
 // function startHTTP2Server(app: Application, port: number, pid?: number) {
 //     // console.log(options);
-    
+
 //     const server = spdy.createServer(options, app);
 
 //     server.listen(port, () => {
@@ -63,6 +63,7 @@ function start(app: Application, port: number, pid?: number) {
 const app = createApp();
 let environmentType = env('envType');
 const PORT = Number(env('port')!);
+const server = createSecureServer(options, app)
 
 function startServer() {
     const numCpu = os.cpus().length;
@@ -77,18 +78,19 @@ function startServer() {
             cluster.fork();
         });
     } else {
-        // app.listen(PORT, () => {
-        //     console.log(`pid - ${process.pid}`);
+        app.listen(PORT, () => {
+            console.log(`pid - ${process.pid}`);
 
-        //     console.log(`server running on port - ${PORT}\n`)
-        // });
-        start(app, PORT, process.pid)
+            console.log(`server running on port - ${PORT}\n`)
+        });
+        // start(app, PORT, process.pid)
     }
 }
 
 if (environmentType == "dev") {
     // app.listen(PORT, () => console.log(`server running on port - ${PORT}`));
-    start(app, PORT);
+    // start(app, PORT);
+    server.listen(3000)
 } else {
     startServer();
 }

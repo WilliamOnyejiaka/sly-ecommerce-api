@@ -37,9 +37,12 @@ import { CompletedJob, FailedJob, IWorker } from "../types";
 import { MyWorker } from "../workers/MyWorker";
 import { completedJob } from "../workers";
 import { Upload } from "../workers/Upload";
+import http2Express from "http2-express-bridge";
 
 function createApp() {
-    const app: Application = express();
+    const app: Application = http2Express(express);
+
+    // const app: Application = express();
 
     const stream = {
         write: (message: string) => logger.http(message.trim()),
