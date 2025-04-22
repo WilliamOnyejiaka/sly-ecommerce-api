@@ -42,11 +42,11 @@ function startServer() {
             console.log(`pid - ${process.pid}`);
             console.log(`HTTP/2 server running on port - ${PORT}\n`)
         });
-        app.listen(PORT, () => {
-            console.log(`pid - ${process.pid}`);
+        // app.listen(PORT, () => {
+        //     console.log(`pid - ${process.pid}`);
 
-            console.log(`server running on port - ${PORT}\n`)
-        });
+        //     console.log(`server running on port - ${PORT}\n`)
+        // });
         // // start(app, PORT, process.pid)
     }
 }
