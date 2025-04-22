@@ -254,6 +254,16 @@ function createApp() {
         res.status(200).json(event)
     });
 
+    app.get("/hello", async (req: Request, res: Response, next: NextFunction) => {
+        const event = {
+            orderId: 22,
+            userId: 2,
+            total: 1000,
+            createdAt: new Date().toISOString(),
+        };
+        res.status(200).json(event)
+    });
+
     async function check(data: any, requiredPermissions: string[]): Promise<{
         error: Boolean,
         message: string,
@@ -333,6 +343,7 @@ function createApp() {
             message: "Route not found. Please check the URL or refer to the API documentation.",
         })
     });
+
     return app;
 }
 

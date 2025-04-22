@@ -14,7 +14,8 @@
     "db-reset": "npx prisma migrate reset --force",
     "format": "npx prisma format",
     "cli": "ts-node src/console/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cert": "sh ./shell/generate-cert.sh"
   },
   "keywords": [],
   "author": "",
@@ -51,6 +52,7 @@
     "rate-limit-redis": "^4.2.0",
     "redis": "^4.7.0",
     "sharp": "^0.33.5",
+    "spdy": "^4.0.2",
     "twilio": "^5.4.0",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
@@ -78,6 +80,7 @@
     "@types/rate-limit-redis": "^3.0.0",
     "@types/redis": "^4.0.11",
     "@types/sharp": "^0.32.0",
+    "@types/spdy": "^3.4.9",
     "@types/twilio": "^3.19.3",
     "@types/winston": "^2.4.4",
     "nodemon": "^3.1.7",
