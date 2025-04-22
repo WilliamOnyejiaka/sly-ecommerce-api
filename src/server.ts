@@ -7,15 +7,15 @@ import { createSecureServer, Http2ServerRequest, Http2ServerResponse } from 'htt
 import { readFileSync } from 'fs';
 
 const CERT_DIR = `./cert`;
-const options = {
-    key: readFileSync(`${CERT_DIR}/server.key`),
-    cert: readFileSync(`${CERT_DIR}/server.cert`),
-};
-
 // const options = {
-//     key: env('sslKey')!,
-//     cert: env('sslCert')!,
+//     key: readFileSync(`${CERT_DIR}/server.key`),
+//     cert: readFileSync(`${CERT_DIR}/server.cert`),
 // };
+
+const options = {
+    key: env('sslKey')!,
+    cert: env('sslCert')!,
+};
 
 
 const app = createApp();
