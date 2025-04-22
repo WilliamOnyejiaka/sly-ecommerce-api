@@ -12,6 +12,12 @@ const options = {
     cert: readFileSync(`${CERT_DIR}/server.cert`),
 };
 
+// const options = {
+//     key: env('sslKey')!,
+//     cert: env('sslCert')!,
+// };
+
+
 const app = createApp();
 let environmentType = env('envType');
 const PORT = Number(env('port')!);
