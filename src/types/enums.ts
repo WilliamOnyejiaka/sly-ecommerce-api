@@ -97,3 +97,8 @@ export enum StreamEvents {
 };
 
 export type ImageUploadType = "banner" | "image" | "storeImages";
+
+export enum Queues {
+    MY_QUEUE = 'my-queue',
+    UPLOAD = "upload"
+};

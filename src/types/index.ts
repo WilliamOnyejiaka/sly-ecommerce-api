@@ -1,3 +1,5 @@
+import Redis from "ioredis";
+import { Job, Queue } from "bullmq";
 
 export interface UploadedImageData {
     mimeType: string;
@@ -37,3 +39,20 @@ export interface StreamGroup {
     consumerGroup: string; // e.g., 'profile-consumers'
     handlers: Map<string, EventHandler>; // e.g., 'ProfileUpdated' -> handler
 }
+
+export interface WorkerConfig { connection: Redis, concurrency?: number, limiter?: { max: number, duration: number } };
+
+export interface CompletedJob { jobId: string, returnvalue: any };
+export interface FailedJob { jobId: string, failedReason: any }
+
+
+export interface IWorker<T> {
+    process: (job: Job<T>) => any,
+    completed?: ({ jobId, returnvalue }: CompletedJob) => void,
+    failed?: ({ jobId, failedReason }: FailedJob) => void,
+    drained?: () => void,
+    config: WorkerConfig,
+    queueName: string,
+    queue: Queue,
+    eventName: string
+};

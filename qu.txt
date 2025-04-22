@@ -1,0 +1,74 @@
+  // BullMQ Queue
+    // const queueName = 'my-queue';
+    // const myQueue = new Queue(queueName, { connection: redisBull });
+
+    // // BullMQ QueueEvents
+    // const queueEvents = new QueueEvents(queueName, { connection: redisBull });
+
+    // // BullMQ Worker
+    // const worker = new Worker(
+    //     queueName,
+    //     async (job: Job) => {
+    //         const { id, data } = job;
+    //         console.log(data);
+
+    //         // console.log(`Processing job ${id} with data:`, data);
+    //         // for (let i = 10; i <= 100; i += 10) {
+    //         //     await new Promise((resolve) => setTimeout(resolve, 500));
+    //         //     await job.updateProgress(i);
+    //         //     console.log(`Job ${id} progress: ${i}%`);
+    //         // }
+    //         return { result: `Job ${id} completed successfully` };
+    //     },
+    //     { connection: redisBull, concurrency: 10 }, // Process 10 jobs concurrently
+    // );
+
+
+        // Publish BullMQ events to Redis channels
+    // queueEvents.on('progress', async ({ jobId, data }) => {
+    //     const job = await myQueue.getJob(jobId);
+    //     const clientId = job?.data.clientId;
+    //     if (clientId && (await redisClient.exists(`client:${clientId}`))) {
+    //         await redisPub.publish(
+    //             `job:${clientId}`,
+    //             JSON.stringify({ event: 'jobProgress', jobId, progress: data }),
+    //         );
+    //     }
+    // });
+
+    // queueEvents.on('completed', async ({ jobId, returnvalue }) => {
+    //     const job = await myQueue.getJob(jobId);
+    //     const clientId = job?.data.clientId;
+    //     const userType = job?.data.userType;
+    //     console.log("Completed user type - ", userType);
+
+    //     if (clientId && (await redisBull.exists(`client:${userType}:${clientId}`))) {
+    //         await redisPub.publish(
+    //             `job:${userType}:${clientId}`,
+    //             JSON.stringify({ event: 'jobCompleted', jobId, returnvalue }),
+    //         );
+    //         // Remove job from client's job list
+    //         const jobIdsStr = await redisBull.hget(`client:${userType}:${clientId}`, 'jobIds');
+    //         const jobIds = jobIdsStr ? JSON.parse(jobIdsStr) : [];
+    //         const updatedJobIds = jobIds.filter((id: string) => id !== jobId);
+    //         await redisBull.hset(`client:${userType}:${clientId}`, 'jobIds', JSON.stringify(updatedJobIds));
+    //     }
+    // });
+
+    // queueEvents.on('failed', async ({ jobId, failedReason }) => {
+    //     const job = await myQueue.getJob(jobId);
+    //     const clientId = job?.data.clientId;
+    //     const userType = job?.data.userType;
+
+    //     if (clientId && (await redisBull.exists(`client:${userType}:${clientId}`))) {
+    //         await redisPub.publish(
+    //             `job:${userType}:${clientId}`,
+    //             JSON.stringify({ event: 'jobFailed', jobId, failedReason }),
+    //         );
+    //         // Remove job from client's job list
+    //         const jobIdsStr = await redisBull.hget(`client:${userType}:${clientId}`, 'jobIds');
+    //         const jobIds = jobIdsStr ? JSON.parse(jobIdsStr) : [];
+    //         const updatedJobIds = jobIds.filter((id: string) => id !== jobId);
+    //         await redisBull.hset(`client:${userType}:${clientId}`, 'jobIds', JSON.stringify(updatedJobIds));
+    //     }
+    // });
