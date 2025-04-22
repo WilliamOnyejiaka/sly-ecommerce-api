@@ -37,12 +37,9 @@ import { CompletedJob, FailedJob, IWorker } from "../types";
 import { MyWorker } from "../workers/MyWorker";
 import { completedJob } from "../workers";
 import { Upload } from "../workers/Upload";
-import http2Express from "http2-express-bridge";
 
 function createApp() {
-    const app: Application = http2Express(express);
-
-    // const app: Application = express();
+    const app: Application = express();
 
     const stream = {
         write: (message: string) => logger.http(message.trim()),
@@ -257,16 +254,6 @@ function createApp() {
         res.status(200).json(event)
     });
 
-    app.get("/hello", async (req: Request, res: Response, next: NextFunction) => {
-        const event = {
-            orderId: 22,
-            userId: 2,
-            total: 1000,
-            createdAt: new Date().toISOString(),
-        };
-        res.status(200).json(event)
-    });
-
     async function check(data: any, requiredPermissions: string[]): Promise<{
         error: Boolean,
         message: string,
@@ -346,7 +333,6 @@ function createApp() {
             message: "Route not found. Please check the URL or refer to the API documentation.",
         })
     });
-
     return app;
 }
 

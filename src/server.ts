@@ -1,27 +1,11 @@
 import cluster from "cluster";
 import * as os from "os";
 import createApp from "./config/app";
-import { env, logger } from "./config";
-import { Application } from "express";
-import { createSecureServer, Http2ServerRequest, Http2ServerResponse } from 'http2';
-import { readFileSync } from 'fs';
-
-const CERT_DIR = `./cert`;
-// const options = {
-//     key: readFileSync(`${CERT_DIR}/server.key`),
-//     cert: readFileSync(`${CERT_DIR}/server.cert`),
-// };
-
-const options = {
-    key: env('sslKey')!,
-    cert: env('sslCert')!,
-};
-
+import { env } from "./config";
 
 const app = createApp();
 let environmentType = env('envType');
-const PORT = Number(env('port')!);
-const server = createSecureServer(options, app)
+const PORT = env('port');
 
 function startServer() {
     const numCpu = os.cpus().length;
@@ -35,26 +19,17 @@ function startServer() {
             console.log(`worker ${worker.process.pid} died`);
             cluster.fork();
         });
-    } else {        
-        // server.listen(3000)
-
-        server.listen(PORT, () => {
+    } else {
+        app.listen(PORT, () => {
             console.log(`pid - ${process.pid}`);
-            console.log(`HTTP/2 server running on port - ${PORT}\n`)
-        });
-        // app.listen(PORT, () => {
-        //     console.log(`pid - ${process.pid}`);
 
-        //     console.log(`server running on port - ${PORT}\n`)
-        // });
-        // // start(app, PORT, process.pid)
+            console.log(`server running on port - ${PORT}\n`)
+        });
     }
 }
 
 if (environmentType == "dev") {
-    // app.listen(PORT, () => console.log(`server running on port - ${PORT}`));
-    // start(app, PORT);
-    server.listen(3000)
+    app.listen(PORT, () => console.log(`server running on port - ${PORT}`));
 } else {
     startServer();
 }
