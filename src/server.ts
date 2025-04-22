@@ -36,17 +36,17 @@ function startServer() {
             cluster.fork();
         });
     } else {
-        server.listen(3000)
+        // server.listen(3000)
 
-        // server.listen(PORT, () => {
-        //     console.log(`pid - ${process.pid}`);
-        //     console.log(`HTTP/2 server running on port - ${PORT}\n`)
-        // });
-        // app.listen(PORT, () => {
-        //     console.log(`pid - ${process.pid}`);
+        server.listen(PORT, () => {
+            console.log(`pid - ${process.pid}`);
+            console.log(`HTTP/2 server running on port - ${PORT}\n`)
+        });
+        app.listen(PORT, () => {
+            console.log(`pid - ${process.pid}`);
 
-        //     console.log(`server running on port - ${PORT}\n`)
-        // });
+            console.log(`server running on port - ${PORT}\n`)
+        });
         // // start(app, PORT, process.pid)
     }
 }
@@ -54,7 +54,7 @@ function startServer() {
 if (environmentType == "dev") {
     // app.listen(PORT, () => console.log(`server running on port - ${PORT}`));
     // start(app, PORT);
-    server.listen(3000)
+    server.listen(PORT)
 } else {
     startServer();
 }
