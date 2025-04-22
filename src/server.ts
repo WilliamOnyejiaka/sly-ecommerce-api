@@ -35,10 +35,10 @@ function startServer() {
             console.log(`worker ${worker.process.pid} died`);
             cluster.fork();
         });
-    } else {
+    } else {        
         // server.listen(3000)
 
-        server.listen(PORT, () => {
+        server.listen(3000, () => {
             console.log(`pid - ${process.pid}`);
             console.log(`HTTP/2 server running on port - ${PORT}\n`)
         });
@@ -54,7 +54,7 @@ function startServer() {
 if (environmentType == "dev") {
     // app.listen(PORT, () => console.log(`server running on port - ${PORT}`));
     // start(app, PORT);
-    server.listen(PORT)
+    server.listen(3000)
 } else {
     startServer();
 }
