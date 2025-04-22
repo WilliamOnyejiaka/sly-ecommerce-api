@@ -36,10 +36,12 @@ function startServer() {
             cluster.fork();
         });
     } else {
-        server.listen(PORT, () => {
-            console.log(`pid - ${process.pid}`);
-            console.log(`HTTP/2 server running on port - ${PORT}\n`)
-        });
+        server.listen(3000)
+
+        // server.listen(PORT, () => {
+        //     console.log(`pid - ${process.pid}`);
+        //     console.log(`HTTP/2 server running on port - ${PORT}\n`)
+        // });
         // app.listen(PORT, () => {
         //     console.log(`pid - ${process.pid}`);
 
