@@ -12,7 +12,7 @@ export default class SSE {
     private static readonly redisPub = redisPub;
     private static readonly redisBull = redisBull;
 
-    public static channel(userType: string, clientId: number, key: string = "job") {
+    public static channel(userType: string, clientId: number, key: string = "user") {
         return `${key}:${userType}:${clientId}`;
     }
 
@@ -20,39 +20,7 @@ export default class SSE {
         return `client:${userType}:${clientId}`;
     }
 
-    // public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "job") {
-    //     const channel = SSE.channel(userType, clientId, key);
-    //     try {
-    //         const streamKey = `user:${userType}:${clientId}:events`;
-    //         // await redisClient.xadd(streamKey, '*', 'data', JSON.stringify(event));
-    //         await Promise.all([
-    //             redisClient.xadd(`user:${clientId}:events`, '*', 'data', JSON.stringify(event)),
-    //             redisPub.publish(`user:${clientId}:pubsub`, JSON.stringify(event)),
-    //         ]);
-    //         logger.info(`🤝 Event was successfully published for ${userType} - ${clientId}`);
-    //     } catch (error) {
-    //         logger.error(`🛑 Failed to publish event for ${userType} - ${clientId}`);
-    //         console.log(error);
-    //     }
-    // }
-
-    // public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "job") {
-    //     const channel = SSE.channel(userType, clientId, key);
-    //     try {
-    //         const streamKey = `user:${userType}:${clientId}:events`;
-    //         await redisClient.xadd(streamKey, '*', 'data', JSON.stringify(event));
-    //         // await SSE.redisPub.publish(
-    //         //     channel,
-    //         //     JSON.stringify(event),
-    //         // );
-    //         logger.info(`🤝 Event was successfully published for ${userType} - ${clientId}`);
-    //     } catch (error) {
-    //         logger.error(`🛑 Failed to publish event for ${userType} - ${clientId}`);
-    //         console.log(error);
-    //     }
-    // }
-
-    public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "job") {
+    public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "user") {
         const channel = SSE.channel(userType, clientId, key);
         try {
             await SSE.redisPub.publish(

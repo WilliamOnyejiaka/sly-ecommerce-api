@@ -2,12 +2,16 @@ import Redis from 'ioredis';
 import { env } from '.';
 import RedisStore from 'rate-limit-redis';
 
-// const redisClient = new Redis(env('redisURL')!);
 const redisClient = new Redis(env('redisURL')!, {
     maxRetriesPerRequest: 10,
     retryStrategy: (times) => Math.min(times * 50, 2000),
 });
 
+const retryStrategy = (times: any) => {
+    const delay = Math.min(times * 100, 2000); // wait time between reconnects
+    console.log(`Reconnecting to Redis pub in ${delay}ms...`);
+    return delay;
+};
 
 export const redisBull = new Redis(env('redisURL')!, {
     maxRetriesPerRequest: null,
@@ -15,13 +19,13 @@ export const redisBull = new Redis(env('redisURL')!, {
 });
 
 export const redisPub = new Redis(env('redisURL')!, {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: true,
+    maxRetriesPerRequest: 10,
+    retryStrategy: retryStrategy
 });
 
 export const redisSub = new Redis(env('redisURL')!, {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: true,
+    maxRetriesPerRequest: 10,
+    retryStrategy: retryStrategy
 });
 
 const redisClients: { type: string, client: Redis }[] = [
@@ -39,20 +43,6 @@ redisClients.forEach(({ client, type }) => {
     client.on('error', (err) => console.error(`Redis ${type}  error:`, err));
     client.on('reconnecting', () => console.log(`Redis ${type}  reconnecting...`));
 });
-
-
-
-// redisClient.on("connecting", () => {
-//     console.log("Redis Connecting...");
-// });
-
-// redisClient.on("connect", () => {
-//     console.log('redis running on port - ', redisClient.options.port);
-// });
-
-// redisClient.on('error', (err) => {
-//     console.error('Redis connection error:', err);
-// });
 
 export const store = new RedisStore({
     // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
