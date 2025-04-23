@@ -15,6 +15,7 @@ import AdBanner from "./AdBanner";
 import UserManagement from "./UserManagement";
 import Comment from "./Comment";
 import StoreFollower from "./StoreFollower";
+import SSEController from "./SSEController";
 
 export {
     Auth,
@@ -33,5 +34,6 @@ export {
     UserManagement,
     AdBanner,
     Comment,
-    StoreFollower
+    StoreFollower,
+    SSEController
 };

@@ -52,4 +52,8 @@ export default class StoreFollower extends Repo {
     public async countFollowers(storeId: number) {
         return await this.countTblRecords({ where: { storeId } });
     }
+
+    public async getFollowers(storeId: number){
+        
+    }
 }

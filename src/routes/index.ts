@@ -15,6 +15,7 @@ import subcategory from "./subcategory";
 import adBanner from "./adBanner";
 import user from "./dashboard/user";
 import storeFollower from "./storeFollower";
+import product from "./product";
 
 export {
     auth,
@@ -33,5 +34,6 @@ export {
     subcategory,
     adBanner,
     user,
-    storeFollower
+    storeFollower,
+    product
 };

@@ -18,11 +18,12 @@ import {
     subcategory,
     adBanner,
     user,
-    storeFollower
+    storeFollower,
+    product
 } from "./../routes";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
 import asyncHandler from "express-async-handler";
-import { Admin } from "../controllers";
+import { Admin, SSEController } from "../controllers";
 import { CustomerCache, VendorCache } from "../cache";
 import { Vendor as VendorRepo, Customer as CustomerRepo } from "../repos";
 import cors from "cors";
@@ -31,12 +32,9 @@ import { http } from "../constants";
 import { Admin as AdminService } from "../services";
 import streamRouter from "./redisStream";
 import cluster from "cluster";
-import { Queue, Worker, QueueEvents, Job } from 'bullmq';
-import { myQueue, uploadQueue } from "./bullmq";
-import { CompletedJob, FailedJob, IWorker } from "../types";
-import { MyWorker } from "../workers/MyWorker";
-import { completedJob } from "../workers";
-import { Upload } from "../workers/Upload";
+import { myQueue, uploadQueue } from "../jobs/queues";
+import { SSE } from "./../services";
+import initializeWorkers from "../jobs/workers";
 
 function createApp() {
     const app: Application = express();
@@ -49,7 +47,10 @@ function createApp() {
     app.use(cors());
     app.use(express.json());
     app.use(morgan("combined", { stream }));
+    initializeWorkers();
 
+    // SSE Endpoint
+    app.get('/SSE', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.SSE);
 
     app.use("/api/v1/seed", seed);
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
@@ -82,123 +83,24 @@ function createApp() {
         validateUser<CustomerCache, CustomerRepo>(new CustomerCache(), new CustomerRepo()),
         customer
     );
-
-    const IWorkers: IWorker<any>[] = [
-        new MyWorker(),
-        new Upload()
-    ];
-
-    for (const IWorker of IWorkers) {
-        const worker = new Worker(IWorker.queueName, IWorker.process.bind(IWorker), IWorker.config);
-        const queueEvents = new QueueEvents(IWorker.queueName, { ...IWorker.config });
-
-        if (IWorker.completed) {
-            queueEvents.on('completed', IWorker.completed.bind(IWorker));
-        } else {
-            queueEvents.on('completed', async ({ jobId, returnvalue }: CompletedJob) => {
-                const job = await IWorker.queue.getJob(jobId);
-                await completedJob(job, IWorker.eventName, jobId, returnvalue);
-            });
-        }
-
-        if (IWorker.failed) {
-            queueEvents.on('failed', IWorker.failed.bind(IWorker));
-        } else {
-            queueEvents.on('failed', async ({ jobId, failedReason }: FailedJob) => {
-                const job = await IWorker.queue.getJob(jobId);
-                await completedJob(job, IWorker.eventName, jobId, failedReason);
-            });
-        }
-        if (IWorker.drained) queueEvents.on('drained', IWorker.drained.bind(IWorker));
-    }
-
-    // SSE Endpoint
-    app.get('/SSE', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), async (req: Request, res: Response) => {
-        // Connection limit
-        // const MAX_CLIENTS = 10000;
-        // const clientCount = await redisClient.dbsize(); // Approximate client count
-        // if (clientCount >= MAX_CLIENTS) {
-        //     res.status(503).json({ error: 'Server at capacity' });
-        //     return;
-        // }
-
-        // Set SSE headers
-        res.setHeader('Content-Type', 'text/event-stream');
-        res.setHeader('Cache-Control', 'no-cache');
-        res.setHeader('Connection', 'keep-alive');
-        res.flushHeaders();
-
-        const clientId = res.locals.data.id;
-        const userType = res.locals.userType;
-
-        // Store client in Redis with TTL (1 hour)
-        // TODO: use redis pipeline
-        const pipeline = redisBull.pipeline();
-        pipeline.hset(`client:${userType}:${clientId}`, {
-            active: 'true',
-            jobIds: JSON.stringify([]),
-        });
-        pipeline.expire(`client:${userType}:${clientId}`, 3600); // TODO: whats the point. Expire in 1 hour
-        await pipeline.exec();
-
-        // Subscribe to client-specific Redis channel
-        redisSub.subscribe(`job:${userType}:${clientId}`, (err) => {
-            if (err) {
-                console.error(`Failed to subscribe to job:${userType}:${clientId}:`, err);
-                res.end();
-            }
-        });
-
-        redisSub.on('message', (channel, message) => {
-            if (channel === `job:${userType}:${clientId}`) {
-                const { event, ...data } = JSON.parse(message);
-                res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
-            }
-        });
-
-        // Send welcome message
-        res.write(`event: connection\ndata: {"message": "User - ${clientId} has connected successfuly"}\n\n`);
-
-        // Clean up on client disconnect
-        req.on('close', async () => {
-            await redisSub.unsubscribe(`job:${userType}:${clientId}`);
-            await redisBull.del(`client:${userType}:${clientId}`);
-            res.end();
-        });
-    });
+    app.use("/api/v1/product", validateJWT(["vendor", "admin"], env("tokenSecret")!), product);
 
     // Endpoint to add a job to the queue
     app.get('/add-job', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), async (req: Request, res: Response) => {
         const clientId = res.locals.data.id;
         const userType = res.locals.userType;
-        if (!clientId) {
-            res.status(400).json({ error: 'Missing clientId' });
-            return;
-        }
 
         // Add job to BullMQ queue
         const job = await myQueue.add('processTask', { task: 'example', clientId, userType });
 
-        // Update client's job list in Redis
-        const jobIdsStr = await redisBull.hget(`client:${userType}:${clientId}`, 'jobIds');
-        const jobIds: any[] = jobIdsStr ? JSON.parse(jobIdsStr) : [];
-        jobIds.push(job.id);
-        await redisBull.hset(`client:${userType}:${clientId}`, 'jobIds', JSON.stringify(jobIds));
-
-        res.json({ message: `Job ${job.id} added to queue for client ${clientId}` });
-    });
-
-    async function updateClientJobs(jobId: any, userType: string, clientId: number) {
-        try {
-            const jobIdsStr = await redisBull.hget(`client:${userType}:${clientId}`, 'jobIds');
-            const jobIds: any[] = jobIdsStr ? JSON.parse(jobIdsStr) : [];
-            jobIds.push(jobId);
-            await redisBull.hset(`client:${userType}:${clientId}`, 'jobIds', JSON.stringify(jobIds));
-            return true;
-        } catch (error) {
-            return false;
+        const wasAdded = await SSE.addJob(job.id, userType, clientId);
+        if (wasAdded) {
+            res.status(200).json({ message: `Job ${job.id} added to queue for client ${clientId}`, error: false });
+            return;
         }
-    }
+
+        res.status(500).json({ message: "Something went wrong", error: true });
+    });
 
     app.get('/upload-image', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), async (req: Request, res: Response) => {
         const clientId = res.locals.data.id;
@@ -206,19 +108,14 @@ function createApp() {
 
         // Add job to BullMQ queue
         const job = await uploadQueue.add('uploadImage', { imageUrl: 'cloudinary.com', clientId, userType });
-        const jobId = job.id;
 
-        // Update client's job list in Redis
-        const updated = await updateClientJobs(jobId, userType, clientId);
-        if (!updated) {
-            res.status(500).json({
-                error: true,
-                message: "failed to add job"
-            });
+        const wasAdded = await SSE.addJob(job.id, userType, clientId);
+        if (wasAdded) {
+            res.status(200).json({ message: `Job ${job.id} added to queue for client ${clientId}`, error: false });
             return;
         }
 
-        res.status(200).json({ message: `Job ${jobId} added to queue for client ${clientId}` });
+        res.status(500).json({ message: "Something went wrong", error: true });
     });
 
     app.get("/test2", async (req: Request, res: Response) => {

@@ -113,7 +113,7 @@ export interface InventoryDto {
     stock?: number,
     soldCount?: number,
     lowStockThreshold?: number,
-    productId: number,
+    productId?: number,
     storeId: number,
     createdAt?: Date,
     updatedAt?: Date

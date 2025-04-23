@@ -1,5 +1,6 @@
 import constants from "../../constants";
 import Repo from "../../repos/bases/Repo";
+import { ImageMeta } from "../../types";
 import { getPagination } from "../../utils";
 
 export default class BaseService<T extends Repo = Repo> {
@@ -21,7 +22,7 @@ export default class BaseService<T extends Repo = Repo> {
         };
     }
 
-    protected handleRepoError(repoResult: any) {
+    public handleRepoError(repoResult: any) {
         if (repoResult.error) {
             return this.responseData(repoResult.type, true, repoResult.message as string);
         }
@@ -131,5 +132,25 @@ export default class BaseService<T extends Repo = Repo> {
                 delete item[imageData];
             });
         });
+    }
+
+    public convertFilesToMeta(files: Express.Multer.File[]) {
+        return files.map((image: Express.Multer.File) => ({
+            originalname: image.originalname,
+            mimetype: image.mimetype,
+            fieldname: image.fieldname,
+            filename: image.filename,
+            destination: image.destination,
+            path: image.path,
+            size: image.size,
+            buffer: image.buffer.toString('base64'), // Convert buffer to base64
+        }));
+    }
+
+    public convertMetaToFiles(data: ImageMeta[]) {
+        for (const [index, item] of data.entries()) {
+            data[index].buffer = Buffer.from(item.buffer, 'base64');
+        }
+        return data;
     }
 }

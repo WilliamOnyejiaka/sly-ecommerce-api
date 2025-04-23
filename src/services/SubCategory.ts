@@ -16,9 +16,10 @@ export default class SubCategory extends AssetService<SubCategoryRepo, SubCatego
 
     public async createCategoryAll(categoryDetailsDto: SubCategoryDto, image: Express.Multer.File) {
         const categoryNameServiceResult = await super.getItemWithName(categoryDetailsDto.name);
-        if (categoryNameServiceResult.json.error) return categoryNameServiceResult;
+        
+        if (categoryNameServiceResult.json.message !== "Item was not found" ) return categoryNameServiceResult;
         if (categoryNameServiceResult.json.data) return super.responseData(HttpStatus.BAD_REQUEST, true, "SubCategory name already exists");
-
+        
         return await super.createAsset(categoryDetailsDto, image);
     }
 

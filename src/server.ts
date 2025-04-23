@@ -22,7 +22,6 @@ function startServer() {
     } else {
         app.listen(PORT, () => {
             console.log(`pid - ${process.pid}`);
-
             console.log(`server running on port - ${PORT}\n`)
         });
     }

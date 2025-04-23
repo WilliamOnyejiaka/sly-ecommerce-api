@@ -21,6 +21,8 @@ import AdBanner from "./AdBanner";
 import Cloudinary from "./Cloudinary";
 import ProductComment from "./ProductComment";
 import StoreFollower from "./StoreFollower";
+import SSE from "./SSE";
+import Product from "./Product";
 
 export {
     Token,
@@ -45,5 +47,7 @@ export {
     AdBanner,
     Cloudinary,
     ProductComment,
-    StoreFollower
+    StoreFollower,
+    SSE,
+    Product
 };

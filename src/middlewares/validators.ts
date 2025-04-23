@@ -78,7 +78,7 @@ const nameExists = <T extends Repo>(repo: T) => async (value: string) => {
 
 const itemWithIdExists = <T extends Repo>(repo: T) => async (id: string) => {
     const repoResult = await repo.getItemWithId(Number(id));
-
+    
     if (repoResult.error) {
         throw new Error(JSON.stringify({
             message: repoResult.message,
@@ -92,7 +92,7 @@ const itemWithIdExists = <T extends Repo>(repo: T) => async (id: string) => {
 
 
 const idExists = <T extends Repo>(repo: T) => async (value: number) => {
-    const repoResult = await repo.getItemWithId(value);
+    const repoResult = await repo.getItemWithId(Number(value));
 
     if (repoResult.error) {
         throw new Error(JSON.stringify({

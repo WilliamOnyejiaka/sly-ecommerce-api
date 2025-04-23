@@ -79,6 +79,7 @@ export enum CdnFolders {
     SUB_CATEGORY = `${category}/subcategory`,
     SUB_SUB_CATEGORY = `${category}/subsubcategory`,
     AD_BANNER = `${basePath}/ad-banner`,
+    PR0DUCT_IMAGES = `${basePath}/products`
 }
 
 
@@ -100,5 +101,14 @@ export type ImageUploadType = "banner" | "image" | "storeImages";
 
 export enum Queues {
     MY_QUEUE = 'my-queue',
-    UPLOAD = "upload"
+    UPLOAD = "upload",
+    CREATE_STORE = "create-store",
+    UPLOAD_PRODUCT = "upload-product"
 };
+
+const sseStoreEvent = "store";
+const sseProductEvent = "product";
+export enum SSEEvents {
+    CREATE_STORE = `${sseStoreEvent}:create`,
+    UPLOAD_PRODUCT = `${sseProductEvent}:upload`
+}

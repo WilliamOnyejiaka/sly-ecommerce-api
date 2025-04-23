@@ -7,6 +7,7 @@ import { StoreDetailsDto } from "../types/dtos";
 import { validationResult } from "express-validator";
 import { http, HttpStatus } from "../constants";
 import Store from "./Store";
+import { UserType } from "../types/enums";
 
 
 
@@ -21,7 +22,7 @@ export default class DashboardStore extends Store {
             return;
         }
         const storeDetailsDto: StoreDetailsDto = req.body;
-        const serviceResult = await DashboardStore.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[]);
+        const serviceResult = await DashboardStore.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[], UserType.Vendor);
         Controller.response(res, serviceResult);
     }
 

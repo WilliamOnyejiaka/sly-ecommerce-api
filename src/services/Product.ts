@@ -1,0 +1,67 @@
+import { Product as ProductRepo } from "../repos";
+import BaseService from "./bases/BaseService";
+import { Store, SubCategory, Category, Cloudinary, SSE } from ".";
+import { InventoryDto, ProductDto } from "../types/dtos";
+import { CdnFolders, ResourceType } from "../types/enums";
+import { uploadProductQueue } from "../jobs/queues";
+
+export default class Product extends BaseService<ProductRepo> {
+
+    public constructor() {
+        super(new ProductRepo());
+    }
+
+    public async uploadProduct(productDto: ProductDto, inventoryDto: InventoryDto, images: Express.Multer.File[], userType: string, clientId: number) {
+        const storeResult = await (new Store()).getItemWithId(productDto.storeId);
+        if (!storeResult.json.data) {
+            return super.responseData(404, true, "Store does not exist");
+        }
+
+        const categoryResult = await (new Category()).getItemWithId(productDto.categoryId!);
+        if (!categoryResult.json.data) {
+            return super.responseData(404, true, "Category does not exist");
+        }
+
+        if (typeof productDto.subcategoryId! === "number") {
+            const subcategoryResult = await (new SubCategory()).getItemWithId(productDto.subcategoryId!);
+            if (!subcategoryResult.json.data) {
+                return super.responseData(404, true, "Subcategory does not exist");
+            }
+        }
+
+        const imageMetadata = super.convertFilesToMeta(images);
+
+        const job = await uploadProductQueue.add('uploadProductQueue', {
+            images: imageMetadata,
+            inventoryDto,
+            productDto,
+            userType,
+            clientId
+        });
+
+        const wasAdded = await SSE.addJob(job.id, userType, clientId);
+        if (wasAdded) {
+            return super.responseData(200, false, `Job ${job.id} added to queue for client ${userType} - ${clientId}`)
+        }
+
+        return super.responseData(500, true, "Something went wrong");
+
+
+        // const { uploadedFiles, publicIds, failedFiles } = await (new Cloudinary()).upload(images, ResourceType.IMAGE, CdnFolders.PR0DUCT_IMAGES)
+        // let uploaded = [];
+
+        // for (const file of uploadedFiles) {
+        //     const item = {
+        //         publicId: file.publicId,
+        //         size: Math.ceil(Number(file.size)),
+        //         imageUrl: file.url,
+        //         mimeType: file.mimeType
+        //     };
+        //     uploaded.push(item)
+        // }
+        // const result = await this.repo!.insertProductAll(productDto, inventoryDto, uploaded as any);
+        // const repoResultError = super.handleRepoError(result);
+        // if (repoResultError) return repoResultError;
+        // return super.responseData(201, false, "Product has been uploaded successfully", result.data);
+    }
+}

@@ -461,7 +461,6 @@ CREATE TABLE `Inventory` (
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `Inventory_productId_key`(`productId`),
-    UNIQUE INDEX `Inventory_storeId_key`(`storeId`),
     INDEX `Inventory_productId_idx`(`productId`),
     INDEX `Inventory_storeId_idx`(`storeId`),
     PRIMARY KEY (`id`)

@@ -1,10 +1,10 @@
 
 import { Job, Queue } from "bullmq";
-import { WorkerConfig, IWorker, CompletedJob, FailedJob } from "../types";
-import { Queues, UserType } from "../types/enums";
-import { redisBull, redisPub } from "../config";
-import { myQueue } from "../config/bullmq";
-import { completedJob, failedJob } from ".";
+import { WorkerConfig, IWorker, CompletedJob, FailedJob } from "../../types";
+import { Queues, UserType } from "../../types/enums";
+import { redisBull, redisPub } from "../../config";
+import { myQueue } from "../queues";
+// import { completedJob, failedJob } from ".";
 
 interface IJob {
     task: string,

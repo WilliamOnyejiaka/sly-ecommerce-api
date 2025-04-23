@@ -4,8 +4,10 @@ import { getPagination } from "../utils";
 import { FirstBanner, SecondBanner, StoreDetails, StoreLogo } from "./../repos";
 import { StoreDetailsDto } from "../types/dtos";
 import ImageService from "./Image";
-import { CdnFolders, StreamEvents, StreamGroups } from "../types/enums";
+import { CdnFolders, StreamEvents, StreamGroups, UserType } from "../types/enums";
 import { streamRouter } from "../config";
+import { createStoreQueue } from "../jobs/queues";
+import SSE from "./SSE";
 
 export default class Store extends BaseService<StoreDetails> {
 
@@ -16,7 +18,7 @@ export default class Store extends BaseService<StoreDetails> {
         super(new StoreDetails());
     }
 
-    public async createStoreAll(storeDetailsDto: StoreDetailsDto, images: Express.Multer.File[]) {
+    public async createStoreAll(storeDetailsDto: StoreDetailsDto, images: Express.Multer.File[], userType: UserType) {
         const storeRepoResult = await this.repo!.getStoreWithVendorId(storeDetailsDto.vendorId!);
         const storeRepoResultError = this.handleRepoError(storeRepoResult);
         if (storeRepoResultError || storeRepoResult.data) return storeRepoResultError ?? super.responseData(HttpStatus.BAD_REQUEST, true, "This vendor already has a store");
@@ -26,47 +28,21 @@ export default class Store extends BaseService<StoreDetails> {
 
         if (storeNameRepoResultError || storeNameRepoResult.data) return storeNameRepoResultError ?? super.responseData(HttpStatus.BAD_REQUEST, true, "Store name already exists");
 
-        const uploadFolders: Record<string, CdnFolders> = {
-            storeLogo: CdnFolders.STORE_LOGO,
-            firstBanner: CdnFolders.FIRST_STORE_BANNER,
-            secondBanner: CdnFolders.SECOND_STORE_BANNER,
-        };
+        const imageMetadata = super.convertFilesToMeta(images);
 
-        const uploadResults = await this.imageService.uploadImages(images, uploadFolders);
-        const storeImages = uploadResults.data;
+        const job = await createStoreQueue.add('createStore', {
+            images: imageMetadata,
+            storeDetailsDto,
+            userType: userType,
+            clientId: storeDetailsDto.vendorId!
+        });
 
-        if (storeImages) {
-            const repoResult = await this.repo!.insertWithRelations(
-                storeDetailsDto,
-                storeImages?.storeLogo,
-                storeImages?.firstBanner,
-                storeImages?.secondBanner
-            );
-
-            if (!repoResult.error) {
-                const result = {
-                    ...repoResult.data,
-                    storeLogoUrl: storeImages.storeLogo?.imageUrl ?? null,
-                    firstBannerUrl: storeImages.firstBanner?.imageUrl ?? null,
-                    secondBannerUrl: storeImages.secondBanner?.imageUrl ?? null,
-                };
-
-                await streamRouter.addEvent(StreamGroups.STORE, {
-                    type: StreamEvents.STORE_CREATE,
-                    data: result,
-                });
-
-                return super.responseData(
-                    201,
-                    false,
-                    "Store was created successfully",
-                    result
-                );
-            }
-            const deleted = await this.imageService.deleteImages(uploadResults.publicIds!)
-            return super.responseData(repoResult.type, true, repoResult.message!);
+        const wasAdded = await SSE.addJob(job.id, userType, storeDetailsDto.vendorId!);
+        if (wasAdded) {
+            return super.responseData(200, false, `Job ${job.id} added to queue for client ${userType} - ${storeDetailsDto.vendorId!}`)
         }
-        return super.responseData(500, true, "Error processing images");
+
+        return super.responseData(500, true, "Something went wrong");
     }
 
     public async createStore(storeDetailsDto: StoreDetailsDto) {

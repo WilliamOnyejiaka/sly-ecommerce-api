@@ -457,7 +457,7 @@ model Inventory {
   lowStockThreshold Int          @default(10)
   productId         Int          @unique
   product           Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  storeId           Int          @unique
+  storeId           Int
   store             StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt

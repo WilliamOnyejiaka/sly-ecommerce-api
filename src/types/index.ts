@@ -56,3 +56,10 @@ export interface IWorker<T> {
     queue: Queue,
     eventName: string
 };
+
+export interface ImageMeta {
+    originalname: string;
+    mimetype: string;
+    size: number;
+    buffer: any;
+};

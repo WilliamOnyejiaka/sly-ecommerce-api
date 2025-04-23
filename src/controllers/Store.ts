@@ -4,6 +4,7 @@ import constants, { http, HttpStatus, urls } from "../constants";
 import { StoreDetailsDto } from "../types/dtos";
 import Controller from "./bases/Controller";
 import { validationResult } from "express-validator";
+import { UserType } from "../types/enums";
 
 export default abstract class Store {
 
@@ -14,7 +15,7 @@ export default abstract class Store {
         const images = req.files!;
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
-        const serviceResult = await Store.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[]);
+        const serviceResult = await Store.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[], UserType.Vendor);
         Controller.response(res, serviceResult);
     }
 

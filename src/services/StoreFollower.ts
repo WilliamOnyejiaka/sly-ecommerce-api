@@ -46,4 +46,8 @@ export default class StoreFollower extends BaseService<StoreFollowerRepo> {
         return this.responseData(404, true, "Store was not found");
     }
 
+    public async getFollowers(storeId: number){
+        
+    }
+
 }
