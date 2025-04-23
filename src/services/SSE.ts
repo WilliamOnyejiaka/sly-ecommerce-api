@@ -1,4 +1,4 @@
-import { logger, redisBull, redisPub } from "../config";
+import { logger, redisBull, redisPub, redisClient } from "../config";
 
 interface SSEEvent {
     error: boolean;
@@ -19,6 +19,38 @@ export default class SSE {
     public static clientKey(userType: string, clientId: number) {
         return `client:${userType}:${clientId}`;
     }
+
+    // public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "job") {
+    //     const channel = SSE.channel(userType, clientId, key);
+    //     try {
+    //         const streamKey = `user:${userType}:${clientId}:events`;
+    //         // await redisClient.xadd(streamKey, '*', 'data', JSON.stringify(event));
+    //         await Promise.all([
+    //             redisClient.xadd(`user:${clientId}:events`, '*', 'data', JSON.stringify(event)),
+    //             redisPub.publish(`user:${clientId}:pubsub`, JSON.stringify(event)),
+    //         ]);
+    //         logger.info(`🤝 Event was successfully published for ${userType} - ${clientId}`);
+    //     } catch (error) {
+    //         logger.error(`🛑 Failed to publish event for ${userType} - ${clientId}`);
+    //         console.log(error);
+    //     }
+    // }
+
+    // public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "job") {
+    //     const channel = SSE.channel(userType, clientId, key);
+    //     try {
+    //         const streamKey = `user:${userType}:${clientId}:events`;
+    //         await redisClient.xadd(streamKey, '*', 'data', JSON.stringify(event));
+    //         // await SSE.redisPub.publish(
+    //         //     channel,
+    //         //     JSON.stringify(event),
+    //         // );
+    //         logger.info(`🤝 Event was successfully published for ${userType} - ${clientId}`);
+    //     } catch (error) {
+    //         logger.error(`🛑 Failed to publish event for ${userType} - ${clientId}`);
+    //         console.log(error);
+    //     }
+    // }
 
     public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "job") {
         const channel = SSE.channel(userType, clientId, key);
