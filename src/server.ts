@@ -8,7 +8,7 @@ let environmentType = env('envType');
 const PORT = env('port');
 
 function startServer() {
-    const numCpu = os.cpus().length;
+    const numCpu = os.cpus().length - 1;
 
     if (cluster.isPrimary) {
         for (let i = 0; i < numCpu; i++) {
