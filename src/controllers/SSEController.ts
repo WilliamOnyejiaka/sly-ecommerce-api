@@ -30,7 +30,11 @@ export default class SSEController {
                     });
                 });
 
-                SSEController.redisSub.on('pmessage', messageHandler);
+                if (!SSEController.redisSub.listenerCount('pmessage')) {
+                    SSEController.redisSub.on('pmessage', messageHandler);
+                }
+
+                // SSEController.redisSub.on('pmessage', messageHandler);
             } catch (error: any) {
                 logger.error(`Error subscribing to channel: ${error.message}`);
                 throw error;
