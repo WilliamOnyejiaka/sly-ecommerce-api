@@ -435,7 +435,6 @@ CREATE TABLE `Product` (
     `additionalInfo` JSON NULL,
     `metaData` JSON NULL,
     `averageRating` DOUBLE NOT NULL DEFAULT 0,
-    `reviewCount` INTEGER NOT NULL DEFAULT 0,
     `isFeatured` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -450,11 +449,22 @@ CREATE TABLE `Product` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `ProductRating` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `rating` INTEGER NOT NULL DEFAULT 1,
+    `customerId` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Inventory` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `stock` INTEGER NOT NULL DEFAULT 0,
     `soldCount` INTEGER NOT NULL DEFAULT 0,
-    `lowStockThreshold` INTEGER NOT NULL DEFAULT 10,
+    `lowStockThreshold` INTEGER NOT NULL DEFAULT 0,
     `productId` INTEGER NOT NULL,
     `storeId` INTEGER NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -481,37 +491,35 @@ CREATE TABLE `ProductComment` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `content` VARCHAR(191) NOT NULL,
     `productId` INTEGER NOT NULL,
-    `userId` INTEGER NOT NULL,
-    `userType` ENUM('VENDOR', 'CUSTOMER', 'ADMIN') NOT NULL,
+    `customerId` INTEGER NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
-    `parentId` INTEGER NOT NULL,
+    `parentId` INTEGER NULL,
 
-    UNIQUE INDEX `ProductComment_productId_key`(`productId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `CommentLike` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `userId` INTEGER NOT NULL,
+    `customerId` INTEGER NOT NULL,
     `commentId` INTEGER NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `CommentLike_userId_commentId_key`(`userId`, `commentId`),
+    UNIQUE INDEX `CommentLike_commentId_customerId_key`(`commentId`, `customerId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `ProductLike` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `userId` INTEGER NOT NULL,
+    `customerId` INTEGER NOT NULL,
     `productId` INTEGER NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `ProductLike_userId_productId_key`(`userId`, `productId`),
+    UNIQUE INDEX `ProductLike_productId_customerId_key`(`productId`, `customerId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -594,6 +602,9 @@ ALTER TABLE `Product` ADD CONSTRAINT `Product_categoryId_fkey` FOREIGN KEY (`cat
 ALTER TABLE `Product` ADD CONSTRAINT `Product_subcategoryId_fkey` FOREIGN KEY (`subcategoryId`) REFERENCES `SubCategory`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `ProductRating` ADD CONSTRAINT `ProductRating_customerId_fkey` FOREIGN KEY (`customerId`) REFERENCES `Customer`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Inventory` ADD CONSTRAINT `Inventory_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -606,7 +617,22 @@ ALTER TABLE `StoreFollower` ADD CONSTRAINT `StoreFollower_storeId_fkey` FOREIGN 
 ALTER TABLE `StoreFollower` ADD CONSTRAINT `StoreFollower_customerId_fkey` FOREIGN KEY (`customerId`) REFERENCES `Customer`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `ProductComment` ADD CONSTRAINT `ProductComment_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProductComment` ADD CONSTRAINT `ProductComment_customerId_fkey` FOREIGN KEY (`customerId`) REFERENCES `Customer`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `ProductComment` ADD CONSTRAINT `ProductComment_parentId_fkey` FOREIGN KEY (`parentId`) REFERENCES `ProductComment`(`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
+ALTER TABLE `CommentLike` ADD CONSTRAINT `CommentLike_customerId_fkey` FOREIGN KEY (`customerId`) REFERENCES `Customer`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `CommentLike` ADD CONSTRAINT `CommentLike_commentId_fkey` FOREIGN KEY (`commentId`) REFERENCES `ProductComment`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProductLike` ADD CONSTRAINT `ProductLike_customerId_fkey` FOREIGN KEY (`customerId`) REFERENCES `Customer`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProductLike` ADD CONSTRAINT `ProductLike_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

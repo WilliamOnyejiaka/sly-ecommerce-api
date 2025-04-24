@@ -103,12 +103,14 @@ export enum Queues {
     MY_QUEUE = 'my-queue',
     UPLOAD = "upload",
     CREATE_STORE = "create-store",
-    UPLOAD_PRODUCT = "upload-product"
+    UPLOAD_PRODUCT = "upload-product",
+    NOTIFY_CUSTOMERS = "notify-customers"
 };
 
 const sseStoreEvent = "store";
 const sseProductEvent = "product";
 export enum SSEEvents {
     CREATE_STORE = `${sseStoreEvent}:create`,
-    UPLOAD_PRODUCT = `${sseProductEvent}:upload`
+    UPLOAD_PRODUCT = `${sseProductEvent}:upload`,
+    NOTIFY_CUSTOMERS = `${sseProductEvent}:notify`
 }

@@ -16,6 +16,7 @@ import adBanner from "./adBanner";
 import user from "./dashboard/user";
 import storeFollower from "./storeFollower";
 import product from "./product";
+import comment from "./comment";
 
 export {
     auth,
@@ -35,5 +36,6 @@ export {
     adBanner,
     user,
     storeFollower,
-    product
+    product,
+    comment
 };

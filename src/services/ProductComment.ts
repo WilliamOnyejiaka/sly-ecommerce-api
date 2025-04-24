@@ -22,7 +22,7 @@ export default class ProductComment extends BaseService<ProductCommentRepo> {
         return super.create<ProductCommentDto>(data, "Product Comment");
     }
 
-    public async getWithId(id: string, depth: number) {
+    public async getWithId(id: number, depth: number) {
         const include = this.buildInclude(depth);
         const repoResult = await this.repo!.getWithId(id, include);
         const repoResultError = this.handleRepoError(repoResult);
@@ -38,7 +38,7 @@ export default class ProductComment extends BaseService<ProductCommentRepo> {
                 productId: productId,
                 OR: [
                     { parentId: null },          // Matches explicit null
-                    { parentId: { isSet: false } } // Matches missing fields
+                    // { parentId: { isSet: false } } // Matches missing fields - only for mongodb 
                 ],
             }, include: this.buildInclude(depth)
         }, {
@@ -46,7 +46,7 @@ export default class ProductComment extends BaseService<ProductCommentRepo> {
                 productId: productId,
                 OR: [
                     { parentId: null },          // Matches explicit null
-                    { parentId: { isSet: false } } // Matches missing fields
+                    // { parentId: { isSet: false } } // Matches missing fields - only for mongodb 
                 ],
             }
         });
@@ -58,7 +58,7 @@ export default class ProductComment extends BaseService<ProductCommentRepo> {
         return super.responseData(200, true, constants('200Comments')!, { data: repoResult.data, pagination });
     }
 
-    public async paginateReplies(productId: number, page: number, pageSize: number, depth: number, parentId: string): Promise<{ statusCode: number; json: { error: boolean; message: string | null; data: any; }; }> {
+    public async paginateReplies(productId: number, page: number, pageSize: number, depth: number, parentId: number): Promise<{ statusCode: number; json: { error: boolean; message: string | null; data: any; }; }> {
         const skip = (page - 1) * pageSize;
         const take = pageSize;
         const repoResult = await this.repo!.paginate(skip, take, { where: { parentId: parentId, productId: productId }, include: this.buildInclude(depth) }, { where: { parentId: parentId, productId: productId } });
@@ -80,12 +80,12 @@ export default class ProductComment extends BaseService<ProductCommentRepo> {
         return include;
     }
 
-    public async like(commentId: string, userId: number, userType: string): Promise<{ statusCode: number; json: { error: boolean; message: string | null; data: any; }; }> {
+    public async like(commentId: number, userId: number): Promise<{ statusCode: number; json: { error: boolean; message: string | null; data: any; }; }> {
         const repoResult = await this.repo!.getWithId(commentId, {});
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
         if (repoResult.data) {
-            const likeResult = await this.commentLikeRepo.toggleLike(userId, userType, commentId);
+            const likeResult = await this.commentLikeRepo.toggleLike(userId, commentId);
             const likeResultError = this.handleRepoError(likeResult);
             if (likeResultError) return likeResultError;
             return this.responseData(200, false, "Action was taken", likeResult.data);

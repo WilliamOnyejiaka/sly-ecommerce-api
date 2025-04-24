@@ -1,8 +1,7 @@
 import { Product as ProductRepo } from "../repos";
 import BaseService from "./bases/BaseService";
-import { Store, SubCategory, Category, Cloudinary, SSE } from ".";
+import { Store, SubCategory, Category, SSE } from ".";
 import { InventoryDto, ProductDto } from "../types/dtos";
-import { CdnFolders, ResourceType } from "../types/enums";
 import { uploadProductQueue } from "../jobs/queues";
 
 export default class Product extends BaseService<ProductRepo> {
@@ -45,23 +44,5 @@ export default class Product extends BaseService<ProductRepo> {
         }
 
         return super.responseData(500, true, "Something went wrong");
-
-
-        // const { uploadedFiles, publicIds, failedFiles } = await (new Cloudinary()).upload(images, ResourceType.IMAGE, CdnFolders.PR0DUCT_IMAGES)
-        // let uploaded = [];
-
-        // for (const file of uploadedFiles) {
-        //     const item = {
-        //         publicId: file.publicId,
-        //         size: Math.ceil(Number(file.size)),
-        //         imageUrl: file.url,
-        //         mimeType: file.mimeType
-        //     };
-        //     uploaded.push(item)
-        // }
-        // const result = await this.repo!.insertProductAll(productDto, inventoryDto, uploaded as any);
-        // const repoResultError = super.handleRepoError(result);
-        // if (repoResultError) return repoResultError;
-        // return super.responseData(201, false, "Product has been uploaded successfully", result.data);
     }
 }

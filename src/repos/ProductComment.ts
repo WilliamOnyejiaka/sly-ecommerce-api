@@ -7,11 +7,11 @@ export default class ProductComment extends Repo {
         super('productComment');
     }
 
-    public async getParentComment(parentId: string){
-        return this.getItem({parentId})
+    public async getParentComment(parentId: string) {
+        return this.getItem({ parentId })
     }
 
-    public async getWithId(id: string,include: Object){
-        return this.getItem({id: id},{include: include});
+    public async getWithId(id: number, include: Object) {
+        return this.getItem({ id: id }, { include: include });
     }
 }

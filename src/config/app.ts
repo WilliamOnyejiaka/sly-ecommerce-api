@@ -19,7 +19,8 @@ import {
     adBanner,
     user,
     storeFollower,
-    product
+    product,
+    comment
 } from "./../routes";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
 import asyncHandler from "express-async-handler";
@@ -50,12 +51,12 @@ function createApp() {
     initializeWorkers();
 
     // SSE Endpoint
-    app.get('/SSE', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.SSE);
 
     app.use("/api/v1/seed", seed);
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
 
     // app.use(secureApi); TODO: uncomment this
+    app.get('/SSE', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.SSE);
     app.use("/api/v1/auth", auth);
     app.use(
         "/api/v1/vendor",
@@ -63,7 +64,6 @@ function createApp() {
         validateUser<VendorCache, VendorRepo>(new VendorCache(), new VendorRepo()),
         vendor
     );
-
     app.use("/api/v1/store/follow", storeFollower);
     app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), vendorIsActive, store);
     app.use("/api/v1/admin", validateJWT(["admin"], env("tokenSecret")!), admin);
@@ -84,6 +84,8 @@ function createApp() {
         customer
     );
     app.use("/api/v1/product", validateJWT(["vendor", "admin"], env("tokenSecret")!), product);
+    app.use("/api/v1/comment/", validateJWT(["customer"], env("tokenSecret")!), comment);
+
 
     // Endpoint to add a job to the queue
     app.get('/add-job', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), async (req: Request, res: Response) => {

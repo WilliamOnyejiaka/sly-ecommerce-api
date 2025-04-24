@@ -7,7 +7,7 @@ export default class Like extends Repo {
         super(likeTbl);
     }
 
-    public async toggleLike(userId: number, userType: string, parentId: number | string) {
+    public async toggleLike(customerId: number, parentId: number | string) {
         try {
             const data = await this.prisma.$transaction(async (tx): Promise<{
                 action: 'liked' | 'unlike';
@@ -16,7 +16,7 @@ export default class Like extends Repo {
                 // Check if the like exists
                 const existingLike = await (tx[this.tblName as any] as any).findUnique({
                     where: {
-                        [`userId_${this.parentColumn}_userType`]: { userId, [this.parentColumn]: parentId, userType },
+                        [`${this.parentColumn}_customerId`]: { customerId: customerId, [this.parentColumn]: parentId },
                     } as any,
                 });
 
@@ -26,7 +26,7 @@ export default class Like extends Repo {
                     // Unlike: Delete the existing like
                     await (tx[this.tblName as any] as any).delete({
                         where: {
-                            [`userId_${this.parentColumn}_userType`]: { userId, [this.parentColumn]: parentId, userType },
+                            [`${this.parentColumn}_customerId`]: { customerId: customerId, [this.parentColumn]: parentId },
                         } as any,
                     });
                     action = 'unlike';
@@ -34,9 +34,8 @@ export default class Like extends Repo {
                     // Like: Create a new like
                     await (tx[this.tblName as any] as any).create({
                         data: {
-                            userId,
-                            [this.parentColumn]: parentId,
-                            userType
+                            customerId,
+                            [this.parentColumn]: parentId
                         } as any,
                     });
                     action = 'liked';
