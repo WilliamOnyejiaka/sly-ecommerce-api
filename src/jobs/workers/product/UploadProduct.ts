@@ -1,11 +1,11 @@
 
 import { Job, Queue } from "bullmq";
-import { WorkerConfig, IWorker, ImageMeta } from "../../../types";
+import { WorkerConfig, IWorker, ImageMeta, CompletedJob } from "../../../types";
 import { CdnFolders, Queues, SSEEvents, ResourceType } from "../../../types/enums";
 import { redisBull } from "../../../config";
-import { uploadProductQueue } from "../../queues";
+import { notifyCustomersQueue, uploadProductQueue } from "../../queues";
 import { InventoryDto, ProductDto } from "../../../types/dtos";
-import { Cloudinary } from "../../../services";
+import { Cloudinary, SSE } from "../../../services";
 import { Product } from "../../../repos";
 import BaseService from "../../../services/bases/BaseService";
 
@@ -51,5 +51,28 @@ export default class UploadProduct implements IWorker<IJob> {
         const repoResultError = service.handleRepoError(result);
         if (repoResultError) return repoResultError;
         return service.responseData(201, false, "Product has been uploaded successfully", result.data);
+    }
+
+    public async completed({ jobId, returnvalue }: CompletedJob) {
+        const job = await uploadProductQueue.getJob(jobId);
+        const clientId = job?.data.clientId;
+        const userType = job?.data.userType;
+
+        if (clientId && (await SSE.clientExists(userType, clientId))) {
+            await SSE.publishSSEEvent(userType, clientId, { id: jobId, event: this.eventName, data: returnvalue, error: false })
+            await SSE.removeJob(jobId, userType, clientId);
+
+            const storeId = returnvalue.json.data.storeId;
+            const productId = returnvalue.json.data.id;
+
+            console.log(returnvalue);
+
+            await notifyCustomersQueue.add('notifyCustomersQueue', {
+                storeId,
+                productId,
+                // userType,
+                // clientId
+            });
+        }
     }
 }

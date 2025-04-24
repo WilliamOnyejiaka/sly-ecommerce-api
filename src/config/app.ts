@@ -56,7 +56,9 @@ function createApp() {
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
 
     // app.use(secureApi); TODO: uncomment this
-    app.get('/SSE', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.SSE);
+    app.get('/events', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.SSE);
+    app.get('/notifications', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.notification);
+
     app.use("/api/v1/auth", auth);
     app.use(
         "/api/v1/vendor",
