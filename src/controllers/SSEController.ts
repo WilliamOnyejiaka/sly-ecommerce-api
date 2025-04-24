@@ -1,7 +1,6 @@
 import { Response, Request } from "express";
 import { logger, redisSub, redisBull, redisClient } from "../config";
 import { SSE } from "../services";
-import cluster from "cluster";
 
 export default class SSEController {
 
@@ -22,15 +21,13 @@ export default class SSEController {
             try {
                 // ! Keep an eye on this logic
                 await new Promise<void>((resolve, reject) => {
-                    if (cluster.isPrimary) {
-                        SSEController.redisSub.psubscribe(baseChannel, (err) => {
-                            if (err) {
-                                reject(new Error(`Failed to subscribe to channel - user:*: ${err.message}`));
-                            } else {
-                                resolve();
-                            }
-                        });
-                    }
+                    SSEController.redisSub.psubscribe(baseChannel, (err) => {
+                        if (err) {
+                            reject(new Error(`Failed to subscribe to channel - user:*: ${err.message}`));
+                        } else {
+                            resolve();
+                        }
+                    });
                 });
 
                 SSEController.redisSub.on('pmessage', messageHandler);
