@@ -1,3 +1,4 @@
+import cluster from "cluster";
 import { logger, redisBull, redisPub, redisClient } from "../config";
 
 interface SSEEvent {
@@ -22,15 +23,17 @@ export default class SSE {
 
     public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "user") {
         const channel = SSE.channel(userType, clientId, key);
-        try {
-            await SSE.redisPub.publish(
-                channel,
-                JSON.stringify(event),
-            );
-            logger.info(`🤝 Event was successfully published for ${userType} - ${clientId}`);
-        } catch (error) {
-            logger.error(`🛑 Failed to publish event for ${userType} - ${clientId}`);
-            console.log(error);
+        if (cluster.isPrimary) {
+            try {
+                await SSE.redisPub.publish(
+                    channel,
+                    JSON.stringify(event),
+                );
+                logger.info(`🤝 Event was successfully published for ${userType} - ${clientId}`);
+            } catch (error) {
+                logger.error(`🛑 Failed to publish event for ${userType} - ${clientId}`);
+                console.log(error);
+            }
         }
     }
 
