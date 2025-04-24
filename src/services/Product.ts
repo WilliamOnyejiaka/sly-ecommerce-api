@@ -11,7 +11,7 @@ export default class Product extends BaseService<ProductRepo> {
     }
 
     public async uploadProduct(productDto: ProductDto, inventoryDto: InventoryDto, images: Express.Multer.File[], userType: string, clientId: number) {
-        const storeResult = await (new Store()).getItemWithId(productDto.storeId);
+        const storeResult = await (new Store()).getItemWithId(productDto.storeId); // TODO: validate if store belongs to the vendor
         if (!storeResult.json.data) {
             return super.responseData(404, true, "Store does not exist");
         }

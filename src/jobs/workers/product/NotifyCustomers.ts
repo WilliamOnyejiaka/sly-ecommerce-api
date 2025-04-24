@@ -1,12 +1,13 @@
 import { Job, Queue } from "bullmq";
 import { WorkerConfig, IWorker, ImageMeta, CompletedJob } from "../../../types";
-import { CdnFolders, Queues, SSEEvents, ResourceType } from "../../../types/enums";
+import { CdnFolders, Queues, SSEEvents, ResourceType, UserType } from "../../../types/enums";
 import { redisBull, redisClient } from "../../../config";
 import { notifyCustomersQueue, uploadProductQueue } from "../../queues";
 import { InventoryDto, ProductDto } from "../../../types/dtos";
 import { Cloudinary, SSE } from "../../../services";
 import prisma, { Product } from "../../../repos";
 import BaseService from "../../../services/bases/BaseService";
+import cluster from "cluster";
 
 
 interface IJob {
@@ -77,7 +78,9 @@ export default class NotifyCustomers implements IWorker<IJob> {
                             productId: returnvalue.json.data.productId,
                             storeId: follower.storeId
                         }
-                        await SSE.publishSSEEvent("customer", follower.customerId, { id: jobId, event: this.eventName, data, error: false }, "notification");
+                        if (cluster.isPrimary) {
+                            await SSE.publishSSEEvent(UserType.Customer, follower.customerId, { id: jobId, event: this.eventName, data, error: false }, "notification");/*  */
+                        }
                     }
                 })
             );
