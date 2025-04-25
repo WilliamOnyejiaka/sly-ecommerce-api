@@ -5,6 +5,7 @@ import { logger, redisBull, redisClient } from "../../../config";
 import { newFollowerQueue } from "../../queues";
 import { Customer, Product, NewFollower as NewFollowerRepo } from "../../../repos";
 import { SSE } from "../../../services";
+import cluster from "cluster";
 
 
 interface IJob {
@@ -54,21 +55,79 @@ export default class NewFollower implements IWorker<IJob> {
         return { error: true, followerProfile: null, vendorId };
     }
 
+    // public async completed({ jobId, returnvalue }: CompletedJob) {
+    //     const key = UserType.Vendor + "s"
+    //     const vendorId = returnvalue.vendorId;
+    //     const error = returnvalue.error;
+    //     try {
+    //         let result = await redisClient.sismember(key, String(vendorId));
+    //         console.log("Checking if vendor is a member");
+
+    //         if (!error && result == 1) {
+    //             console.log("vendor has passed the check");
+    //             const data = {
+    //                 error: error,
+    //                 followerProfile: returnvalue.followerProfile
+    //             }
+    //             if (cluster.isPrimary) {
+    //                 await SSE.publishSSEEvent(UserType.Vendor, vendorId, { event: this.eventName, data, error: false }, "notification");
+    //                 logger.info(`👍 Vendor - ${vendorId} has been notified of the follow`);
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // }
+
     public async completed({ jobId, returnvalue }: CompletedJob) {
-        const key = UserType.Vendor + "s"
+        const key = UserType.Vendor + "s";
         const vendorId = returnvalue.vendorId;
         const error = returnvalue.error;
-        const result = await redisClient.sismember(key, String(vendorId));
+
         console.log("Checking if vendor is a member");
 
-        if (!error && result == 1) {
-            console.log("vendor has passed the check");
-            const data = {
-                error: error,
-                followerProfile: returnvalue.followerProfile
-            }
+        // Early exit if returnvalue has error
+        if (error) {
+            console.log("Job completed with a db error ");
+            return;
+        }
+
+        // Early exit if vendorId is not defined
+        if (!vendorId) {
+            console.log("Missing vendorId in returnvalue");
+            return;
+        }
+
+        let isMember: number;
+        try {
+            isMember = await redisClient.sismember(key, String(vendorId));
+        } catch (err) {
+            console.error("Redis error while checking vendor membership:", err);
+            return;
+        }
+
+        // Early exit if vendor is not in the Redis set
+        if (isMember !== 1) {
+            console.log(`Vendor ${vendorId} is not a member of ${key}`);
+            return;
+        }
+
+        // Early exit if not running on the primary cluster process
+        if (!cluster.isPrimary) {
+            return;
+        }
+
+        const data = {
+            error: false,
+            followerProfile: returnvalue.followerProfile
+        };
+
+        try {
             await SSE.publishSSEEvent(UserType.Vendor, vendorId, { event: this.eventName, data, error: false }, "notification");
             logger.info(`👍 Vendor - ${vendorId} has been notified of the follow`);
+        } catch (err) {
+            console.error("Failed to publish SSE event:", err);
         }
     }
+
 }
