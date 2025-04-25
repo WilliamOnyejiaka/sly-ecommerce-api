@@ -54,8 +54,10 @@ export default class Product extends BaseService<ProductRepo> {
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
         const data = repoResult.data as any;
-        const imageUrls = data!.productImage.map((item: any) => item.imageUrl);
-        data.productImage = imageUrls;
+        if (data) {
+            const imageUrls = data!.productImage.map((item: any) => item.imageUrl);
+            data.productImage = imageUrls;
+        }
         return super.responseData(200, false, repoResult.message, data);
     }
 
@@ -69,10 +71,12 @@ export default class Product extends BaseService<ProductRepo> {
         const totalRecords = data.totalItems;
         const pagination = getPagination(page, pageSize, totalRecords);
         let items = data.items;
-        items = items.map((item: any) => ({
-            ...item,
-            productImage: item.productImage.map((img: any) => img.imageUrl)
-        }));
+        if (items) {
+            items = items.map((item: any) => ({
+                ...item,
+                productImage: item.productImage.map((img: any) => img.imageUrl)
+            }));
+        }
         return super.responseData(200, true, "Products were retrieved successfully", { items, pagination });
     }
 

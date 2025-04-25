@@ -10,6 +10,7 @@ export default class Product extends AssetRepo {
 
     public async getProduct(id: number) {
         try {
+            
             const product = await this.prisma.product.findFirst({
                 where: { id },
                 include: {
