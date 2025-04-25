@@ -16,6 +16,8 @@ import UserManagement from "./UserManagement";
 import Comment from "./Comment";
 import StoreFollower from "./StoreFollower";
 import SSEController from "./SSEController";
+import NewProductInbox from "./NewProductInbox";
+import SavedProduct from "./SavedProduct";
 
 export {
     Auth,
@@ -35,5 +37,7 @@ export {
     AdBanner,
     Comment,
     StoreFollower,
-    SSEController
+    SSEController,
+    NewProductInbox,
+    SavedProduct
 };

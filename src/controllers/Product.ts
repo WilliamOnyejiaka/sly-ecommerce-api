@@ -9,6 +9,33 @@ export default class Product {
 
     private static readonly service: ProductService = new ProductService();
 
+    public static async getProduct(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+
+        const id = Number(req.params.id)
+        const result = await Product.service.getProduct(id);
+        return Controller.response(res, result)
+    }
+
+    public static async getProducts(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+
+        const limit = Number(req.query.limit);
+        const page = Number(req.query.page);
+
+        const result = await Product.service.getProducts(page, limit);
+        Controller.response(res, result);
+    }
 
     public static async createProduct(req: Request, res: Response) {
 

@@ -1,7 +1,10 @@
 import BaseService from "./bases/BaseService";
 import { StoreFollower as StoreFollowerRepo, StoreDetails } from "../repos";
-import { streamRouter } from "../config";
-import { StreamGroups, StreamEvents } from "../types/enums";
+import { redisClient, streamRouter } from "../config";
+import { StreamGroups, StreamEvents, UserType } from "../types/enums";
+import SSE from "./SSE";
+import cluster from "cluster";
+import { newFollowerQueue } from "../jobs/queues";
 
 export default class StoreFollower extends BaseService<StoreFollowerRepo> {
 
@@ -28,6 +31,17 @@ export default class StoreFollower extends BaseService<StoreFollowerRepo> {
                     action: data.action
                 },
             });
+            if (data.action == "follow") {
+                try {
+                    const job = await newFollowerQueue.add('newFollowerQueue', { // TODO: be adding jobs in try catch
+                        vendorId: repoResult.data.id,
+                        customerId,
+                        storeId
+                    });
+                } catch (error) {
+                    console.log("Job failed: ", error);
+                }
+            }
             return this.responseData(200, false, "An action was taken", followResult.data);
         }
         return this.responseData(404, true, "Store was not found");
@@ -46,8 +60,8 @@ export default class StoreFollower extends BaseService<StoreFollowerRepo> {
         return this.responseData(404, true, "Store was not found");
     }
 
-    public async getFollowers(storeId: number){
-        
+    public async getFollowers(storeId: number) {
+
     }
 
 }

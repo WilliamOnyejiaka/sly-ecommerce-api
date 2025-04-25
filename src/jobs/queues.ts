@@ -8,4 +8,6 @@ export const uploadQueue = new Queue(Queues.UPLOAD, { connection: redisBull });
 export const createStoreQueue = new Queue(Queues.CREATE_STORE, { connection: redisBull });
 export const uploadProductQueue = new Queue(Queues.UPLOAD_PRODUCT, config);
 export const notifyCustomersQueue = new Queue(Queues.NOTIFY_CUSTOMERS, config);
+export const newFollowerQueue = new Queue(Queues.NEW_FOLLOWER, config);
+
 

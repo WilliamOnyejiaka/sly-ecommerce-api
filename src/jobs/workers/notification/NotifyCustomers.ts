@@ -34,8 +34,6 @@ export default class NotifyCustomers implements IWorker<IJob> {
 
         const service = new BaseService();
 
-        console.log("notification"); //! remove
-
         const followers = await prisma.storeFollower.findMany({
             where: { storeId },
         });

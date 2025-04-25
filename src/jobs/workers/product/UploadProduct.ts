@@ -65,8 +65,6 @@ export default class UploadProduct implements IWorker<IJob> {
             const storeId = returnvalue.json.data.storeId;
             const productId = returnvalue.json.data.id;
 
-            console.log(returnvalue);
-
             await notifyCustomersQueue.add('notifyCustomersQueue', {
                 storeId,
                 productId,

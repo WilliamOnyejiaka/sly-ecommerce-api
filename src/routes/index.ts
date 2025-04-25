@@ -17,6 +17,8 @@ import user from "./dashboard/user";
 import storeFollower from "./storeFollower";
 import product from "./product";
 import comment from "./comment";
+import newProductInbox from "./newProductInbox";
+import savedProduct from "./savedProduct";
 
 export {
     auth,
@@ -37,5 +39,7 @@ export {
     user,
     storeFollower,
     product,
-    comment
+    comment,
+    newProductInbox,
+    savedProduct
 };

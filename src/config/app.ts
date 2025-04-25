@@ -20,7 +20,9 @@ import {
     user,
     storeFollower,
     product,
-    comment
+    comment,
+    newProductInbox,
+    savedProduct
 } from "./../routes";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
 import asyncHandler from "express-async-handler";
@@ -50,12 +52,12 @@ function createApp() {
     app.use(morgan("combined", { stream }));
     initializeWorkers();
 
-    // SSE Endpoint
+    // app.use(secureApi); TODO: uncomment this
 
     app.use("/api/v1/seed", seed);
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
+    app.use("/api/v1/product", product);
 
-    // app.use(secureApi); TODO: uncomment this
     app.get('/events', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.SSE);
     app.get('/notifications', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.notification);
 
@@ -85,8 +87,11 @@ function createApp() {
         validateUser<CustomerCache, CustomerRepo>(new CustomerCache(), new CustomerRepo()),
         customer
     );
-    app.use("/api/v1/product", validateJWT(["vendor", "admin"], env("tokenSecret")!), product);
     app.use("/api/v1/comment/", validateJWT(["customer"], env("tokenSecret")!), comment);
+    app.use("/api/v1/inbox/", validateJWT(["customer"], env("tokenSecret")!), newProductInbox);
+    app.use("/api/v1/saved-products/", validateJWT(["customer"], env("tokenSecret")!), savedProduct);
+
+
 
 
     // Endpoint to add a job to the queue

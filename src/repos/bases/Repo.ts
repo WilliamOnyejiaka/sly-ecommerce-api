@@ -131,7 +131,7 @@ export default class Repo<T = any> implements Repository {
 
     public async paginate(skip: number, take: number, filter: any = {}, countFilter: any = {}): Promise<RepoResponse<{ items: T[], totalItems: any } | {}>> {
         try {
-            const items = await (prisma[this.tblName] as any).findMany({
+            const items = await (prisma[this.tblName] as any).findMany({ // TODO: use a transaction
                 skip,   // Skips the first 'skip' records
                 take,   // Fetches 'take' records
                 ...filter

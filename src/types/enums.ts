@@ -104,7 +104,8 @@ export enum Queues {
     UPLOAD = "upload",
     CREATE_STORE = "create-store",
     UPLOAD_PRODUCT = "upload-product",
-    NOTIFY_CUSTOMERS = "notify-customers"
+    NOTIFY_CUSTOMERS = "notify-customers",
+    NEW_FOLLOWER = "new-follower"
 };
 
 const sseStoreEvent = "store";
@@ -112,5 +113,6 @@ const sseProductEvent = "product";
 export enum SSEEvents {
     CREATE_STORE = `${sseStoreEvent}:create`,
     UPLOAD_PRODUCT = `${sseProductEvent}:upload`,
-    NOTIFY_CUSTOMERS = `${sseProductEvent}:notify`
+    NOTIFY_CUSTOMERS = `${sseProductEvent}:notify`,
+    NEW_FOLLOWER = "notification:newFollower"
 }

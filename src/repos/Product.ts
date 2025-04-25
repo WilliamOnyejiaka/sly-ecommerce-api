@@ -8,6 +8,49 @@ export default class Product extends AssetRepo {
         super('product', 'productImage');
     }
 
+    public async getProduct(id: number) {
+        try {
+            const product = await this.prisma.product.findFirst({
+                where: { id },
+                include: {
+                    productImage: {
+                        select: {
+                            imageUrl: true
+                        }
+                    }
+                }
+            })
+
+            return this.repoResponse(false, 200, "Product was retrieved successfully", product);
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
+    }
+
+    public async getProducts(skip: number, take: number) {
+        try {
+            const data = await this.prisma.$transaction(async (tx): Promise<{ items: any, totalItems: number }> => {
+                const items = await tx.product.findMany({
+                    skip,
+                    take,
+                    include: {
+                        productImage: {
+                            select: {
+                                imageUrl: true
+                            }
+                        }
+                    }
+                });
+                const totalItems = await tx.newProductInbox.count();
+                return { items, totalItems }
+            });
+
+            return this.repoResponse(false, 200, "Products were retrieved successfully", data);
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
+    }
+
     public async insertProduct(productData: ProductDto, inventoryData: InventoryDto) {
         try {
             const createdProduct = this.prisma.product.create({
@@ -113,46 +156,5 @@ export default class Product extends AssetRepo {
         }
     }
 
-    public async insertProducte(productData: ProductDto, inventoryData: InventoryDto, productImages: any) {
-        try {
-            const data = await this.prisma.$transaction(async (tx): Promise<any> => {
 
-                const createdProduct = tx.product.create({
-                    data: {
-                        name: productData.name,
-                        description: productData.description,
-                        price: productData.price,
-                        discountPrice: productData.discountPrice,
-                        isAvailable: productData.isAvailable,
-                        attributes: productData.attributes,
-                        additionalInfo: productData.additionalInfo,
-                        metaData: productData.metaData,
-                        isFeatured: productData.isFeatured,
-                        storeId: productData.storeId,
-                        categoryId: productData.categoryId,
-                        subcategoryId: productData.subcategoryId,
-                        inventory: {
-                            create: {
-                                stock: inventoryData.stock,
-                                soldCount: inventoryData.soldCount,
-                                lowStockThreshold: inventoryData.lowStockThreshold,
-                                storeId: inventoryData.storeId
-                            }
-                        },
-                        productImage: {
-                            createMany: {
-                                data: [...productImages]
-                            }
-                        }
-                    },
-                    include: { inventory: true, productImage: true },
-                })
-
-                return createdProduct;
-            });
-            return this.repoResponse(false, 201, "Product has been created successfully", data);
-        } catch (error) {
-            return this.handleDatabaseError(error);
-        }
-    }
 }

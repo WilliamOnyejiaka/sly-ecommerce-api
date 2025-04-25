@@ -5,14 +5,16 @@ import { Upload } from "./Upload";
 import { SSE } from "../../services";
 import CreateStore from "./../workers/store/CreateStore";
 import UploadProduct from "./product/UploadProduct";
-import NotifyCustomers from "./product/NotifyCustomers";
+import NotifyCustomers from "./notification/NotifyCustomers";
+import NewFollower from "./notification/NewFollower";
 
 const IWorkers: IWorker<any>[] = [
     new MyWorker(),
     new Upload(),
     new CreateStore(),
     new UploadProduct(),
-    new NotifyCustomers()
+    new NotifyCustomers(),
+    new NewFollower()
 ];
 
 export default function initializeWorkers() {

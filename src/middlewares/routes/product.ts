@@ -1,14 +1,15 @@
-import { adminAuthorization, uploads, validateBody } from "..";
+import { adminAuthorization, uploads, validateBody, validateJWT } from "..";
+import { env } from "../../config";
 import { StoreDetails } from "../../repos";
 import { AdminPermission } from "../../types/enums";
-import { bodyNumberIsValid, itemNameExists } from "../validators";
+import { bodyNumberIsValid, itemNameExists, paramNumberIsValid, queryIsValidNumber } from "../validators";
 
-const auth = adminAuthorization([AdminPermission.MANAGE_ALL, AdminPermission.MANAGE_VENDORS]);
-const storeNameExists = itemNameExists<StoreDetails>(new StoreDetails(), "name");
-
+export const allUsers = validateJWT(["vendor", "admin", "customer"], env("tokenSecret")!);
+export const justVendor = validateJWT(["vendor"], env("tokenSecret")!);
 
 export const productUpload = [
-    uploads.array("images",5),
+    justVendor,
+    uploads.array("images", 5),
     validateBody([
         'name',
         'categoryId',
@@ -22,3 +23,14 @@ export const productUpload = [
     bodyNumberIsValid('categoryId'),
     bodyNumberIsValid('stock'),
 ];
+
+export const idIsValid = [
+    allUsers,
+    paramNumberIsValid('id')
+];
+
+export const pagination = [
+    allUsers,
+    queryIsValidNumber('page'),
+    queryIsValidNumber('limit')
+]

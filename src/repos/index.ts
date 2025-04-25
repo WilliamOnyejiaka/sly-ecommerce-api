@@ -23,6 +23,9 @@ import CommentLike from "./CommentLike";
 import ProductComment from "./ProductComment";
 import StoreFollower from "./StoreFollower";
 import Product from "./Product";
+import NewProductInbox from "./NewProductInbox";
+import NewFollower from "./NewFollower";
+import SavedProduct from "./SavedProduct";
 
 const prisma: PrismaClient = new PrismaClient();
 
@@ -52,5 +55,8 @@ export {
     ProductComment,
     AdBannerImage,
     StoreFollower,
-    Product
+    Product,
+    NewProductInbox,
+    NewFollower,
+    SavedProduct
 };

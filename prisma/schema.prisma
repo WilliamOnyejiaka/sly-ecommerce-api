@@ -60,6 +60,8 @@ model StoreDetails {
   Inventory         Inventory[]
   StoreFollower     StoreFollower[]
   NewProductInbox   NewProductInbox[]
+  NewFollower       NewFollower[]
+  FavoriteStore     FavoriteStore[]
 
   @@index([name])
   @@index([vendorId])
@@ -233,6 +235,8 @@ model Customer {
   ProductLike        ProductLike[]
   SavedProduct       SavedProduct[]
   NewProductInbox    NewProductInbox[]
+  NewFollower        NewFollower[]
+  FavoriteStore      FavoriteStore[]
 
   @@index([email])
   @@index([phoneNumber])
@@ -547,6 +551,18 @@ model SavedProduct {
   @@unique([productId, customerId])
 }
 
+model FavoriteStore {
+  id         Int          @id @default(autoincrement())
+  customerId Int
+  customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  storeId    Int
+  store      StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([storeId, customerId])
+}
+
 model NewProductInbox {
   id         Int          @id @default(autoincrement())
   customerId Int
@@ -560,4 +576,15 @@ model NewProductInbox {
   updatedAt  DateTime     @updatedAt
 
   @@unique([productId, customerId, storeId])
+}
+
+model NewFollower {
+  id         Int          @id @default(autoincrement())
+  storeId    Int
+  store      StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  customerId Int
+  customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  viewed     Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 }

@@ -145,7 +145,7 @@ export default class StoreDetails extends Repo {
 
     public async getStore(storeId: number) {
         try {
-            const banners = await prisma.storeDetails.findUnique({
+            const data = await prisma.storeDetails.findUnique({
                 where: { id: storeId },
                 include: {
                     storeLogo: true,
@@ -154,7 +154,7 @@ export default class StoreDetails extends Repo {
                 }
             });
 
-            return super.repoResponse(false, 201, null, banners);
+            return super.repoResponse(false, 201, null, data);
         } catch (error) {
             return super.handleDatabaseError(error);
         }
