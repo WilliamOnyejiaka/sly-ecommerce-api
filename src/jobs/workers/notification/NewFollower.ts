@@ -5,6 +5,7 @@ import { logger, redisBull, redisClient } from "../../../config";
 import { newFollowerQueue } from "../../queues";
 import { Customer, Product, NewFollower as NewFollowerRepo } from "../../../repos";
 import { SSE } from "../../../services";
+import cluster from "cluster";
 
 
 interface IJob {
@@ -30,6 +31,8 @@ export default class NewFollower implements IWorker<IJob> {
 
         const newFollowerRepo = new NewFollowerRepo();
         const newFollowerResult = await newFollowerRepo.insert({ customerId, storeId });
+        console.log(newFollowerRepo);
+        
 
         if (!newFollowerResult.error) {
             const customerRepo = new Customer();
@@ -58,15 +61,22 @@ export default class NewFollower implements IWorker<IJob> {
 
         console.log("Floower")
 
-        if (!error && (await redisClient.sismember(key, String(vendorId))) == 1) {
-            console.log("sadd");
-            
-            const data = {
-                error: error,
-                followerProfile: returnvalue.followerProfile
+        if (cluster.isPrimary) {
+            const isMemeber = (await redisClient.sismember(key, String(vendorId)))
+            console.log("Yo - ", isMemeber);
+
+
+
+            if (isMemeber == 1) {
+                console.log("sadd");
+
+                const data = {
+                    error: error,
+                    followerProfile: returnvalue.followerProfile
+                }
+                await SSE.publishSSEEvent(UserType.Vendor, vendorId, { event: this.eventName, data, error: false }, "notification");
+                logger.info(`👍 Vendor - ${vendorId} has been notified of the follow`);
             }
-            await SSE.publishSSEEvent(UserType.Vendor, vendorId, { event: this.eventName, data, error: false }, "notification");
-            logger.info(`👍 Vendor - ${vendorId} has been notified of the follow`);
         }
     }
 }
