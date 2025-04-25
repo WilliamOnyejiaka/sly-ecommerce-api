@@ -57,8 +57,9 @@ export default class Product extends BaseService<ProductRepo> {
         if (data) {
             const imageUrls = data!.productImage.map((item: any) => item.imageUrl);
             data.productImage = imageUrls;
+            return super.responseData(200, false, repoResult.message, data);
         }
-        return super.responseData(200, false, repoResult.message, data);
+        return super.responseData(404, false, "Product was not found", data);
     }
 
     public async getProducts(page: number, pageSize: number) {
