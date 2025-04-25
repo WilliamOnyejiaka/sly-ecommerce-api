@@ -56,7 +56,11 @@ export default class NewFollower implements IWorker<IJob> {
         const vendorId = returnvalue.vendorId;
         const error = returnvalue.error;
 
+        console.log("Floower")
+
         if (!error && (await redisClient.sismember(key, String(vendorId))) == 1) {
+            console.log("sadd");
+            
             const data = {
                 error: error,
                 followerProfile: returnvalue.followerProfile

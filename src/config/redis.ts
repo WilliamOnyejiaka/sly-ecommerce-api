@@ -19,12 +19,12 @@ export const redisBull = new Redis(env('redisURL')!, {
 });
 
 export const redisPub = new Redis(env('redisURL')!, {
-    maxRetriesPerRequest: null,
+    maxRetriesPerRequest: 10,
     retryStrategy: retryStrategy
 });
 
 export const redisSub = new Redis(env('redisURL')!, {
-    maxRetriesPerRequest: null,
+    maxRetriesPerRequest: 10,
     retryStrategy: retryStrategy
 });
 
