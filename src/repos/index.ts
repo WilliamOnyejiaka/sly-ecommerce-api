@@ -26,6 +26,7 @@ import Product from "./Product";
 import NewProductInbox from "./NewProductInbox";
 import NewFollower from "./NewFollower";
 import SavedProduct from "./SavedProduct";
+import FavoriteStore from "./FavoriteStore";
 
 const prisma: PrismaClient = new PrismaClient();
 
@@ -58,5 +59,6 @@ export {
     Product,
     NewProductInbox,
     NewFollower,
-    SavedProduct
+    SavedProduct,
+    FavoriteStore
 };

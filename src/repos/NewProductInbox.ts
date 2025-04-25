@@ -26,6 +26,7 @@ export default class NewProductInbox extends Repo {
                                 name: true,
                                 price: true,
                                 description: true,
+                                storeId: true,
                                 discountPrice: true,
                                 metaData: true,
                                 isAvailable: true,

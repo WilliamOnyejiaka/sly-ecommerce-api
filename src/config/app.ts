@@ -22,7 +22,8 @@ import {
     product,
     comment,
     newProductInbox,
-    savedProduct
+    savedProduct,
+    favoriteStore
 } from "./../routes";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
 import asyncHandler from "express-async-handler";
@@ -58,7 +59,7 @@ function createApp() {
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
     app.use("/api/v1/product", product);
 
-    app.get('/events', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.SSE);
+    app.get('/events', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.SSE); // TODO: Remove the env
     app.get('/notifications', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.notification);
 
     app.use("/api/v1/auth", auth);
@@ -89,7 +90,8 @@ function createApp() {
     );
     app.use("/api/v1/comment/", validateJWT(["customer"], env("tokenSecret")!), comment);
     app.use("/api/v1/inbox/", validateJWT(["customer"], env("tokenSecret")!), newProductInbox);
-    app.use("/api/v1/saved-products/", validateJWT(["customer"], env("tokenSecret")!), savedProduct);
+    app.use("/api/v1/saved-product/", validateJWT(["customer"], env("tokenSecret")!), savedProduct);
+    app.use("/api/v1/favorite-store/", validateJWT(["customer"], env("tokenSecret")!), favoriteStore);
 
 
 

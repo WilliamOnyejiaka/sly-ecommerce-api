@@ -19,6 +19,7 @@ import product from "./product";
 import comment from "./comment";
 import newProductInbox from "./newProductInbox";
 import savedProduct from "./savedProduct";
+import favoriteStore from "./favoriteStore";    
 
 export {
     auth,
@@ -41,5 +42,6 @@ export {
     product,
     comment,
     newProductInbox,
-    savedProduct
+    savedProduct,
+    favoriteStore
 };

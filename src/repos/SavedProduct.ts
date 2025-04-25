@@ -7,6 +7,43 @@ export default class SavedProduct extends Repo {
         super('savedProduct');
     }
 
+    public async insertProduct(productId: number, customerId: number) {
+        try {
+            const savedProduct = await this.prisma.savedProduct.create({
+                data: { productId, customerId },
+                include: {
+                    product: {
+                        select: {
+                            id: true,
+                            productImage: {
+                                select: {
+                                    imageUrl: true
+                                }
+                            },
+                            name: true,
+                            price: true,
+                            description: true,
+                            storeId: true,
+                            discountPrice: true,
+                            metaData: true,
+                            isAvailable: true,
+                            attributes: true,
+                            additionalInfo: true,
+                            isFeatured: true,
+                            categoryId: true,
+                            subcategoryId: true,
+                            updatedAt: true,
+                            createdAt: true
+                        }
+                    }
+                }
+            });
+            return this.repoResponse(false, 200, null, savedProduct);
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
+    }
+
     public async getSavedProduct(productId: number, customerId: number) {
         try {
             const savedProduct = await this.prisma.savedProduct.findFirst({
@@ -23,6 +60,7 @@ export default class SavedProduct extends Repo {
                             name: true,
                             price: true,
                             description: true,
+                            storeId: true,
                             discountPrice: true,
                             metaData: true,
                             isAvailable: true,
@@ -63,6 +101,7 @@ export default class SavedProduct extends Repo {
                                 name: true,
                                 price: true,
                                 description: true,
+                                storeId: true,
                                 discountPrice: true,
                                 metaData: true,
                                 isAvailable: true,

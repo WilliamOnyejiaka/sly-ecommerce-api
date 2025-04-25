@@ -18,6 +18,7 @@ import StoreFollower from "./StoreFollower";
 import SSEController from "./SSEController";
 import NewProductInbox from "./NewProductInbox";
 import SavedProduct from "./SavedProduct";
+import FavoriteStore from "./FavoriteStore";
 
 export {
     Auth,
@@ -39,5 +40,6 @@ export {
     StoreFollower,
     SSEController,
     NewProductInbox,
-    SavedProduct
+    SavedProduct,
+    FavoriteStore
 };

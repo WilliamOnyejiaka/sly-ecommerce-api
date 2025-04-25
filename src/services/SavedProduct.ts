@@ -9,9 +9,12 @@ export default class SavedProduct extends BaseService<SavedProductRepo> {
     }
 
     public async addProduct(productId: number, customerId: number) {
-        const repoResult = await this.repo!.insert({ productId, customerId });
+        const repoResult = await this.repo!.insertProduct(productId, customerId);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
+        const data = repoResult.data as any;
+        const imageUrls = data!.product.productImage.map((item: any) => item.imageUrl);
+        data.product.productImage = imageUrls;
         return this.responseData(201, false, "Product was added successfully", repoResult.data);
     }
 
@@ -20,10 +23,10 @@ export default class SavedProduct extends BaseService<SavedProductRepo> {
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
         const data = repoResult.data as any;
-        // const imageUrls = data!.productImage.map((item: any) => item.imageUrl);
-        // data.productImage = imageUrls;
-        console.log(data);
-
+        if (data) {
+            const imageUrls = data!.product.productImage.map((item: any) => item.imageUrl);
+            data.product.productImage = imageUrls;
+        }
         return super.responseData(200, false, repoResult.message, data);
     }
 
@@ -37,10 +40,12 @@ export default class SavedProduct extends BaseService<SavedProductRepo> {
         const totalRecords = data.totalItems;
         const pagination = getPagination(page, pageSize, totalRecords);
         let items = data.items;
-        // items = items.map((item: any) => ({
-        //     ...item,
-        //     productImage: item.productImage.map((img: any) => img.imageUrl)
-        // }));
+        if (items) {
+            items = items.map((item: any) => ({
+                ...item,
+                product: { ...item.product, productImage: item.product.productImage.map((img: any) => img.imageUrl) }
+            }));
+        }
         return super.responseData(200, true, "Products were retrieved successfully", { items, pagination });
     }
 }
