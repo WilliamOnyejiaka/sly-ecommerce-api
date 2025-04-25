@@ -5,7 +5,6 @@ import { logger, redisBull, redisClient } from "../../../config";
 import { newFollowerQueue } from "../../queues";
 import { Customer, Product, NewFollower as NewFollowerRepo } from "../../../repos";
 import { SSE } from "../../../services";
-import cluster from "cluster";
 
 
 interface IJob {
@@ -31,8 +30,6 @@ export default class NewFollower implements IWorker<IJob> {
 
         const newFollowerRepo = new NewFollowerRepo();
         const newFollowerResult = await newFollowerRepo.insert({ customerId, storeId });
-        console.log(newFollowerRepo);
-        
 
         if (!newFollowerResult.error) {
             const customerRepo = new Customer();
@@ -49,8 +46,11 @@ export default class NewFollower implements IWorker<IJob> {
                 profilePicture
 
             }
+            console.log("New Follower Notification has been saved successfully");
+
             return { error: false, followerProfile, vendorId };
         }
+        console.log("New Follower Notification failed to save");
         return { error: true, followerProfile: null, vendorId };
     }
 
@@ -58,25 +58,17 @@ export default class NewFollower implements IWorker<IJob> {
         const key = UserType.Vendor + "s"
         const vendorId = returnvalue.vendorId;
         const error = returnvalue.error;
+        const result = await redisClient.sismember(key, String(vendorId));
+        console.log("Checking if vendor is a member");
 
-        console.log("Floower")
-
-        if (cluster.isPrimary) {
-            const isMemeber = (await redisClient.sismember(key, String(vendorId)))
-            console.log("Yo - ", isMemeber);
-
-
-
-            if (isMemeber == 1) {
-                console.log("sadd");
-
-                const data = {
-                    error: error,
-                    followerProfile: returnvalue.followerProfile
-                }
-                await SSE.publishSSEEvent(UserType.Vendor, vendorId, { event: this.eventName, data, error: false }, "notification");
-                logger.info(`👍 Vendor - ${vendorId} has been notified of the follow`);
+        if (!error && result == 1) {
+            console.log("vendor has passed the check");
+            const data = {
+                error: error,
+                followerProfile: returnvalue.followerProfile
             }
+            await SSE.publishSSEEvent(UserType.Vendor, vendorId, { event: this.eventName, data, error: false }, "notification");
+            logger.info(`👍 Vendor - ${vendorId} has been notified of the follow`);
         }
     }
 }
