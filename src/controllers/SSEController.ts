@@ -122,9 +122,7 @@ export default class SSEController {
 
         const [, isMemberResult] = result;
 
-        if (isMemberResult && Array.isArray(isMemberResult) && typeof isMemberResult[1] === 'number') {
-            console.log("OK");
-            
+        if (isMemberResult && Array.isArray(isMemberResult) && typeof isMemberResult[1] === 'number') {            
             return isMemberResult[1] === 1;
         }
 

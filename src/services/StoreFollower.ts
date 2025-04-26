@@ -18,6 +18,8 @@ export default class StoreFollower extends BaseService<StoreFollowerRepo> {
         const repoResult = await this.storeRepo!.getItemWithId(storeId)
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
+        console.log("repoResult", repoResult.error, " ", repoResult.message);
+
         if (repoResult.data) {
             const followResult = await this.repo!.toggleFollow(customerId, storeId);
             const followResultError = this.handleRepoError(followResult);
