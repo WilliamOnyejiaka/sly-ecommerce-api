@@ -33,13 +33,14 @@ function startServer() {
             const aliveWorkers = workers.filter(w => w.isConnected());
             if (aliveWorkers.length === 0) return;
 
-            setTimeout(() => console.log("Switching Worker Publisher"), 500);
-            const currentWorker = aliveWorkers[currentIndex % aliveWorkers.length];
-            console.log(`Switching active publisher to Worker ${currentWorker.id} (PID ${currentWorker.process.pid})`);
+            setTimeout(async () => {
+                const currentWorker = aliveWorkers[currentIndex % aliveWorkers.length];
+                console.log(`Switching active publisher to Worker ${currentWorker.id} (PID ${currentWorker.process.pid})`);
 
-            await redisClient.set(REDIS_ACTIVE_PUBLISHER, currentWorker.id.toString());
+                await redisClient.set(REDIS_ACTIVE_PUBLISHER, currentWorker.id.toString());
 
-            currentIndex++;
+                currentIndex++;
+            }, 500);
         }
 
         // Switch publisher every 10 seconds
