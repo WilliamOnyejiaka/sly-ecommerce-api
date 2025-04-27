@@ -24,7 +24,13 @@ export default class SSE {
     public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "user") {
         const myWorkerId = cluster.worker?.id;
         const REDIS_ACTIVE_PUBLISHER = "cluster:active_publisher";
-        const activePublisher = await redisClient.get(REDIS_ACTIVE_PUBLISHER);
+        let activePublisher;
+        try {
+            activePublisher = await redisClient.get(REDIS_ACTIVE_PUBLISHER);
+        } catch (error) {
+            console.log("An error occurred in the publishSSEEvent function: ", error);
+
+        }
         if (activePublisher === myWorkerId?.toString()) {
             console.log(`Worker ${myWorkerId} (PID ${process.pid}) is active publisher. Publishing now...`);
 

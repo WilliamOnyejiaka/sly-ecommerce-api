@@ -33,14 +33,16 @@ function startServer() {
             const aliveWorkers = workers.filter(w => w.isConnected());
             if (aliveWorkers.length === 0) return;
 
-            setTimeout(async () => {
+            try {
                 const currentWorker = aliveWorkers[currentIndex % aliveWorkers.length];
                 console.log(`Switching active publisher to Worker ${currentWorker.id} (PID ${currentWorker.process.pid})`);
 
                 await redisClient.set(REDIS_ACTIVE_PUBLISHER, currentWorker.id.toString());
 
                 currentIndex++;
-            }, 500);
+            } catch (error) {
+                console.log("An error occurred in the switchPublisher function: ", error);
+            }
         }
 
         // Switch publisher every 10 seconds
@@ -49,7 +51,13 @@ function startServer() {
         cluster.on("exit", async (worker, code, signal) => {
             console.log(`Worker ${worker.id} (PID ${worker.process.pid}) died.`);
 
-            const activePublisher = await redisClient.get(REDIS_ACTIVE_PUBLISHER);
+            let activePublisher;
+            try {
+                activePublisher = await redisClient.get(REDIS_ACTIVE_PUBLISHER);
+            } catch (error: any) {
+                console.log("An error occurred in the cluster on exit: ", error);
+            }
+
             if (activePublisher === worker.id.toString()) {
                 console.log(`Dead worker was the active publisher. Switching now...`);
                 await switchPublisher(); // Elect new publisher immediately
