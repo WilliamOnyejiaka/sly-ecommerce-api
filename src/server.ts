@@ -2,7 +2,8 @@ import cluster, { Worker } from "cluster";
 import * as os from "os";
 import createApp from "./config/app";
 import { env } from "./config";
-import { redisClient, redisPub } from "./config";
+import { redisClient, redisPub} from "./config";
+import Redlock from 'redlock';
 
 const app = createApp();
 let environmentType = env('envType');
@@ -10,6 +11,7 @@ const PORT = env('port');
 const REDIS_CHANNEL = "publish:change";
 const REDIS_ACTIVE_PUBLISHER_KEY = "cluster:active_publisher";
 const REDIS_HEARTBEAT_KEY = "cluster:heartbeat";
+const redlock = new Redlock([redisClient], { retryCount: 10, retryDelay: 200 });
 
 function startServer() {
     const REDIS_ACTIVE_PUBLISHER = "cluster:active_publisher";
@@ -33,15 +35,21 @@ function startServer() {
             const aliveWorkers = workers.filter(w => w.isConnected());
             if (aliveWorkers.length === 0) return;
 
-            const currentWorker = aliveWorkers[currentIndex % aliveWorkers.length];
-            console.log(`Switching active publisher to Worker ${currentWorker.id} (PID ${currentWorker.process.pid})`);
+            const lock = await redlock.acquire(['switchPublisherLock'], 500); // Lock for 1s
+            try {
+                const currentWorker = aliveWorkers[currentIndex % aliveWorkers.length];
+                console.log(`Switching active publisher to Worker ${currentWorker.id} (PID ${currentWorker.process.pid})`);
 
-            await redisClient.set(REDIS_ACTIVE_PUBLISHER, currentWorker.id.toString());
+                await redisClient.set(REDIS_ACTIVE_PUBLISHER, currentWorker.id.toString());
+                currentIndex++;
+            } finally {
+                await lock.release();
+            }
 
             currentIndex++;
         }
 
-        // Switch publisher every 5 seconds
+        // Switch publisher every 10 seconds
         setInterval(switchPublisher, 10000);
 
         cluster.on("exit", async (worker, code, signal) => {
