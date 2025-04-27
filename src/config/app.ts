@@ -51,8 +51,6 @@ function createApp() {
     app.use(cors());
     app.use(express.json());
     app.use(morgan("combined", { stream }));
-    initializeWorkers();
-
     // app.use(secureApi); TODO: uncomment this
 
     app.use("/api/v1/seed", seed);
@@ -234,6 +232,7 @@ function createApp() {
         cronJobs.start();
     }
 
+    initializeWorkers();
     app.use(handleMulterErrors);
     app.use((req: Request, res: Response, next: NextFunction) => {
         console.warn(`Unmatched route: ${req.method} ${req.path}`);

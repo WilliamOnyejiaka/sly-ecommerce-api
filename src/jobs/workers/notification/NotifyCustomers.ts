@@ -59,32 +59,31 @@ export default class NotifyCustomers implements IWorker<IJob> {
     }
 
     public async completed({ jobId, returnvalue }: CompletedJob) {
-        const job = await notifyCustomersQueue.getJob(jobId); // ! Remove if not needed
 
-        const followers: { id: number, storeId: number, customerId: number }[] = returnvalue.json.data.followers;
-        const batchSize = 500;
+        // const followers: { id: number, storeId: number, customerId: number }[] = returnvalue.json.data.followers;
+        // const batchSize = 500;
 
-        for (let i = 0; i < followers.length; i += batchSize) {
-            const batch = followers.slice(i, i + batchSize);
-            const key = UserType.Customer + "s";
+        // for (let i = 0; i < followers.length; i += batchSize) {
+        //     const batch = followers.slice(i, i + batchSize);
+        //     const key = UserType.Customer + "s";
 
 
-            await Promise.all(
-                batch.map(async (follower) => {
-                    const isMember = await redisClient.sismember(key, String(follower.customerId));
-                    if (isMember === 1) {
-                        console.log("Yes");
+        //     await Promise.all(
+        //         batch.map(async (follower) => {
+        //             const isMember = await redisClient.sismember(key, String(follower.customerId));
+        //             if (isMember === 1) {
+        //                 console.log("Yes");
 
-                        const data = {
-                            message: "A store has uploaded a product",
-                            productId: returnvalue.json.data.productId,
-                            storeId: follower.storeId
-                        }
-                        await SSE.publishSSEEvent(UserType.Customer, follower.customerId, { id: jobId, event: this.eventName, data, error: false }, "notification");/*  */
-                    }
-                })
-            );
+        //                 const data = {
+        //                     message: "A store has uploaded a product",
+        //                     productId: returnvalue.json.data.productId,
+        //                     storeId: follower.storeId
+        //                 }
+        //                 await SSE.publishSSEEvent(UserType.Customer, follower.customerId, { id: jobId, event: this.eventName, data, error: false }, "notification");/*  */
+        //             }
+        //         })
+        //     );
 
-        }
+        // }
     }
 }

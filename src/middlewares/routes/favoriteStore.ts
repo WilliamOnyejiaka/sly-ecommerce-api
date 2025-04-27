@@ -14,5 +14,5 @@ export const storeIdIsValid = [
 ];
 
 export const idIsValid = [
-    paramNumberIsValid('id')
+    paramNumberIsValid('storeId')
 ];
