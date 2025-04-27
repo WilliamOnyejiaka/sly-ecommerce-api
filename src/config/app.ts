@@ -229,6 +229,7 @@ function createApp() {
         return;
     });
 
+    
     if (cluster.isPrimary) {
         cronJobs.start();
     }

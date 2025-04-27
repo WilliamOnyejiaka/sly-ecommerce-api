@@ -43,6 +43,8 @@ export default class StoreFollower extends Repo {
 
                 return { action, totalFollowers };
             });
+            // console.log(data);
+            
             return this.repoResponse<{ action: "follow" | "unfollow", totalFollowers: number }>(false, 200, null, data);
         } catch (error: any) {
             return this.handleDatabaseError(error);

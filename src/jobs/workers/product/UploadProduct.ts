@@ -67,9 +67,7 @@ export default class UploadProduct implements IWorker<IJob> {
 
             await notifyCustomersQueue.add('notifyCustomersQueue', {
                 storeId,
-                productId,
-                // userType,
-                // clientId
+                productId
             });
         }
     }
