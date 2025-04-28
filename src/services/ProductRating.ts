@@ -13,10 +13,7 @@ export default class ProductRating extends BaseService<ProductRatingRepo> {
         const repoResult = await this.repo!.rate(productId, customerId, rating);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
-        const data = repoResult.data as any;
-        // const imageUrls = data!.customer.CustomerProfilePic.map((item: any) => item.imageUrl);
-        // data.product.productImage = imageUrls;
-        return this.responseData(201, false, data.message, repoResult.data);
+        return this.responseData(201, false, repoResult.message, repoResult.data);
     }
 
     public async getRating(id: number) {
@@ -24,11 +21,12 @@ export default class ProductRating extends BaseService<ProductRatingRepo> {
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
         const data = repoResult.data as any;
-        // if (data) {
-        //     const imageUrls = data!.product.productImage.map((item: any) => item.imageUrl);
-        //     data.product.productImage = imageUrls;
-        // }
-        return super.responseData(200, false, repoResult.message, data);
+        const statusCode = data ? 200 : 404;
+        if (data) {
+            const imageUrls = data!.customer.CustomerProfilePic.map((item: any) => item.imageUrl);
+            data.customer.CustomerProfilePic = imageUrls;
+        }
+        return super.responseData(statusCode, false, repoResult.message, data);
     }
 
     public async getRatings(productId: number, page: number, pageSize: number) {
@@ -41,12 +39,12 @@ export default class ProductRating extends BaseService<ProductRatingRepo> {
         const totalRecords = data.totalItems;
         const pagination = getPagination(page, pageSize, totalRecords);
         let items = data.items;
-        // if (items) {
-        //     items = items.map((item: any) => ({
-        //         ...item,
-        //         product: { ...item.product, productImage: item.product.productImage.map((img: any) => img.imageUrl) }
-        //     }));
-        // }
+        if (items) {
+            items = items.map((item: any) => ({
+                ...item,
+                customer: { ...item.customer, CustomerProfilePic: item.customer.CustomerProfilePic.map((img: any) => img.imageUrl) }
+            }));
+        }
         return super.responseData(200, true, "Ratings were retrieved successfully", { items, pagination });
     }
 }
