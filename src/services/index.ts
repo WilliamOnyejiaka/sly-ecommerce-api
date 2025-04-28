@@ -27,6 +27,8 @@ import Product from "./Product";
 import NewFollower from "./NewFollower";
 import SavedProduct from "./SavedProduct";
 import FavoriteStore from "./FavoriteStore";
+import ProductRating from "./ProductRating";
+import StoreRating from "./StoreRating";
 
 export {
     Token,
@@ -57,5 +59,7 @@ export {
     NewProductInbox,
     NewFollower,
     SavedProduct,
-    FavoriteStore
+    FavoriteStore,
+    ProductRating,
+    StoreRating
 };

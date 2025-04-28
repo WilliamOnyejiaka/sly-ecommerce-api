@@ -23,7 +23,9 @@ import {
     comment,
     newProductInbox,
     savedProduct,
-    favoriteStore
+    favoriteStore,
+    storeRating,
+    productRating
 } from "./../routes";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
 import asyncHandler from "express-async-handler";
@@ -90,8 +92,8 @@ function createApp() {
     app.use("/api/v1/inbox/", validateJWT(["customer"], env("tokenSecret")!), newProductInbox);
     app.use("/api/v1/saved-product/", validateJWT(["customer"], env("tokenSecret")!), savedProduct);
     app.use("/api/v1/favorite-store/", validateJWT(["customer"], env("tokenSecret")!), favoriteStore);
-
-
+    app.use("/api/v1/rating/product", validateJWT(["customer"], env("tokenSecret")!), productRating);
+    app.use("/api/v1/rating/store", validateJWT(["customer"], env("tokenSecret")!), storeRating);
 
 
     // Endpoint to add a job to the queue
@@ -227,7 +229,7 @@ function createApp() {
         return;
     });
 
-    
+
     if (cluster.isPrimary) {
         cronJobs.start();
     }

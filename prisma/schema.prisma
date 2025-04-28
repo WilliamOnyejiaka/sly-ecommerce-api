@@ -62,6 +62,7 @@ model StoreDetails {
   NewProductInbox   NewProductInbox[]
   NewFollower       NewFollower[]
   FavoriteStore     FavoriteStore[]
+  StoreRating       StoreRating[]
 
   @@index([name])
   @@index([vendorId])
@@ -237,6 +238,7 @@ model Customer {
   NewProductInbox    NewProductInbox[]
   NewFollower        NewFollower[]
   FavoriteStore      FavoriteStore[]
+  StoreRating        StoreRating[]
 
   @@index([email])
   @@index([phoneNumber])
@@ -458,6 +460,7 @@ model Product {
   ProductComment  ProductComment[]
   SavedProduct    SavedProduct[]
   NewProductInbox NewProductInbox[]
+  ProductRating   ProductRating[]
 
   @@index([name])
   @@index([categoryId])
@@ -469,9 +472,12 @@ model ProductRating {
   rating     Int      @default(1)
   customerId Int
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId  Int
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@unique([productId, customerId])
 }
 
 model Inventory {
@@ -587,4 +593,17 @@ model NewFollower {
   viewed     Boolean      @default(false)
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
+}
+
+model StoreRating {
+  id         Int          @id @default(autoincrement())
+  rating     Int          @default(1)
+  customerId Int
+  customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  storeId    Int
+  store      StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([storeId, customerId])
 }

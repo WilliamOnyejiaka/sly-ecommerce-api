@@ -19,6 +19,8 @@ import SSEController from "./SSEController";
 import NewProductInbox from "./NewProductInbox";
 import SavedProduct from "./SavedProduct";
 import FavoriteStore from "./FavoriteStore";
+import ProductRating from "./ProductRating";
+import StoreRating from "./StoreRating";
 
 export {
     Auth,
@@ -41,5 +43,7 @@ export {
     SSEController,
     NewProductInbox,
     SavedProduct,
-    FavoriteStore
+    FavoriteStore,
+    ProductRating,
+    StoreRating
 };
