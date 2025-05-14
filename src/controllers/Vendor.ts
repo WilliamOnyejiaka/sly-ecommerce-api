@@ -11,13 +11,13 @@ export default class Vendor {
     public static async uploadProfilePicture(req: Request, res: Response) {
         const image = req.file!;
         const vendorId = Number(res.locals.data.id);
-        const facadeResult = await Vendor.facade.uploadProfilePicture(image, vendorId, UserType.Vendor);
+        const facadeResult = await Vendor.facade.uploadProfilePicture(image, vendorId, UserType.VENDOR);
         Controller.response(res, facadeResult);
     }
 
     public static async getVendor(req: Request, res: Response) {
         const vendorEmail = res.locals.data.email;
-        const facadeResult = await Vendor.facade.getUserProfileWithEmail(vendorEmail, UserType.Vendor);
+        const facadeResult = await Vendor.facade.getUserProfileWithEmail(vendorEmail, UserType.VENDOR);
         Controller.response(res, facadeResult);
     }
 
@@ -50,13 +50,13 @@ export default class Vendor {
         //     return;
         // }
         const vendorId = res.locals.data.id;
-        const facadeResult = await Vendor.facade.deleteUserAndLogOut(vendorId, token, UserType.Vendor);
+        const facadeResult = await Vendor.facade.deleteUserAndLogOut(vendorId, token, UserType.VENDOR);
         Controller.response(res, facadeResult);
     }
 
     public static async getVendorAll(req: Request, res: Response) {
         const vendorId = Number(res.locals.data.id);
-        const facadeResult = await Vendor.facade.getUserProfileWithId(vendorId, UserType.Vendor);
+        const facadeResult = await Vendor.facade.getUserProfileWithId(vendorId, UserType.VENDOR);
         Controller.response(res, facadeResult);
     }
 }

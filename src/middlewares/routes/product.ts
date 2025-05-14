@@ -2,13 +2,12 @@ import { adminAuthorization, uploads, validateBody, validateJWT } from "..";
 import { env } from "../../config";
 import { StoreDetails } from "../../repos";
 import { AdminPermission } from "../../types/enums";
-import { bodyNumberIsValid, itemNameExists, paramNumberIsValid, queryIsValidNumber } from "../validators";
+import { bodyBooleanIsValid, bodyNumberIsValid, itemNameExists, paramNumberIsValid, queryIsValidNumber } from "../validators";
 
-export const allUsers = validateJWT(["vendor", "admin", "customer"], env("tokenSecret")!);
-export const justVendor = validateJWT(["vendor"], env("tokenSecret")!);
+// export const allUsers = validateJWT(["vendor", "admin", "customer"], env("tokenSecret")!);
+// export const justVendor = validateJWT(["vendor"], env("tokenSecret")!);
 
 export const productUpload = [
-    justVendor,
     uploads.array("images", 5),
     validateBody([
         'name',
@@ -16,7 +15,9 @@ export const productUpload = [
         'price',
         'description',
         'stock',
-        'storeId'
+        'storeId',
+        'draft',
+        'link'
     ]),
     bodyNumberIsValid('storeId'),
     bodyNumberIsValid('price'),
@@ -24,13 +25,24 @@ export const productUpload = [
     bodyNumberIsValid('stock'),
 ];
 
+export const publishDraft = [
+    validateBody([
+        'storeId',
+        'productId'
+    ]),
+    bodyNumberIsValid('storeId'),
+    bodyNumberIsValid('productId'),
+]
+
 export const idIsValid = [
-    allUsers,
     paramNumberIsValid('id')
 ];
 
 export const pagination = [
-    allUsers,
     queryIsValidNumber('page'),
     queryIsValidNumber('limit')
-]
+];
+
+export const productId = [
+    paramNumberIsValid('productId')
+];

@@ -59,7 +59,7 @@ export const adminSignUp = [
     emailIsValid,
     passwordIsValid,
     // phoneNumberIsValid,
-    userPhoneNumberExists<Admin>(new Admin()), // ! TODO: check if there is a phone number validation error
+    userPhoneNumberExists<Admin>(new Admin()), //  TODO: check if there is a phone number validation error
     userEmailExists<Admin>(new Admin())
 ];
 
@@ -83,7 +83,7 @@ export const logOut = [
 
 
 export const resetPassword = [
-    validateJWT([UserType.Admin, UserType.Vendor, UserType.Customer], env("tokenSecret")!),
+    validateJWT([UserType.ADMIN, UserType.VENDOR, UserType.CUSTOMER]),
     validateBody([
         'password',
     ]),

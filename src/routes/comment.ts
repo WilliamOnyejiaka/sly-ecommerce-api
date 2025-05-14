@@ -9,7 +9,7 @@ comment.post('/product/', createProductComment, asyncHandler(Comment.createProdu
 // comment.get('/product/:id', asyncHandler(Comment.getWithId));
 comment.get("/product/:productId", productId, asyncHandler(Comment.paginate));
 comment.get('/product/:productId/:parentId/replies', productId, asyncHandler(Comment.paginateReplies));
-comment.get("/product/like/:commentId", asyncHandler(Comment.like));
+comment.get("/product/like/:commentId", asyncHandler(Comment.like)); // TODO: validate the commentId in the middleware
 
 
 export default comment;

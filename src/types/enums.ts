@@ -1,8 +1,8 @@
 
 export enum UserType {
-    Admin = "admin",
-    Vendor = "vendor",
-    Customer = "customer",
+    ADMIN = "admin",
+    VENDOR = "vendor",
+    CUSTOMER = "customer",
 };
 
 export enum OTPType {

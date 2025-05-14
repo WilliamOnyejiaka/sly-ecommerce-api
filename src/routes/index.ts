@@ -15,7 +15,6 @@ import subcategory from "./subcategory";
 import adBanner from "./adBanner";
 import user from "./dashboard/user";
 import storeFollower from "./storeFollower";
-import product from "./product";
 import comment from "./comment";
 import newProductInbox from "./newProductInbox";
 import savedProduct from "./savedProduct";
@@ -41,7 +40,6 @@ export {
     adBanner,
     user,
     storeFollower,
-    product,
     comment,
     newProductInbox,
     savedProduct,

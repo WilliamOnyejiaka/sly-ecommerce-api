@@ -122,6 +122,8 @@ export interface ProductDto {
     id?: number,
     name: string,
     description: string,
+    draft: boolean,
+    link?: string,
     price: number,
     discountPrice?: number,
     isAvailable?: boolean,

@@ -7,7 +7,7 @@ import constants, { http, HttpStatus } from "../constants";
 import { AdminCache, AdminKey, CustomerCache, TokenBlackList, VendorCache } from "../cache";
 import BaseService from "./bases/BaseService";
 import UserRepo from "../repos/bases/UserRepo";
-import BaseCache from "../cache/BaseCache";
+import BaseCache from "../cache/bases/BaseCache";
 import { OTPType, UserType } from "../types/enums";
 
 
@@ -161,7 +161,7 @@ export default class Authentication extends BaseService { // ! TODO: Deprecated 
 
         if (vendor) {
             const vendorName = (vendor as VendorDto).firstName + " " + (vendor as VendorDto).lastName;
-            const otpService = new OTP((vendor as VendorDto).email, OTPType.Verification, UserType.Vendor);
+            const otpService = new OTP((vendor as VendorDto).email, OTPType.Verification, UserType.VENDOR);
             const otpServiceResult = await otpService.send(vendorName);
             return super.responseData(otpServiceResult.statusCode, otpServiceResult.json.error, otpServiceResult.json.message);
         }
@@ -171,7 +171,7 @@ export default class Authentication extends BaseService { // ! TODO: Deprecated 
 
 
     public async vendorEmailVerification(vendorEmail: string, otpCode: string) {
-        const otp = new OTP(vendorEmail, OTPType.Verification, UserType.Vendor);
+        const otp = new OTP(vendorEmail, OTPType.Verification, UserType.VENDOR);
         const otpServiceResult = await otp.confirmOTP(otpCode);
 
         if (otpServiceResult.json.error) {

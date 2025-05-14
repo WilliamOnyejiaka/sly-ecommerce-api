@@ -23,7 +23,7 @@ import ProductComment from "./ProductComment";
 import StoreFollower from "./StoreFollower";
 import SSE from "./SSE";
 import NewProductInbox from "./NewProductInbox";
-import Product from "./Product";
+import Product from "./Product/Product";
 import NewFollower from "./NewFollower";
 import SavedProduct from "./SavedProduct";
 import FavoriteStore from "./FavoriteStore";

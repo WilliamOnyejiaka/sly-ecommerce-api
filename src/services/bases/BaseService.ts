@@ -1,6 +1,8 @@
 import constants from "../../constants";
 import Repo from "../../repos/bases/Repo";
+import UserRepo from "../../repos/bases/UserRepo";
 import { ImageMeta } from "../../types";
+import { UserType } from "../../types/enums";
 import { getPagination } from "../../utils";
 
 export default class BaseService<T extends Repo = Repo> {
@@ -10,6 +12,40 @@ export default class BaseService<T extends Repo = Repo> {
     constructor(repo?: T) {
         this.repo = repo;
     }
+
+    public sanitizeUserData(data: any, userType: UserType, repo: UserRepo) {
+        let cacheData;
+        data.profilePictureUrl = data[repo.imageRelation].length != 0 ? data[repo.imageRelation][0].imageUrl : null;
+        delete data[repo.imageRelation];
+        delete data.password;
+        if (userType === UserType.VENDOR) {
+            if (data.storeDetails.length > 0) {
+                let storeDetails = data.storeDetails[0];
+                storeDetails.storeLogo = storeDetails.storeLogo.length > 0 ? storeDetails.storeLogo[0].imageUrl : null;
+                cacheData = { ...data };
+                cacheData.storeDetails = JSON.stringify(storeDetails);
+                if (data.oAuthDetails) {
+                    cacheData.oAuthDetails = JSON.stringify(data.oAuthDetails);
+                }
+            }
+            cacheData = { ...data };
+            cacheData.storeDetails = JSON.stringify({});
+            return { data, cacheData };
+        } else if (userType === UserType.CUSTOMER) {
+            let address = data.Address[0];
+            data.Address = address;
+            cacheData = { ...data };
+            cacheData.Address = JSON.stringify(address);
+            if (data.oAuthDetails) {
+                cacheData.oAuthDetails = JSON.stringify(data.oAuthDetails);
+            }
+            return { data, cacheData };
+        } else {
+            return { data, cacheData: data }
+        }
+
+    }
+
 
     public responseData(statusCode: number, error: boolean, message: string | null, data: any = {}) {
         return {

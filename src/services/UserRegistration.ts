@@ -27,7 +27,7 @@ export default class UserRegistration extends Authentication {
             const result = repoResult.data!;
             delete (result as VendorDto).password;
             const cacheSuccessful = await this.vendorCache.set(
-                String((result as VendorDto).id),
+                (result as VendorDto).id!,
                 result as VendorDto
             );
             await streamRouter.addEvent(StreamGroups.USER, {
@@ -64,7 +64,7 @@ export default class UserRegistration extends Authentication {
         if (!error) {
             delete result.password;
             const cacheSuccessful = await this.customerCache.set(
-                String(result.id),
+                result.id,
                 result
             );
             await streamRouter.addEvent(StreamGroups.USER, {

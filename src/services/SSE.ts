@@ -1,5 +1,5 @@
 import cluster from "cluster";
-import { logger, redisBull, redisPub, redisClient } from "../config";
+import { logger, redisBull, redisPub, redisClient, env } from "../config";
 
 interface SSEEvent {
     error: boolean;
@@ -22,6 +22,24 @@ export default class SSE {
     }
 
     public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "user") {
+        return env("envType")! === "dev" ? await this.publishSSEEventDev(userType, clientId, event, key) : await this.publishSSEEventProd(userType, clientId, event, key)
+    }
+
+    public static async publishSSEEventDev(userType: string, clientId: number, event: SSEEvent, key: string = "user") {
+        const channel = SSE.channel(userType, clientId, key);
+        try {
+            await SSE.redisPub.publish(
+                channel,
+                JSON.stringify(event),
+            );
+            logger.info(`🤝 Event was successfully published for ${userType} - ${clientId}`);
+        } catch (error) {
+            logger.error(`🛑 Failed to publish event for ${userType} - ${clientId}`);
+            console.log(error);
+        }
+    }
+
+    public static async publishSSEEventProd(userType: string, clientId: number, event: SSEEvent, key: string = "user") {
         const myWorkerId = cluster.worker?.id;
         const REDIS_ACTIVE_PUBLISHER = "cluster:active_publisher";
         let activePublisher;
@@ -47,53 +65,6 @@ export default class SSE {
             }
         }
     }
-
-    // public static async publishSSEEvent(userType: string, clientId: number, event: SSEEvent, key: string = "user") {
-    //     // Validate inputs
-    //     if (!userType || typeof userType !== 'string') {
-    //         throw new Error('userType must be a non-empty string');
-    //     }
-    //     if (!Number.isInteger(clientId) || clientId <= 0) {
-    //         throw new Error('clientId must be a positive integer');
-    //     }
-    //     if (!event) {
-    //         throw new Error('Event is required');
-    //     }
-    //     if (!key || typeof key !== 'string') {
-    //         throw new Error('Key must be a non-empty string');
-    //     }
-
-    //     const channel = SSE.channel(userType, clientId, key);
-    //     // Generate unique key for deduplication
-    //     const DEDUP_KEY_PREFIX = 'sse:';
-    //     let dedupKey: string;
-    //     try {
-    //         dedupKey = `${DEDUP_KEY_PREFIX}${userType}:${clientId}:${key}:${JSON.stringify(event)}`;
-    //     } catch (error: any) {
-    //         throw new Error(`Failed to serialize event: ${error.message}`);
-    //     }
-
-    //     try {
-    //         // Attempt to set deduplication key if it doesn't exist
-    //         const published = await SSE.redisPub.setnx(dedupKey, 'published');
-
-    //         if (published) {
-    //             // Publish event to Redis channel
-    //             await SSE.redisPub.publish(channel, JSON.stringify(event));
-    //             logger.info(`🤝 Event published for ${userType} - ${clientId} on channel ${channel}`, { event });
-
-    //             // Delete deduplication key after publishing
-    //             await SSE.redisPub.del(dedupKey);
-    //         } else {
-    //             logger.info(`🤝 Event already published for ${userType} - ${clientId} on channel ${channel}`, { event });
-    //         }
-    //     } catch (error: unknown) {
-    //         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    //         const errorStack = error instanceof Error ? error.stack : undefined;
-    //         logger.error(`🛑 Failed to publish event for ${userType} - ${clientId} on channel ${channel}: ${errorMessage}`, { error: errorStack });
-    //         throw error; // Re-throw to allow caller to handle
-    //     }
-    // }
 
     public static async clientExists(userType: string, clientId: number) {
         const clientKey = SSE.clientKey(userType, clientId);

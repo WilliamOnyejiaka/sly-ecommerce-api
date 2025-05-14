@@ -12,7 +12,7 @@ export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfi
     private readonly roleService: Role = new Role();
 
     public constructor() {
-        super(new AdminRepo(), new AdminCache(), new AdminProfilePicture(), UserType.Admin, CdnFolders.ADMIN_PROFILE_PIC);
+        super(new AdminRepo(), new AdminCache(), new AdminProfilePicture(), UserType.ADMIN, CdnFolders.ADMIN_PROFILE_PIC);
     }
 
     public async defaultAdmin(roleId: number) {

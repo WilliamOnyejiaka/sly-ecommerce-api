@@ -1,7 +1,7 @@
 import constants from "../constants";
 import VendorDto from "../types/dtos";
 import { redisClient } from "./../config";
-import BaseCache from "./BaseCache";
+import BaseCache from "./bases/BaseCache";
 
 export default class TokenBlackList extends BaseCache {
 

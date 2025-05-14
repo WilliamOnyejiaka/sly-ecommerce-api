@@ -1,4 +1,4 @@
-import BaseCache from "../../cache/BaseCache";
+import UserCache from "../../cache/bases/UserCache";
 import { env, streamRouter } from "../../config";
 import constants, { http, HttpStatus } from "../../constants";
 import ImageRepo from "../../repos/bases/ImageRepo";
@@ -9,7 +9,7 @@ import BaseService from "./BaseService";
 import Cloudinary from "../Cloudinary";
 import { CdnFolders, ResourceType, StreamGroups, StreamEvents, UserType } from "../../types/enums";
 
-export default class UserService<T extends UserRepo, U extends BaseCache, V extends ImageRepo> extends BaseService<T> {
+export default class UserService<T extends UserRepo, U extends UserCache, V extends ImageRepo> extends BaseService<T> {
 
     protected readonly cache: U;
     protected readonly imageService: ImageService = new ImageService();
@@ -65,7 +65,7 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
 
         const statusCode = repoResult.data ? HttpStatus.OK : HttpStatus.NOT_FOUND;
         const error: boolean = repoResult.error;
-        const user = repoResult.data;
+        let user = repoResult.data;
 
         if (user) {
             this.sanitizeUserImageItems([user]);
@@ -74,6 +74,15 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
 
         return super.responseData(statusCode, error, constants('404User')!, repoResult.data);
     }
+
+    // public async middlewareGetUser(userId: number) {
+    //     const serviceResult = await this.getUserProfileWithId(userId);
+    //     if (serviceResult.json.error) return serviceResult;
+    //     let user = serviceResult.json.data;
+    //     let cacheData = user;
+    //     ({ data: user, cacheData } = this.sanitizeUserData(user, this.userType));
+    //     return super.responseData(serviceResult.statusCode, false, serviceResult.json.message, { user, cacheData });
+    // }
 
     public async getUserProfileWithEmail(email: string) {
         const repoResult = await this.repo!.getUserProfileWithEmail(email);
@@ -157,7 +166,7 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
 
         const user = repoResult.data;
         delete user.password;
-        const cacheResponse = await this.cache.get(String(userId));
+        const cacheResponse = await this.cache.get(userId);
 
         if (cacheResponse.error) {
             return super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
@@ -168,7 +177,7 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
 
         if (cachedUser) {
             cachedUser.active = user.active;
-            const successfulCache = await this.cache.set(String(userId), cachedUser);
+            const successfulCache = await this.cache.set(userId, cachedUser);
             return successfulCache ? super.responseData(HttpStatus.OK, false, message, user) : super.responseData(HttpStatus.INTERNAL_SERVER_ERROR, true, http(HttpStatus.INTERNAL_SERVER_ERROR.toString())!);
         }
         return super.responseData(200, false, message, user);
@@ -201,7 +210,7 @@ export default class UserService<T extends UserRepo, U extends BaseCache, V exte
         const repoResultError = super.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
 
-        const deleted = await this.cache.delete(String(userId));
+        const deleted = await this.cache.delete(userId);
 
         return deleted ?
             super.responseData(200, false, "User was deleted successfully") :

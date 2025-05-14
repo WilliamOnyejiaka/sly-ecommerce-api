@@ -24,42 +24,42 @@ auth.post(
     asyncHandler(Auth.adminSignUp)
 );
 
-auth.post("/admin/login", login, asyncHandler(Auth.login(UserType.Admin)));
-auth.post("/vendor/login", login, asyncHandler(Auth.login(UserType.Vendor)));
-auth.post("/customer/login", login, asyncHandler(Auth.login(UserType.Customer)));
+auth.post("/admin/login", login, asyncHandler(Auth.login(UserType.ADMIN)));
+auth.post("/vendor/login", login, asyncHandler(Auth.login(UserType.VENDOR)));
+auth.post("/customer/login", login, asyncHandler(Auth.login(UserType.CUSTOMER)));
 
 
-auth.get("/vendor/otp/:email", asyncHandler(Auth.sendUserOTP(UserType.Vendor, OTPType.Verification)));
-auth.get("/vendor/email-verification/:email/:otpCode", asyncHandler(Auth.emailVerification(UserType.Vendor)));
+auth.get("/vendor/otp/:email", asyncHandler(Auth.sendUserOTP(UserType.VENDOR, OTPType.Verification)));
+auth.get("/vendor/email-verification/:email/:otpCode", asyncHandler(Auth.emailVerification(UserType.VENDOR)));
 
-auth.get("/customer/otp/:email", asyncHandler(Auth.sendUserOTP(UserType.Customer, OTPType.Verification)));
-auth.get("/customer/email-verification/:email/:otpCode", asyncHandler(Auth.emailVerification(UserType.Customer)));
+auth.get("/customer/otp/:email", asyncHandler(Auth.sendUserOTP(UserType.CUSTOMER, OTPType.Verification)));
+auth.get("/customer/email-verification/:email/:otpCode", asyncHandler(Auth.emailVerification(UserType.CUSTOMER)));
 
-auth.get("/admin/otp/:email", asyncHandler(Auth.sendUserOTP(UserType.Admin, OTPType.Verification)));
-auth.get("/admin/email-verification/:email/:otpCode", asyncHandler(Auth.emailVerification(UserType.Admin)));
+auth.get("/admin/otp/:email", asyncHandler(Auth.sendUserOTP(UserType.ADMIN, OTPType.Verification)));
+auth.get("/admin/email-verification/:email/:otpCode", asyncHandler(Auth.emailVerification(UserType.ADMIN)));
 
-auth.get("/vendor/forgot-password/:email", asyncHandler(Auth.sendUserOTP(UserType.Vendor, OTPType.Reset)));
-auth.get("/vendor/confirm-otp/:email/:otpCode", asyncHandler(Auth.otpConfirmation(UserType.Vendor)));
+auth.get("/vendor/forgot-password/:email", asyncHandler(Auth.sendUserOTP(UserType.VENDOR, OTPType.Reset)));
+auth.get("/vendor/confirm-otp/:email/:otpCode", asyncHandler(Auth.otpConfirmation(UserType.VENDOR)));
 auth.patch(
     "/vendor/reset-password",
     resetPassword,
-    asyncHandler(Auth.passwordReset(UserType.Vendor))
+    asyncHandler(Auth.passwordReset(UserType.VENDOR))
 );
 
-auth.get("/admin/forgot-password/:email", asyncHandler(Auth.sendUserOTP(UserType.Admin, OTPType.Reset)));
-auth.get("/admin/confirm-otp/:email/:otpCode", asyncHandler(Auth.otpConfirmation(UserType.Admin)));
+auth.get("/admin/forgot-password/:email", asyncHandler(Auth.sendUserOTP(UserType.ADMIN, OTPType.Reset)));
+auth.get("/admin/confirm-otp/:email/:otpCode", asyncHandler(Auth.otpConfirmation(UserType.ADMIN)));
 auth.patch(
     "/admin/reset-password",
     resetPassword,
-    asyncHandler(Auth.passwordReset(UserType.Admin))
+    asyncHandler(Auth.passwordReset(UserType.ADMIN))
 );
 
-auth.get("/customer/forgot-password/:email", asyncHandler(Auth.sendUserOTP(UserType.Customer, OTPType.Reset)));
-auth.get("/customer/confirm-otp/:email/:otpCode", asyncHandler(Auth.otpConfirmation(UserType.Customer)));
+auth.get("/customer/forgot-password/:email", asyncHandler(Auth.sendUserOTP(UserType.CUSTOMER, OTPType.Reset)));
+auth.get("/customer/confirm-otp/:email/:otpCode", asyncHandler(Auth.otpConfirmation(UserType.CUSTOMER)));
 auth.patch(
     "/customer/reset-password",
     resetPassword,
-    asyncHandler(Auth.passwordReset(UserType.Customer))
+    asyncHandler(Auth.passwordReset(UserType.CUSTOMER))
 );
 
 auth.get("/logout", logOut, asyncHandler(Auth.logOut));

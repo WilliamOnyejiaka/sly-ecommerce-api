@@ -7,7 +7,7 @@ import Controller from "./bases/Controller";
 export default class CustomerManagement {
 
     private static readonly facade: UserManagementFacade = new UserManagementFacade();
-    private static readonly user: UserType = UserType.Customer;
+    private static readonly user: UserType = UserType.CUSTOMER;
 
     public static async getCustomer(req: Request, res: Response) {
         const validationErrors = validationResult(req);

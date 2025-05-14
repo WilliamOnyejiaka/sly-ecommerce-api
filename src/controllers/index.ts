@@ -21,6 +21,8 @@ import SavedProduct from "./SavedProduct";
 import FavoriteStore from "./FavoriteStore";
 import ProductRating from "./ProductRating";
 import StoreRating from "./StoreRating";
+import ProductManagement from "./ProductManagement";
+import FYPProduct from "./FYPProduct";
 
 export {
     Auth,
@@ -45,5 +47,7 @@ export {
     SavedProduct,
     FavoriteStore,
     ProductRating,
-    StoreRating
+    StoreRating,
+    ProductManagement,
+    FYPProduct
 };

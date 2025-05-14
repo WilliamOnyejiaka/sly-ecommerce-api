@@ -19,7 +19,6 @@ import {
     adBanner,
     user,
     storeFollower,
-    product,
     comment,
     newProductInbox,
     savedProduct,
@@ -27,6 +26,8 @@ import {
     storeRating,
     productRating
 } from "./../routes";
+import { vendorProductManagement } from "../routes/vendor";
+import { fypProduct } from "./../routes/fyp";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
 import asyncHandler from "express-async-handler";
 import { Admin, SSEController } from "../controllers";
@@ -37,7 +38,6 @@ import axios from 'axios';
 import { http } from "../constants";
 import { Admin as AdminService } from "../services";
 import streamRouter from "./redisStream";
-import cluster from "cluster";
 import { myQueue, uploadQueue } from "../jobs/queues";
 import { SSE } from "./../services";
 import initializeWorkers from "../jobs/workers";
@@ -57,47 +57,48 @@ function createApp() {
 
     app.use("/api/v1/seed", seed);
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
-    app.use("/api/v1/product", product);
+    app.use("/api/v1/fyp/product", validateJWT(["customer"]), fypProduct);
+    app.use("/api/v1/vendor/product", validateJWT(["vendor"]), vendorProductManagement);
 
-    app.get('/events', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.SSE); // TODO: Remove the env
-    app.get('/notifications', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), SSEController.notification);
+    app.get('/events', validateJWT(["admin", "vendor", "customer"]), SSEController.SSE);
+    app.get('/notifications', validateJWT(["admin", "vendor", "customer"]), SSEController.notification);
 
     app.use("/api/v1/auth", auth);
     app.use(
         "/api/v1/vendor",
-        validateJWT(["vendor"], env("tokenSecret")!),
+        validateJWT(["vendor"]),
         validateUser<VendorCache, VendorRepo>(new VendorCache(), new VendorRepo()),
         vendor
     );
     app.use("/api/v1/store/follow", storeFollower);
-    app.use("/api/v1/store", validateJWT(["vendor"], env("tokenSecret")!), vendorIsActive, store);
-    app.use("/api/v1/admin", validateJWT(["admin"], env("tokenSecret")!), admin);
-    app.use("/api/v1/admin/role", validateJWT(["admin"], env("tokenSecret")!), role);
-    app.use("/api/v1/admin/permission", validateJWT(["admin"], env("tokenSecret")!), permission);
-    app.use("/api/v1/admin/admin-permission", validateJWT(["admin"], env("tokenSecret")!), adminPermission);
-    app.use("/api/v1/admin/store", validateJWT(["admin"], env("tokenSecret")!), adminStore);
-    app.use("/api/v1/dashboard/category", validateJWT(["admin"], env("tokenSecret")!), dashboardCategory);
-    app.use("/api/v1/category", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), category);
-    app.use("/api/v1/dashboard/subcategory", validateJWT(["admin"], env("tokenSecret")!), dashboardSubCategory);
-    app.use("/api/v1/subcategory", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), subcategory);
-    app.use("/api/v1/ad-banner", validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), adBanner);
-    app.use("/api/v1/dashboard/user", validateJWT(["admin",], env("tokenSecret")!), user);
+    app.use("/api/v1/store", validateJWT(["vendor"]), vendorIsActive, store);
+    app.use("/api/v1/admin", validateJWT(["admin"]), admin);
+    app.use("/api/v1/admin/role", validateJWT(["admin"]), role);
+    app.use("/api/v1/admin/permission", validateJWT(["admin"]), permission);
+    app.use("/api/v1/admin/admin-permission", validateJWT(["admin"]), adminPermission);
+    app.use("/api/v1/admin/store", validateJWT(["admin"]), adminStore);
+    app.use("/api/v1/dashboard/category", validateJWT(["admin"]), dashboardCategory);
+    app.use("/api/v1/category", validateJWT(["admin", "vendor", "customer"]), category);
+    app.use("/api/v1/dashboard/subcategory", validateJWT(["admin"]), dashboardSubCategory);
+    app.use("/api/v1/subcategory", validateJWT(["admin", "vendor", "customer"]), subcategory);
+    app.use("/api/v1/ad-banner", validateJWT(["admin", "vendor", "customer"]), adBanner);
+    app.use("/api/v1/dashboard/user", validateJWT(["admin"]), user);
     app.use(
         "/api/v1/customer",
-        validateJWT(["customer"], env("tokenSecret")!),
+        validateJWT(["customer"]),
         validateUser<CustomerCache, CustomerRepo>(new CustomerCache(), new CustomerRepo()),
         customer
     );
-    app.use("/api/v1/comment/", validateJWT(["customer"], env("tokenSecret")!), comment);
-    app.use("/api/v1/inbox/", validateJWT(["customer"], env("tokenSecret")!), newProductInbox);
-    app.use("/api/v1/saved-product/", validateJWT(["customer"], env("tokenSecret")!), savedProduct);
-    app.use("/api/v1/favorite-store/", validateJWT(["customer"], env("tokenSecret")!), favoriteStore);
-    app.use("/api/v1/rating/product", validateJWT(["customer"], env("tokenSecret")!), productRating);
-    app.use("/api/v1/rating/store", validateJWT(["customer"], env("tokenSecret")!), storeRating);
+    app.use("/api/v1/comment/", validateJWT(["customer"]), comment);
+    app.use("/api/v1/inbox/", validateJWT(["customer"]), newProductInbox);
+    app.use("/api/v1/saved-product/", validateJWT(["customer"]), savedProduct);
+    app.use("/api/v1/favorite-store/", validateJWT(["customer"]), favoriteStore);
+    app.use("/api/v1/rating/product", validateJWT(["customer"]), productRating);
+    app.use("/api/v1/rating/store", validateJWT(["customer"]), storeRating);
 
 
     // Endpoint to add a job to the queue
-    app.get('/add-job', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), async (req: Request, res: Response) => {
+    app.get('/add-job', validateJWT(["admin", "vendor", "customer"]), async (req: Request, res: Response) => {
         const clientId = res.locals.data.id;
         const userType = res.locals.userType;
 
@@ -113,7 +114,7 @@ function createApp() {
         res.status(500).json({ message: "Something went wrong", error: true });
     });
 
-    app.get('/upload-image', validateJWT(["admin", "vendor", "customer"], env("tokenSecret")!), async (req: Request, res: Response) => {
+    app.get('/upload-image', validateJWT(["admin", "vendor", "customer"]), async (req: Request, res: Response) => {
         const clientId = res.locals.data.id;
         const userType = res.locals.userType;
 
@@ -217,7 +218,7 @@ function createApp() {
         };
     }
 
-    app.post("/validate-admin", validateJWT(['admin'], env("tokenSecret")!), async (req: Request, res: Response, next: NextFunction) => {
+    app.post("/validate-admin", validateJWT(['admin']), async (req: Request, res: Response, next: NextFunction) => {
         const { requiredPermissions } = req.body;
         const result = await check(res.locals.data, requiredPermissions);
 
@@ -230,9 +231,9 @@ function createApp() {
     });
 
 
-    if (cluster.isPrimary) {
-        cronJobs.start();
-    }
+    // if (cluster.isPrimary) {
+    //     cronJobs.start();
+    // }
 
     initializeWorkers();
     app.use(handleMulterErrors);

@@ -20,66 +20,6 @@ export default class Cloudinary extends BaseService {
         });
     }
 
-    // public async upload(files: Express.Multer.File[], resourceType: ResourceType, folder: CdnFolders) {
-    //     const uploadedFiles: UploadedFiles[] = [];
-    //     const failedFiles: FailedFiles[] = [];
-    //     const publicIds: string[] = [];
-
-    //     await Promise.all(
-    //         files.map(async (file) => {
-    //             try {
-    //                 const buffer = resourceType === ResourceType.IMAGE ? await compressImage(file) : { error: false, buffer: file.buffer };
-    //                 if (!buffer.error) {
-    //                     const result: any = await new Promise((resolve, reject) => {
-    //                         const baseDetails = {
-    //                             resource_type: resourceType,
-    //                             folder: folder,
-    //                             timeout: 100000,
-    //                         };
-    //                         const uploadStreamDetails = resourceType === ResourceType.VIDEO ?
-    //                             {
-    //                                 ...baseDetails,
-    //                                 eager: [
-    //                                     { format: "jpg", transformation: [{ width: 300, height: 200, crop: "thumb", start_offset: "auto" }] }
-    //                                 ]
-    //                             } : baseDetails;
-
-    //                         const stream = cloudinary.uploader.upload_stream(
-    //                             uploadStreamDetails,
-    //                             (error, result) => {
-    //                                 if (error) reject(error);
-    //                                 else resolve(result);
-    //                             }
-    //                         );
-    //                         stream.end(buffer.buffer);
-    //                     });
-
-    //                     const thumbnail = resourceType === ResourceType.VIDEO && result.eager ? result.eager[0].secure_url : null;
-    //                     const url = resourceType === ResourceType.IMAGE ? this.getUrl(result.public_id) : result.url;
-    //                     const duration = resourceType === ResourceType.VIDEO ? result.duration : null;
-
-    //                     uploadedFiles.push({
-    //                         publicId: result.public_id,
-    //                         size: String(result.bytes),
-    //                         url: url,
-    //                         mimeType: file.mimetype,
-    //                         thumbnail: thumbnail,
-    //                         duration: duration
-    //                     });
-    //                     publicIds.push(result.public_id);
-    //                 } else {
-    //                     failedFiles.push({ filename: file.originalname, error: "Failed to compress image." });
-    //                 }
-    //             } catch (error: any) {
-    //                 console.error(`Upload failed for ${file.originalname}:`, error);
-    //                 failedFiles.push({ filename: file.originalname, error: error.message });
-    //             }
-    //         })
-    //     );
-
-    //     return { uploadedFiles, failedFiles, publicIds };
-    // }
-
     public async upload(
         files: Express.Multer.File[],
         resourceType: ResourceType,

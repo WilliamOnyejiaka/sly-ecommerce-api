@@ -30,8 +30,29 @@ export default class UserRepo extends Repo {
                 }
             },
         } : {};
+        const store = this.tblName === "vendor" ? {
+            storeDetails: {
+                select: {
+                    id: true,
+                    name: true,
+                    address: true,
+                    city: true,
+                    description: true,
+                    tagLine: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    vendorId: true,
+                    storeLogo: {
+                        select: {
+                            imageUrl: true
+                        }
+                    }
+                }
+            }
+        } : {};
         return await super.getItem(where, {
             include: {
+                ...store,
                 ...customerAddress,
                 [this.imageRelation]: {
                     select: {

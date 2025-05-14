@@ -43,9 +43,9 @@ export default class AuthenticationManagementFacade extends BaseFacade {
      */
     public async login(email: string, password: string, user: UserType) {
         const loginMethods = {
-            [UserType.Admin]: this.authService.adminLogin.bind(this.authService),
-            [UserType.Customer]: this.authService.customerLogin.bind(this.authService),
-            [UserType.Vendor]: this.authService.vendorLogin.bind(this.authService)
+            [UserType.ADMIN]: this.authService.adminLogin.bind(this.authService),
+            [UserType.CUSTOMER]: this.authService.customerLogin.bind(this.authService),
+            [UserType.VENDOR]: this.authService.vendorLogin.bind(this.authService)
         };
 
         const loginMethod = loginMethods[user];
@@ -67,9 +67,9 @@ export default class AuthenticationManagementFacade extends BaseFacade {
      */
     public async sendUserOTP(email: string, otpType: OTPType, user: UserType) {
         const sendOTPMethods = {
-            [UserType.Vendor]: this.userOTPService.sendVendorOTP.bind(this.userOTPService),
-            [UserType.Admin]: this.userOTPService.sendAdminOTP.bind(this.userOTPService),
-            [UserType.Customer]: this.userOTPService.sendCustomerOTP.bind(this.userOTPService)
+            [UserType.VENDOR]: this.userOTPService.sendVendorOTP.bind(this.userOTPService),
+            [UserType.ADMIN]: this.userOTPService.sendAdminOTP.bind(this.userOTPService),
+            [UserType.CUSTOMER]: this.userOTPService.sendCustomerOTP.bind(this.userOTPService)
         };
 
         const sendOTPMethod = sendOTPMethods[user];
@@ -84,9 +84,9 @@ export default class AuthenticationManagementFacade extends BaseFacade {
      */
     public async emailVerification(email: string, otpCode: string, user: UserType) {
         const verifyEmailMethods = {
-            [UserType.Vendor]: this.userOTPService.vendorEmailVerification.bind(this.userOTPService),
-            [UserType.Admin]: this.userOTPService.adminEmailVerification.bind(this.userOTPService),
-            [UserType.Customer]: this.userOTPService.customerEmailVerification.bind(this.userOTPService)
+            [UserType.VENDOR]: this.userOTPService.vendorEmailVerification.bind(this.userOTPService),
+            [UserType.ADMIN]: this.userOTPService.adminEmailVerification.bind(this.userOTPService),
+            [UserType.CUSTOMER]: this.userOTPService.customerEmailVerification.bind(this.userOTPService)
         };
 
         const verifyEmailMethod = verifyEmailMethods[user];
@@ -114,9 +114,9 @@ export default class AuthenticationManagementFacade extends BaseFacade {
      */
     public async passwordReset(email: string, password: string, user: UserType) {
         const verifyEmailMethods = {
-            [UserType.Vendor]: this.userOTPService.vendorPasswordReset.bind(this.userOTPService),
-            [UserType.Admin]: this.userOTPService.adminPasswordReset.bind(this.userOTPService),
-            [UserType.Customer]: this.userOTPService.customerPasswordReset.bind(this.userOTPService)
+            [UserType.VENDOR]: this.userOTPService.vendorPasswordReset.bind(this.userOTPService),
+            [UserType.ADMIN]: this.userOTPService.adminPasswordReset.bind(this.userOTPService),
+            [UserType.CUSTOMER]: this.userOTPService.customerPasswordReset.bind(this.userOTPService)
         };
 
         const verifyEmailMethod = verifyEmailMethods[user];

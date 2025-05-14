@@ -57,7 +57,7 @@ export default class NewFollower implements IWorker<IJob> {
     }
 
     public async completed({ jobId, returnvalue }: CompletedJob) {
-        const key = UserType.Vendor + "s";
+        const key = UserType.VENDOR + "s";
         const vendorId = returnvalue.vendorId;
         const error = returnvalue.error;
 
@@ -74,12 +74,12 @@ export default class NewFollower implements IWorker<IJob> {
             return;
         }
         try {
-                const data = {
-                    error: false,
-                    followerProfile: returnvalue.followerProfile
-                };
-                await SSE.publishSSEEvent(UserType.Vendor, vendorId, { event: this.eventName, data, error: false }, "notification");
-                logger.info(`👍 Vendor - ${vendorId} has been notified of the follow`);
+            const data = {
+                error: false,
+                followerProfile: returnvalue.followerProfile
+            };
+            await SSE.publishSSEEvent(UserType.VENDOR, vendorId, { event: this.eventName, data, error: false }, "notification");
+            logger.info(`👍 Vendor - ${vendorId} has been notified of the follow`);
         } catch (err) {
             console.error("Failed to acquire lock or publish event:", err);
         }

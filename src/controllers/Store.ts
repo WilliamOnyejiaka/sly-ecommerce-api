@@ -15,7 +15,7 @@ export default abstract class Store {
         const images = req.files!;
         const storeDetailsDto: StoreDetailsDto = req.body;
         storeDetailsDto.vendorId = Number(res.locals.data.id);
-        const serviceResult = await Store.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[], UserType.Vendor);
+        const serviceResult = await Store.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[], UserType.VENDOR);
         Controller.response(res, serviceResult);
     }
 

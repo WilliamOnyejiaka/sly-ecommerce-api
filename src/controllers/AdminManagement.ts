@@ -8,7 +8,7 @@ import { AdminDto } from "../types/dtos";
 export default class AdminManagement {
 
     private static readonly facade: UserManagementFacade = new UserManagementFacade();
-    private static readonly user: UserType = UserType.Admin;
+    private static readonly user: UserType = UserType.ADMIN;
 
     public static async getAdmin(req: Request, res: Response) {
         const validationErrors = validationResult(req);

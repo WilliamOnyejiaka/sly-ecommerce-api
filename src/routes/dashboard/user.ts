@@ -24,43 +24,43 @@ user.get(
 user.patch(
     "/vendor/activate",
     updateActiveStatus,
-    asyncHandler(UserManagement.activateUser(UserType.Vendor))
+    asyncHandler(UserManagement.activateUser(UserType.VENDOR))
 );
 
 user.patch(
     "/vendor/deactivate",
     updateActiveStatus,
-    asyncHandler(UserManagement.deactivateUser(UserType.Vendor))
+    asyncHandler(UserManagement.deactivateUser(UserType.VENDOR))
 );
 
 user.patch(
     "/customer/activate",
     updateActiveStatus,
-    asyncHandler(UserManagement.activateUser(UserType.Customer))
+    asyncHandler(UserManagement.activateUser(UserType.CUSTOMER))
 );
 
 user.patch(
     "/customer/deactivate",
     updateActiveStatus,
-    asyncHandler(UserManagement.deactivateUser(UserType.Customer))
+    asyncHandler(UserManagement.deactivateUser(UserType.CUSTOMER))
 );
 
 user.get(
     "/admin/count",
     totalRecords,
-    asyncHandler(UserManagement.totalRecords(UserType.Admin))
+    asyncHandler(UserManagement.totalRecords(UserType.ADMIN))
 );
 
 user.get(
     "/customer/count",
     totalRecords,
-    asyncHandler(UserManagement.totalRecords(UserType.Customer))
+    asyncHandler(UserManagement.totalRecords(UserType.CUSTOMER))
 );
 
 user.get(
     "/vendor/count",
     totalRecords,
-    asyncHandler(UserManagement.totalRecords(UserType.Vendor))
+    asyncHandler(UserManagement.totalRecords(UserType.VENDOR))
 );
 
 user.get(
@@ -79,56 +79,56 @@ user.get(
 user.get(
     "/vendor/paginate",
     paginateUsers,
-    asyncHandler(UserManagement.paginateUsers(UserType.Vendor))
+    asyncHandler(UserManagement.paginateUsers(UserType.VENDOR))
 );
 
 user.get(
     "/customer/paginate",
     paginateUsers,
-    asyncHandler(UserManagement.paginateUsers(UserType.Customer))
+    asyncHandler(UserManagement.paginateUsers(UserType.CUSTOMER))
 );
 
 user.get(
     "/admin/paginate",
     paginateUsers,
-    asyncHandler(UserManagement.paginateUsers(UserType.Admin))
+    asyncHandler(UserManagement.paginateUsers(UserType.ADMIN))
 );
 
 user.get(
     "/vendor/:id",
     getUser,
-    asyncHandler(UserManagement.getUser(UserType.Vendor))
+    asyncHandler(UserManagement.getUser(UserType.VENDOR))
 );
 
 
 user.get(
     "/admin/:id",
     getUser,
-    asyncHandler(UserManagement.getUser(UserType.Admin))
+    asyncHandler(UserManagement.getUser(UserType.ADMIN))
 );
 
 user.get(
     "/customer/:id",
     getUser,
-    asyncHandler(UserManagement.getUser(UserType.Customer))
+    asyncHandler(UserManagement.getUser(UserType.CUSTOMER))
 );
 
 user.get(
     "/vendor",
     getUsers,
-    asyncHandler(UserManagement.getAllUsers(UserType.Vendor))
+    asyncHandler(UserManagement.getAllUsers(UserType.VENDOR))
 );
 
 user.get(
     "/customer",
     getUsers,
-    asyncHandler(UserManagement.getAllUsers(UserType.Customer))
+    asyncHandler(UserManagement.getAllUsers(UserType.CUSTOMER))
 );
 
 user.get(
     "/admin",
     getUsers,
-    asyncHandler(UserManagement.getAllUsers(UserType.Admin))
+    asyncHandler(UserManagement.getAllUsers(UserType.ADMIN))
 );
 
 user.post(

@@ -22,7 +22,7 @@ export default class DashboardStore extends Store {
             return;
         }
         const storeDetailsDto: StoreDetailsDto = req.body;
-        const serviceResult = await DashboardStore.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[], UserType.Vendor);
+        const serviceResult = await DashboardStore.service.createStoreAll(storeDetailsDto, images as Express.Multer.File[], UserType.VENDOR);
         Controller.response(res, serviceResult);
     }
 

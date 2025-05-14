@@ -10,7 +10,7 @@ import { streamRouter } from "../config";
 export default class Vendor extends UserService<VendorRepo, VendorCache, VendorProfilePicture> {
 
     public constructor() {
-        super(new VendorRepo(), new VendorCache(), new VendorProfilePicture(), UserType.Vendor, CdnFolders.VENDOR_PROFILE_PIC);
+        super(new VendorRepo(), new VendorCache(), new VendorProfilePicture(), UserType.VENDOR, CdnFolders.VENDOR_PROFILE_PIC);
     }
 
     public async createVendor(vendorDto: VendorDto) {

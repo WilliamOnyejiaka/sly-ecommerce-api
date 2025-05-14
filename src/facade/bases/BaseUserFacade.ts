@@ -11,9 +11,9 @@ export default class BaseUserFacade extends BaseFacade {
 
     protected getUserService(user: UserType) {
         const services = {
-            [UserType.Admin]: this.adminService,
-            [UserType.Vendor]: this.vendorService,
-            [UserType.Customer]: this.customerService,
+            [UserType.ADMIN]: this.adminService,
+            [UserType.VENDOR]: this.vendorService,
+            [UserType.CUSTOMER]: this.customerService,
         };
         return services[user] || null;
     }

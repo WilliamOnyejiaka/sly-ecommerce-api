@@ -449,6 +449,8 @@ model Product {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   storeId         Int
+  draft           Boolean           @default(true)
+  link            String?
   store           StoreDetails      @relation(fields: [storeId], references: [id], onDelete: Cascade)
   categoryId      Int?
   category        Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)

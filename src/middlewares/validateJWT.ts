@@ -2,8 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import { Token } from '../services';
 import { http } from '../constants';
 import { TokenBlackList } from '../cache';
+import { env } from "./../config";
 
-const validateJWT = (types: string[], tokenSecret: string, neededData: string[] = ['data']) => async (req: Request, res: Response, next: NextFunction) => {
+const validateJWT = (types: string[], neededData: string[] = ['data']) => async (req: Request, res: Response, next: NextFunction) => {
+    const tokenSecret: string = env("tokenSecret")!;
     if (!req.headers.authorization || req.headers.authorization.indexOf('Bearer ') === -1) {
         res.status(401).json({ error: true, message: 'Missing Bearer Authorization Header' });
         return;

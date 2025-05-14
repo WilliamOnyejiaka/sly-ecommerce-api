@@ -1,6 +1,7 @@
 import { Token } from ".";
 import { AdminCache, CustomerCache, VendorCache } from "../cache";
-import BaseCache from "../cache/BaseCache";
+import BaseCache from "../cache/bases/BaseCache";
+import UserCache from "../cache/bases/UserCache";
 import constants, { http, HttpStatus } from "../constants";
 import { Admin, Customer, Vendor } from "../repos";
 import UserRepo from "../repos/bases/UserRepo";
@@ -14,7 +15,7 @@ export default class Auth extends Authentication {
         super();
     }
 
-    public async login<T extends UserRepo, U extends BaseCache>(
+    public async login<T extends UserRepo, U extends UserCache>(
         repo: T,
         logInDetails: {
             email: string,
@@ -27,20 +28,24 @@ export default class Auth extends Authentication {
         const errorResponse = super.handleRepoError(repoResult);
         if (errorResponse) return errorResponse;
 
-        const user = repoResult.data;
+        let user = repoResult.data;
 
         if (user) {
             const hashedPassword = user.password
             const validPassword = Password.compare(logInDetails.password, hashedPassword, this.storedSalt);
 
+
             if (validPassword) {
-                user.profilePictureUrl = user[repo.imageRelation].length != 0 ? user[repo.imageRelation][0].imageUrl : null;
-                delete user[repo.imageRelation];
-                delete user.password;
+                // user.profilePictureUrl = user[repo.imageRelation].length != 0 ? user[repo.imageRelation][0].imageUrl : null;
+                // delete user[repo.imageRelation];
+                // delete user.password;
+                let cacheData = user;
+                ({ data: user, cacheData } = this.sanitizeUserData(user, role, repo));
                 const cacheSuccessful = await cache.set(
-                    String(user.id),
-                    user
+                    user.id,
+                    cacheData
                 );
+                console.log(cacheData);
 
                 const token = role === "admin" ? this.generateAdminToken(user) : this.generateUserToken(user.id, role);
 
@@ -55,15 +60,15 @@ export default class Auth extends Authentication {
     }
 
     public async customerLogin(email: string, password: string) {
-        return await this.login<Customer, CustomerCache>(this.customerRepo, { email, password }, this.customerCache, UserType.Customer);
+        return await this.login<Customer, CustomerCache>(this.customerRepo, { email, password }, this.customerCache, UserType.CUSTOMER);
     }
 
     public async adminLogin(email: string, password: string) {
-        return await this.login<Admin, AdminCache>(this.adminRepo, { email, password }, this.adminCache, UserType.Admin);
+        return await this.login<Admin, AdminCache>(this.adminRepo, { email, password }, this.adminCache, UserType.ADMIN);
     }
 
     public async vendorLogin(email: string, password: string) {
-        return await this.login<Vendor, VendorCache>(this.vendorRepo, { email, password }, this.vendorCache, UserType.Vendor);
+        return await this.login<Vendor, VendorCache>(this.vendorRepo, { email, password }, this.vendorCache, UserType.VENDOR);
     }
 
     public async logOut(token: string) {

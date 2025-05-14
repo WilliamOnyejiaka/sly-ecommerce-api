@@ -3,12 +3,11 @@ import {
     paramNumberIsValid
 } from "../validators";
 import { validateJWT } from "./../";
-import { env } from "./../../config";
 import { UserType } from "../../types/enums";
 
-const customerJWT = validateJWT([UserType.Customer], env("tokenSecret")!);
-const vendorJWT = validateJWT([UserType.Vendor], env("tokenSecret")!);
-const generalJWT = validateJWT([UserType.Vendor, UserType.Customer], env("tokenSecret")!);
+const customerJWT = validateJWT([UserType.CUSTOMER]);
+const vendorJWT = validateJWT([UserType.VENDOR]);
+const generalJWT = validateJWT([UserType.VENDOR, UserType.CUSTOMER]);
 
 
 export const storeId = [

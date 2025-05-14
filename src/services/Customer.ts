@@ -10,7 +10,7 @@ import { streamRouter } from "../config";
 export default class Customer extends UserService<CustomerRepo, CustomerCache, CustomerProfilePic> {
 
     public constructor() {
-        super(new CustomerRepo(), new CustomerCache(), new CustomerProfilePic(), UserType.Customer, CdnFolders.CUSTOMER_PROFILE_PIC);
+        super(new CustomerRepo(), new CustomerCache(), new CustomerProfilePic(), UserType.CUSTOMER, CdnFolders.CUSTOMER_PROFILE_PIC);
     }
 
     public async createCustomer(
@@ -44,7 +44,7 @@ export default class Customer extends UserService<CustomerRepo, CustomerCache, C
             return super.responseData(repoResult.type, true, repoResult.message!);
         }
 
-        const deleted = await this.cache.delete(String(customerId));
+        const deleted = await this.cache.delete(customerId);
 
         return deleted ?
             super.responseData(200, false, "Customer was deleted successfully") :

@@ -55,6 +55,11 @@ export default class Like extends Repo {
     }
 
     public async countLikes(parentId: number | string) {
-        return await ((this.prisma[this.likeTbl] as any) as any).count({ where: { [`${this.parentColumn}`]: parentId } })
+        try {
+            const likes = await ((this.prisma[this.likeTbl] as any) as any).count({ where: { [`${this.parentColumn}`]: parentId } });
+            return this.repoResponse(false, 200, null, { likes });
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
     }
 }

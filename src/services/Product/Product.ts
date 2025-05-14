@@ -1,12 +1,14 @@
-import { Product as ProductRepo } from "../repos";
-import BaseService from "./bases/BaseService";
-import { Store, SubCategory, Category, SSE } from ".";
-import { InventoryDto, ProductDto } from "../types/dtos";
-import { uploadProductQueue } from "../jobs/queues";
-import { logger } from "../config";
-import { getPagination } from "../utils";
+import { ProductLike, Product as ProductRepo } from "../../repos";
+import BaseService from "../bases/BaseService";
+import { Store, SubCategory, Category, SSE } from "..";
+import { InventoryDto, ProductDto } from "../../types/dtos";
+import { uploadProductQueue } from "../../jobs/queues";
+import { logger } from "../../config";
+import { getPagination } from "../../utils";
 
 export default class Product extends BaseService<ProductRepo> {
+
+    protected readonly productLikeRepo = new ProductLike();
 
     public constructor() {
         super(new ProductRepo());
@@ -49,7 +51,7 @@ export default class Product extends BaseService<ProductRepo> {
         return super.responseData(500, true, "Something went wrong");
     }
 
-    public async getProduct(productId: number) {
+    public async getProduct(productId: number, vendorId: number) {
         const repoResult = await this.repo!.getProduct(productId);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
@@ -62,10 +64,10 @@ export default class Product extends BaseService<ProductRepo> {
         return super.responseData(404, false, "Product was not found", data);
     }
 
-    public async getProducts(page: number, pageSize: number) {
+    public async getProducts(page: number, pageSize: number, vendorId: number) {
         const skip = (page - 1) * pageSize;
         const take = pageSize;
-        const repoResult = await this.repo!.getProducts(skip, take);
+        const repoResult = await this.repo!.getProducts(skip, take, vendorId);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
         const data = repoResult.data as any;
@@ -81,4 +83,8 @@ export default class Product extends BaseService<ProductRepo> {
         return super.responseData(200, true, "Products were retrieved successfully", { items, pagination });
     }
 
+    public async countLikes(productId: number) {
+        const repoResult = await this.productLikeRepo.countLikes(productId);
+        return repoResult;
+    }
 }

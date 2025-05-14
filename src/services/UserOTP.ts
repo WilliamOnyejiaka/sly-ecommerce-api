@@ -1,6 +1,7 @@
 import { OTP } from ".";
 import { AdminCache, CustomerCache, VendorCache } from "../cache";
-import BaseCache from "../cache/BaseCache";
+import BaseCache from "../cache/bases/BaseCache";
+import UserCache from "../cache/bases/UserCache";
 import { env } from "../config";
 import constants, { http } from "../constants";
 import { Admin, Customer, Vendor } from "../repos";
@@ -33,18 +34,18 @@ export default class UserOTP extends Authentication {
     }
 
     public async sendVendorOTP(email: string, otpType: OTPType) {
-        return await this.sendUserOTP<Vendor>(this.vendorRepo, email, otpType, UserType.Vendor);
+        return await this.sendUserOTP<Vendor>(this.vendorRepo, email, otpType, UserType.VENDOR);
     }
 
     public async sendCustomerOTP(email: string, otpType: OTPType) {
-        return await this.sendUserOTP<Customer>(this.customerRepo, email, otpType, UserType.Customer);
+        return await this.sendUserOTP<Customer>(this.customerRepo, email, otpType, UserType.CUSTOMER);
     }
 
     public async sendAdminOTP(email: string, otpType: OTPType) {
-        return await this.sendUserOTP<Admin>(this.adminRepo, email, otpType, UserType.Admin);
+        return await this.sendUserOTP<Admin>(this.adminRepo, email, otpType, UserType.ADMIN);
     }
 
-    private async emailVerification<T extends UserRepo, U extends BaseCache>(repo: T, cache: U, email: string, otpCode: string, userType: UserType) {
+    private async emailVerification<T extends UserRepo, U extends UserCache>(repo: T, cache: U, email: string, otpCode: string, userType: UserType) {
         const otp = new OTP(email, OTPType.Verification, userType);
         const otpServiceResult = await otp.confirmOTP(otpCode);
 
@@ -90,7 +91,7 @@ export default class UserOTP extends Authentication {
             this.vendorCache,
             email,
             otpCode,
-            UserType.Vendor
+            UserType.VENDOR
         );
     }
 
@@ -100,7 +101,7 @@ export default class UserOTP extends Authentication {
             this.customerCache,
             email,
             otpCode,
-            UserType.Customer
+            UserType.CUSTOMER
         );
     }
 
@@ -110,7 +111,7 @@ export default class UserOTP extends Authentication {
             this.adminCache,
             email,
             otpCode,
-            UserType.Admin
+            UserType.ADMIN
         );
     }
 
@@ -126,7 +127,7 @@ export default class UserOTP extends Authentication {
         return super.responseData(200, false, "OTP confirmation was successful", { token: token });
     }
 
-    private async passwordReset<T extends UserRepo>(repo: T, email: string, password: string, userType: UserType) {       
+    private async passwordReset<T extends UserRepo>(repo: T, email: string, password: string, userType: UserType) {
         const repoResult = userType === "admin" ? await this.adminRepo.getAdminAndRoleWithEmail(email) : await repo.getUserProfileWithEmail(email);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
@@ -155,7 +156,7 @@ export default class UserOTP extends Authentication {
             this.adminRepo,
             email,
             password,
-            UserType.Admin
+            UserType.ADMIN
         );
     }
 
@@ -164,7 +165,7 @@ export default class UserOTP extends Authentication {
             this.vendorRepo,
             email,
             password,
-            UserType.Vendor
+            UserType.VENDOR
         );
     }
 
@@ -173,7 +174,7 @@ export default class UserOTP extends Authentication {
             this.customerRepo,
             email,
             password,
-            UserType.Customer
+            UserType.CUSTOMER
         );
     }
 } 

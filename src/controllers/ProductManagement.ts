@@ -4,10 +4,47 @@ import { InventoryDto, ProductDto } from "../types/dtos";
 import { numberValidator } from "../validators";
 import { validationResult } from "express-validator";
 import { Product as ProductService } from "../services";
+import { Draft } from "../services/Product";
 
-export default class Product {
+export default class ProductManagement {
 
     private static readonly service: ProductService = new ProductService();
+    private static readonly draftService: Draft = new Draft();
+
+    public static async drafts(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+
+        const storeId = Number(req.params.storeId);
+        const limit = Number(req.query.limit);
+        const page = Number(req.query.page);
+        const result = await ProductManagement.draftService.drafts(page, limit, storeId);
+        return Controller.response(res, result);
+    }
+
+    public static async publishDraft(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+
+        let {
+            productId,
+            storeId
+        } = req.body;
+
+
+        storeId = Number(storeId);
+        productId = Number(productId);
+        const result = await ProductManagement.draftService.publish(productId, storeId);
+        return Controller.response(res, result);
+    }
 
     public static async getProduct(req: Request, res: Response) {
         const validationErrors = validationResult(req);
@@ -17,8 +54,9 @@ export default class Product {
             return;
         }
 
-        const id = Number(req.params.id)
-        const result = await Product.service.getProduct(id);
+        const id = Number(req.params.id);
+        const userId = Number(res.locals.data.id);
+        const result = await ProductManagement.service.getProduct(id, userId);
         return Controller.response(res, result)
     }
 
@@ -32,8 +70,9 @@ export default class Product {
 
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
+        const userId = Number(res.locals.data.id);
 
-        const result = await Product.service.getProducts(page, limit);
+        const result = await ProductManagement.service.getProducts(page, limit, userId);
         Controller.response(res, result);
     }
 
@@ -58,8 +97,19 @@ export default class Product {
             categoryId,
             subcategoryId,
             stock,
-            lowStockThreshold
+            lowStockThreshold,
+            draft,
+            link
         } = req.body;
+
+        if (!(draft === "true" || draft === "false")) {
+            res.status(400).json({
+                error: true,
+                data: draft,
+                message: "draft must be a boolean"
+            });
+            return;
+        }
 
         storeId = Number(storeId);
 
@@ -68,9 +118,11 @@ export default class Product {
             description,
             price: Number(price),
             additionalInfo,
+            draft: JSON.parse(draft),
             attributes,
             metaData,
             storeId,
+            link,
             categoryId: Number(categoryId)
         };
 
@@ -97,7 +149,7 @@ export default class Product {
 
         const userId = Number(res.locals.data.id);
         const userType = res.locals.userType;
-        const result = await Product.service.uploadProduct(productDto, inventoryDto, req.files as Express.Multer.File[], userType, userId);
+        const result = await ProductManagement.service.uploadProduct(productDto, inventoryDto, req.files as Express.Multer.File[], userType, userId);
         Controller.response(res, result);
     }
 }

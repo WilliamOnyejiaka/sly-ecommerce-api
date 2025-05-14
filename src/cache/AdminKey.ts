@@ -1,4 +1,4 @@
-import BaseCache from "./BaseCache";
+import BaseCache from "./bases/BaseCache";
 
 export default class AdminKey extends BaseCache {
 
@@ -7,6 +7,6 @@ export default class AdminKey extends BaseCache {
     }
 
     public async set(key: string, data: any = "adminKey", expirationTime?: number): Promise<boolean> {
-        return await super.set(key,data);
+        return await super.set(key, data);
     }
 }
