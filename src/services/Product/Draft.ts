@@ -7,7 +7,7 @@ export default class Draft extends Product {
         const repoResult = await this.repo!.updateDraft(productId, storeId);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
-        return this.responseData(200, false, "Product was publish successfully", repoResult.data);
+        return this.responseData(200, false, "Product was published successfully", repoResult.data);
     }
 
     public async edit() {

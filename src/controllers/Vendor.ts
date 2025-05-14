@@ -3,16 +3,34 @@ import { Auth, Vendor as VendorService } from "../services";
 import Controller from "./bases/Controller";
 import { UserFacade } from "../facade";
 import { UserType } from "../types/enums";
+import { validationResult } from "express-validator";
 
 export default class Vendor {
 
     private static readonly facade: UserFacade = new UserFacade();
+    private static readonly service: VendorService = new VendorService();
+
 
     public static async uploadProfilePicture(req: Request, res: Response) {
         const image = req.file!;
         const vendorId = Number(res.locals.data.id);
         const facadeResult = await Vendor.facade.uploadProfilePicture(image, vendorId, UserType.VENDOR);
         Controller.response(res, facadeResult);
+    }
+
+    public static async updateProfile(req: Request, res: Response) {
+        const vendorId = Number(res.locals.data.id);
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            res.status(400).json({
+                error: true,
+                message: validationErrors.array()[0].msg,
+            });
+            return;
+        }
+        const serviceResult = await Vendor.service.updateProfile(vendorId, req.body);
+        Controller.response(res, serviceResult);
     }
 
     public static async getVendor(req: Request, res: Response) {

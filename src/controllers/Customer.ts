@@ -1,7 +1,7 @@
 import { Controller } from ".";
 import { Auth, Customer as CustomerService } from "./../services";
+import { validationResult } from "express-validator";
 import { Request, Response } from "express";
-
 
 export default class Customer {
 
@@ -19,6 +19,21 @@ export default class Customer {
         const customerId = Number(res.locals.data.id);
         const serviceResult = await Customer.service.getUserProfileWithId(customerId);
         res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
+    public static async updateProfile(req: Request, res: Response) {
+        const customerId = Number(res.locals.data.id);
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            res.status(400).json({
+                error: true,
+                message: validationErrors.array()[0].msg,
+            });
+            return;
+        }
+        const serviceResult = await Customer.service.updateProfile(customerId, req.body);
+        Controller.response(res, serviceResult);
     }
 
     public static async delete(req: Request, res: Response) {

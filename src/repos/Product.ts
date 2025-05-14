@@ -305,6 +305,4 @@ export default class Product extends AssetRepo {
             return this.handleDatabaseError(error); // Ensure this method handles the error correctly
         }
     }
-
-
 }

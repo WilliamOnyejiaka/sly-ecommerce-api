@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { Vendor } from "../../controllers";
 import { uploads, validateBody } from "../../middlewares";
 import asyncHandler from "express-async-handler";
+import { validateUpdateUser } from "./../../middlewares/routes/user";
 
 const vendor: Router = Router();
 
@@ -38,6 +39,8 @@ vendor.get(
     "/",
     asyncHandler(Vendor.getVendorAll)
 );
+
+vendor.put("/", validateUpdateUser, asyncHandler(Vendor.updateProfile));
 
 vendor.delete(
     "/",

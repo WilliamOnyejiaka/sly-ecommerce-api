@@ -4,7 +4,7 @@ import constants, { HttpStatus } from "../constants";
 import UserRepo from "../repos/bases/UserRepo";
 import Repo from "../repos/bases/Repo";
 
-const errorDetails = (message: string, statusCode: number) => {
+export const errorDetails = (message: string, statusCode: number) => {
     return JSON.stringify({
         message: message,
         statusCode: statusCode
@@ -78,7 +78,7 @@ const nameExists = <T extends Repo>(repo: T) => async (value: string) => {
 
 const itemWithIdExists = <T extends Repo>(repo: T) => async (id: string) => {
     const repoResult = await repo.getItemWithId(Number(id));
-    
+
     if (repoResult.error) {
         throw new Error(JSON.stringify({
             message: repoResult.message,

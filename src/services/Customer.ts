@@ -5,7 +5,9 @@ import UserService from "./bases/UserService";
 import { Password } from "../utils";
 import { CustomerAddressDto } from "../types/dtos";
 import { CdnFolders, StreamGroups, UserType } from "../types/enums";
-import { streamRouter } from "../config";
+import { streamRouter, env } from "../config";
+import { Prisma } from "@prisma/client";
+
 
 export default class Customer extends UserService<CustomerRepo, CustomerCache, CustomerProfilePic> {
 
@@ -36,6 +38,44 @@ export default class Customer extends UserService<CustomerRepo, CustomerCache, C
             data: customer,
         });
         return super.responseData(201, false, "Customer has been created successfully", customer);
+    }
+
+    public async updateProfile(id: number, data: any) {
+        const profileRepoResult = await this.repo!.getItemWithId(id);
+        const repoResultError = this.handleRepoError(profileRepoResult);
+        if (repoResultError) return repoResultError;
+        const profile = profileRepoResult.data;
+        if (!profile) return this.responseData(404, true, "User was not found");
+
+        // Check if email is taken (excluding current user)
+        const newEmail = data.email
+        if (newEmail && newEmail !== profile.email) {
+            const emailRepoResult = await this.repo?.emailExists(newEmail);
+            const repoResultError = this.handleRepoError(profileRepoResult);
+            if (repoResultError) return repoResultError;
+            const { exists } = emailRepoResult!.data as any;
+            if (exists) return this.responseData(400, true, "Email is already taken");
+        }
+
+        const updateData: Prisma.CustomerUpdateInput = {};
+
+        if (data.firstName) updateData.firstName = data.firstName;
+        if (data.lastName) updateData.lastName = data.lastName;
+        if (data.email) {
+            updateData.email = data.email;
+            updateData.verified = false;
+        }
+        if (data.phoneNumber) updateData.phoneNumber = data.phoneNumber;
+        if (data.password) {
+            const passwordHash: string = Password.hashPassword(data.password!, this.storedSalt);
+            updateData.password = passwordHash;
+        }
+
+        const updateRepoResult = await this.repo!.updateProfile(id, updateData);
+        const updateRepoResultError = this.handleRepoError(updateRepoResult);
+        if (updateRepoResultError) return updateRepoResultError;
+
+        return this.responseData(200, false, "User has been updated successfully", updateRepoResult.data);
     }
 
     public async delete(customerId: number) {

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import prisma from "..";
 import Repo from "./Repo";
 
@@ -9,6 +9,43 @@ export default class UserRepo extends Repo {
     public constructor(tblName: keyof PrismaClient, imageRelation: string) {
         super(tblName);
         this.imageRelation = imageRelation;
+    }
+
+    public async updateProfile(id: number, updateData: Prisma.CustomerUpdateInput | Prisma.VendorUpdateInput) {
+        try {
+            const updatedUser = await (this.prisma[this.tblName] as any).update({
+                where: { id },
+                data: updateData as any,
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    phoneNumber: true,
+                    active: true,
+                    verified: true,
+                    isOauth: true,
+                    oAuthDetails: true,
+                    createdAt: true,
+                    updatedAt: true
+                },
+            });
+            return super.repoResponse(false, 200, "User has been updated successfully", updatedUser);
+        } catch (error) {
+            return super.handleDatabaseError(error);
+        }
+    }
+
+    public async emailExists(email: string) {
+        try {
+            const item = await (this.prisma[this.tblName] as any).findUnique({
+                // const item = await this.prisma.customer.findUnique({
+                where: { email }
+            });
+            return this.repoResponse(false, 200, null, { exists: item?.email ? true : false });
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
     }
 
     public async getUserWithId(userId: number) {
