@@ -146,10 +146,11 @@ export default class Repo<T = any> implements Repository {
         }
     }
 
-    public async getAll(where: any = {}) {
+    public async getAll(where: any = {},filter: any = {}) {
         try {
             const items = await (prisma[this.tblName] as any).findMany({
-                where: where
+                where: where,
+                ...filter
             });
             return this.repoResponse(false, 200, null, items);
         } catch (error) {
