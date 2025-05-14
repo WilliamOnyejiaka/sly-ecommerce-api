@@ -111,20 +111,15 @@ export default class UserRepo extends Repo {
     }
 
     public async getAll(filter?: any) {
-        try {
-            const items = await (prisma[this.tblName] as any).findMany({
-                include: {
-                    [this.imageRelation]: {
-                        select: {
-                            imageUrl: true
-                        }
+        return await super.getAll({}, {
+            include: {
+                [this.imageRelation]: {
+                    select: {
+                        imageUrl: true
                     }
                 }
-            });
-            return this.repoResponse(false, 200, null, items);
-        } catch (error) {
-            return this.handleDatabaseError(error);
-        }
+            }
+        });
     }
 
     protected async updateWithIdOrEmail(idOrEmail: number | string, data: any) {
