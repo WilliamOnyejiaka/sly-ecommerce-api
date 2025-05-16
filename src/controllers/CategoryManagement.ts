@@ -105,7 +105,7 @@ export default class CategoryManagement extends Category {
         Controller.response(res, facadeResult);
     }
 
-    public static override getCategoryWithName(category: CategoryType) {
+    public static override getWithName(category: CategoryType) {
         return async (req: Request, res: Response) => {
             const facadeResult = await Category.facade.adminGetCategory(req.params.categoryName, category);
             Controller.response(res, facadeResult);

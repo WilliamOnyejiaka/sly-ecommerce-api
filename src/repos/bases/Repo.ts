@@ -137,6 +137,7 @@ export default class Repo<T = any> implements Repository {
                 ...filter
             });
             const totalItems = await (prisma[this.tblName] as any).count(countFilter);
+
             return this.repoResponse(false, 200, null, {
                 items: items,
                 totalItems: totalItems
@@ -146,7 +147,7 @@ export default class Repo<T = any> implements Repository {
         }
     }
 
-    public async getAll(where: any = {},filter: any = {}) {
+    public async getAll(where: any = {}, filter: any = {}) {
         try {
             const items = await (prisma[this.tblName] as any).findMany({
                 where: where,

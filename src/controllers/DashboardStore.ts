@@ -48,7 +48,7 @@ export default class DashboardStore extends Store {
         }
 
         const vendorId = Number(req.params.vendorId);
-        const serviceResult = await DashboardStore.service.getStoreAll(vendorId);
+        const serviceResult = await DashboardStore.service.getStoreAllWithVendorId(vendorId);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

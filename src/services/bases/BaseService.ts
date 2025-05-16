@@ -109,11 +109,11 @@ export default class BaseService<T extends Repo = Repo> {
         return await this.getItem(name, message200);
     }
 
-    public async paginate(page: number, pageSize: number, filter: any = {}) {
+    public async paginate(page: number, pageSize: number, filter: any = {}, countFilter: any = {}) {
         const skip = (page - 1) * pageSize;
         const take = pageSize;
 
-        const repoResult = await this.repo!.paginate(Number(skip), take, filter);
+        const repoResult = await this.repo!.paginate(Number(skip), take, filter, countFilter);
 
         if (repoResult.error) {
             return this.responseData(repoResult.type, true, repoResult.message!);

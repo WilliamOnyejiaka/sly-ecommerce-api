@@ -80,7 +80,7 @@ export default abstract class Store {
 
     public static async getStoreAll(req: Request, res: Response) {
         const vendorId = Number(res.locals.data.id);
-        const serviceResult = await Store.service.getStoreAll(vendorId);
+        const serviceResult = await Store.service.getStoreAllWithVendorId(vendorId);
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 

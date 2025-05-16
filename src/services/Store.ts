@@ -190,7 +190,7 @@ export default class Store extends BaseService<StoreDetails> {
         );
     }
 
-    public async getStoreAll(vendorId: number) {
+    public async getStoreAllWithVendorId(vendorId: number) {
         const repoResult = await this.repo!.getStoreAndRelationsWithVendorId(vendorId);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
@@ -208,7 +208,7 @@ export default class Store extends BaseService<StoreDetails> {
 
     public async paginateStores(page: number, pageSize: number) {
         const skip = (page - 1) * pageSize;
-        const take = pageSize;        
+        const take = pageSize;
         const repoResult = await this.repo!.paginateStore(skip, take);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;

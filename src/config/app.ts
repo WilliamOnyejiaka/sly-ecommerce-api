@@ -13,9 +13,7 @@ import {
     adminStore,
     dashboardCategory,
     customer,
-    category,
     dashboardSubCategory,
-    subcategory,
     adBanner,
     user,
     storeFollower,
@@ -77,10 +75,8 @@ function createApp() {
     app.use("/api/v1/admin/permission", validateJWT(["admin"]), permission);
     app.use("/api/v1/admin/admin-permission", validateJWT(["admin"]), adminPermission);
     app.use("/api/v1/admin/store", validateJWT(["admin"]), adminStore);
-    app.use("/api/v1/dashboard/category", validateJWT(["admin"]), dashboardCategory);
-    app.use("/api/v1/category", validateJWT(["admin", "vendor", "customer"]), category);
-    app.use("/api/v1/dashboard/subcategory", validateJWT(["admin"]), dashboardSubCategory);
-    app.use("/api/v1/subcategory", validateJWT(["admin", "vendor", "customer"]), subcategory);
+    app.use("/api/v1/category", dashboardCategory);
+    app.use("/api/v1/subcategory", dashboardSubCategory);
     app.use("/api/v1/ad-banner", validateJWT(["admin", "vendor", "customer"]), adBanner);
     app.use("/api/v1/dashboard/user", validateJWT(["admin"]), user);
     app.use(

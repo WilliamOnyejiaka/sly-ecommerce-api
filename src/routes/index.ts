@@ -9,9 +9,7 @@ import adminPermission from "./adminPermission";
 import dashboardStore from "./dashboard/store";
 import dashboardCategory from "./dashboard/category";
 import customer from "./users/customer";
-import category from "./category";
 import dashboardSubCategory from "./dashboard/subCategory";
-import subcategory from "./subcategory";
 import adBanner from "./adBanner";
 import user from "./dashboard/user";
 import storeFollower from "./storeFollower";
@@ -34,9 +32,7 @@ export {
     dashboardStore as adminStore,
     dashboardCategory,
     customer,
-    category,
     dashboardSubCategory,
-    subcategory,
     adBanner,
     user,
     storeFollower,

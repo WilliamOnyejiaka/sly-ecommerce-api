@@ -16,10 +16,10 @@ export default class SubCategory extends AssetService<SubCategoryRepo, SubCatego
 
     public async createCategoryAll(categoryDetailsDto: SubCategoryDto, image: Express.Multer.File) {
         const categoryNameServiceResult = await super.getItemWithName(categoryDetailsDto.name);
-        
-        if (categoryNameServiceResult.json.message !== "Item was not found" ) return categoryNameServiceResult;
+
+        if (categoryNameServiceResult.json.message !== "Item was not found") return categoryNameServiceResult;
         if (categoryNameServiceResult.json.data) return super.responseData(HttpStatus.BAD_REQUEST, true, "SubCategory name already exists");
-        
+
         return await super.createAsset(categoryDetailsDto, image);
     }
 
@@ -56,9 +56,10 @@ export default class SubCategory extends AssetService<SubCategoryRepo, SubCatego
     }
 
     public async paginateSubCategoryWithCategoryId(page: number, pageSize: number, categoryId: number) {
-        const serviceResult = await super.paginate(page, pageSize, {
-            where: { categoryId: categoryId }
-        });
+        const where = {
+            where: { categoryId }
+        };        
+        const serviceResult = await super.paginate(page, pageSize, where, where);
         if (!serviceResult.json.error) super.sanitizeImageItems(serviceResult.json.data.data);
         return serviceResult;
     }

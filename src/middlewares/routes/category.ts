@@ -3,7 +3,8 @@ import { Category, SubCategory } from "../../repos";
 import { AdminPermission } from "../../types/enums";
 import adminAuthorization from "../adminAuthorization";
 import validateBody from "../validateBody";
-import { bodyBooleanIsValid, bodyNumberIsValid, itemIdExists, itemNameExists, paramItemIsPresent } from "../validators";
+import validateJWT from "./../validateJWT";
+import { bodyBooleanIsValid, bodyNumberIsValid, itemIdExists, itemNameExists, paramItemIsPresent, paramNumberIsValid, queryIsValidNumber } from "../validators";
 
 const categoryNameExists = itemNameExists<Category>(new Category(), "name");
 const adminAuth = adminAuthorization(['manage_all']);
@@ -11,6 +12,7 @@ const category = new Category();
 const subCategory = new SubCategory();
 
 export const createCategory = [
+    validateJWT(["admin"]),
     adminAuth,
     validateBody([
         "name",
@@ -23,6 +25,7 @@ export const createCategory = [
 ];
 
 export const createCategoryAll = [
+    validateJWT(["admin"]),
     adminAuth,
     uploads.single("image"),
     validateBody([
@@ -36,6 +39,7 @@ export const createCategoryAll = [
 ];
 
 export const createSubCategory = [
+    validateJWT(["admin"]),
     adminAuth,
     validateBody([
         "name",
@@ -48,6 +52,7 @@ export const createSubCategory = [
 ];
 
 export const createSubCategoryAll = [
+    validateJWT(["admin"]),
     adminAuth,
     uploads.single("image"),
     validateBody([
@@ -62,6 +67,7 @@ export const createSubCategoryAll = [
 ];
 
 export const toggleActiveStatus = [
+    validateJWT(["admin"]),
     adminAuth,
     validateBody([
         "id",
@@ -72,6 +78,7 @@ export const toggleActiveStatus = [
 ];
 
 export const updateName = [
+    validateJWT(["admin"]),
     adminAuth,
     validateBody([
         "id",
@@ -92,6 +99,7 @@ export const updateSubCategoryName = [
 ];
 
 export const updateCategoryPriority = [
+    validateJWT(["admin"]),
     adminAuth,
     validateBody([
         "id",
@@ -102,13 +110,25 @@ export const updateCategoryPriority = [
 ];
 
 export const uploadCategoryImage = [
+    validateJWT(["admin"]),
     adminAuthorization([AdminPermission.MANAGE_ALL]),
     uploads.single("image"),
     paramItemIsPresent<typeof category>(category, "categoryId")
 ];
 
 export const uploadSubCategoryImage = [
+    validateJWT(["admin"]),
     adminAuthorization([AdminPermission.MANAGE_ALL]),
     uploads.single("image"),
     paramItemIsPresent<typeof subCategory>(subCategory, "categoryId")
 ];
+
+export const pagination = [
+    queryIsValidNumber('page'),
+    queryIsValidNumber('limit')
+];
+
+export const subcategoryPagination = [
+    paramNumberIsValid('categoryId'),
+    ...pagination
+]

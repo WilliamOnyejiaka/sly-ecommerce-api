@@ -8,27 +8,19 @@ import { createStore } from "../../middlewares/routes/store";
 const dashboardStore: Router = Router();
 
 dashboardStore.get(
-    "/paginate",
-    adminAuthorization(['manage_all', 'manage_vendor']),
-    asyncHandler(DashboardStore.paginateStores)
-);
-
-dashboardStore.get(
-    "/all",
-    adminAuthorization(['manage_all', 'manage_vendor']),
-    asyncHandler(DashboardStore.getAllStores)
-);
-
-dashboardStore.get(
-    "/:vendorId",
-    adminAuthorization(['manage_all', 'manage_vendor']),
+    "/vendor/:vendorId",
     asyncHandler(DashboardStore.getStoreWithVendorId)
 );
 
 dashboardStore.delete(
-    "/:vendorId",
+    "/vendor/:vendorId",
     adminAuthorization(['manage_all', 'manage_vendor']),
     asyncHandler(DashboardStore.delete)
+);
+
+dashboardStore.get(
+    "/",
+    asyncHandler(DashboardStore.paginateStores)
 );
 
 dashboardStore.post(

@@ -5,6 +5,7 @@ import { ImageService } from "../../services";
 import AssetService from "../../services/bases/AssetService";
 import AssetRepo from "../../repos/bases/AssetRepo";
 import ImageRepo from "../../repos/bases/ImageRepo";
+import { validationResult } from "express-validator";
 
 export default class Controller {
 
@@ -24,8 +25,14 @@ export default class Controller {
 
     public static paginateAssetItems<T extends AssetService<AssetRepo, ImageRepo>>(service: T) {
         return async (req: Request, res: Response) => {
-            const { page, pageSize } = req.query;
-            const serviceResult = await service.paginate(page as any, pageSize as any);
+            const validationErrors = validationResult(req);
+
+            if (!validationErrors.isEmpty()) {
+                Controller.handleValidationErrors(res, validationErrors);
+                return;
+            }
+            const { page, limit } = req.query;
+            const serviceResult = await service.paginate(Number(page), Number(limit));
             service.sanitizeImageItems(serviceResult.json.data.data);
             res.status(serviceResult.statusCode).json(serviceResult.json);
         }

@@ -3,6 +3,7 @@ import { numberValidator } from "../validators";
 import { Controller } from ".";
 import { CategoryManagementFacade } from "../facade";
 import { CategoryType } from "../types/enums";
+import { validationResult } from "express-validator";
 
 export default abstract class Category {
 
@@ -14,13 +15,20 @@ export default abstract class Category {
     }
 
     public static async paginateSubCategoryWithCategoryId(req: Request, res: Response) {
-        const { page, pageSize } = req.query;
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+
+        const { page, limit } = req.query;
         const categoryId = Number(req.params.categoryId);
 
-        const facadeResult = await Category.facade.paginateSubCategoryWithCategoryId(page as any, pageSize as any, categoryId as any);
+        const facadeResult = await Category.facade.paginateSubCategoryWithCategoryId(Number(page), Number(limit), Number(categoryId));
         res.status(facadeResult.statusCode).json(facadeResult.json);
     }
-    
+
     public static getAllCategories(category: CategoryType) {
         return async (req: Request, res: Response) => {
             const facadeResult = await Category.facade.getAllCategories(category);
@@ -28,14 +36,14 @@ export default abstract class Category {
         }
     }
 
-    public static getCategoryWithName(category: CategoryType) {
+    public static getWithName(category: CategoryType) {
         return async (req: Request, res: Response) => {
             const facadeResult = await Category.facade.getCategory(req.params.categoryName, category);
             Controller.response(res, facadeResult);
         }
     }
 
-    public static getCategoryWithId(category: CategoryType) {
+    public static getWithId(category: CategoryType) {
         return async (req: Request, res: Response) => {
             const idResult = numberValidator(req.params.categoryId);
 

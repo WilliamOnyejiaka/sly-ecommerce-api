@@ -2,44 +2,25 @@ import { Router, Request, Response } from "express";
 import { CategoryManagement } from "../../controllers";
 import { adminAuthorization, uploads } from "../../middlewares";
 import asyncHandler from "express-async-handler";
-import { validateQueryParams } from "../../validators";
-import { createCategory, createCategoryAll, toggleActiveStatus, updateCategoryName, updateCategoryPriority, uploadCategoryImage } from "../../middlewares/routes/category";
+import { createCategory, createCategoryAll, pagination, toggleActiveStatus, updateCategoryName, updateCategoryPriority, uploadCategoryImage } from "../../middlewares/routes/category";
 import { CategoryType } from "../../types/enums";
 
 const dashboardCategory: Router = Router();
 
 dashboardCategory.get(
-    "/paginate-categories",
-    adminAuthorization(['any']),
-    validateQueryParams([
-        {
-            name: "page",
-            type: "number"
-        },
-        {
-            name: "pageSize",
-            type: "number"
-        }
-    ]),
-    asyncHandler(CategoryManagement.paginateCategories(CategoryType.Main))
+    "/name/:categoryName",
+    asyncHandler(CategoryManagement.getWithName(CategoryType.Main))
+);
+
+dashboardCategory.get(
+    "/id/:categoryId",
+    asyncHandler(CategoryManagement.getWithId(CategoryType.Main))
 );
 
 dashboardCategory.post(
     "/all",
     createCategoryAll,
     asyncHandler(CategoryManagement.createCategoryAll)
-);
-
-dashboardCategory.get(
-    "/get-with-name/:categoryName",
-    adminAuthorization(['any']),
-    asyncHandler(CategoryManagement.getCategoryWithName(CategoryType.Main))
-);
-
-dashboardCategory.get(
-    "/get-with-id/:categoryId",
-    adminAuthorization(['any']),
-    asyncHandler(CategoryManagement.getCategoryWithId(CategoryType.Main))
 );
 
 dashboardCategory.post(
@@ -55,13 +36,13 @@ dashboardCategory.patch(
 );
 
 dashboardCategory.patch(
-    "/update-name",
+    "/name",
     updateCategoryName,
     asyncHandler(CategoryManagement.updateName(CategoryType.Main))
 );
 
 dashboardCategory.patch(
-    "/update-priority",
+    "/priority",
     updateCategoryPriority,
     asyncHandler(CategoryManagement.updatePriority(CategoryType.Main))
 );
@@ -72,16 +53,17 @@ dashboardCategory.delete(
     asyncHandler(CategoryManagement.delete(CategoryType.Main))
 );
 
+
+dashboardCategory.get(
+    "/",
+    pagination,
+    asyncHandler(CategoryManagement.paginateCategories(CategoryType.Main))
+);
+
 dashboardCategory.post(
     "/",
     createCategory,
     asyncHandler(CategoryManagement.createCategory)
-);
-
-dashboardCategory.get(
-    "/",
-    adminAuthorization(['any']),
-    asyncHandler(CategoryManagement.getAllCategories(CategoryType.Main))
 );
 
 export default dashboardCategory;

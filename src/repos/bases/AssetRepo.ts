@@ -31,12 +31,12 @@ export default class AssetRepo extends Repo {
         return await super.getItem({ name: name }, this.imageFilter);
     }
 
-    public override async paginate(skip: number, take: number, filter: any = {}) {
+    public override async paginate(skip: number, take: number, filter: any = {}, countFilter: any = {}) {
 
         return super.paginate(skip, take, {
             ...filter,
             ...this.imageFilter
-        });
+        }, countFilter);
     }
 
     public async insertWithRelations(
