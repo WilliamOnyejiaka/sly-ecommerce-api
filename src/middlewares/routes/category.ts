@@ -19,7 +19,7 @@ export const createCategory = [
         "priority",
         "active"
     ]),
-    bodyBooleanIsValid('active'),
+    // bodyBooleanIsValid('active'),
     bodyNumberIsValid('priority'),
     categoryNameExists
 ];
@@ -31,7 +31,7 @@ export const createCategoryAll = [
     validateBody([
         "name",
         "priority",
-        // "active"
+        "active"
     ]),
     // bodyBooleanIsValid('active'),
     bodyNumberIsValid('priority'),
