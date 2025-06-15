@@ -5,7 +5,7 @@ import { CdnFolders, Queues, SSEEvents, ResourceType } from "../../../types/enum
 import { logger, redisBull, streamRouter } from "../../../config";
 import { notifyCustomersQueue, uploadProductQueue } from "../../queues";
 import { InventoryDto, ProductDto } from "../../../types/dtos";
-import { Cloudinary, SSE } from "../../../services";
+import { Cloudinary } from "../../../services";
 import { Product } from "../../../repos";
 import BaseService from "../../../services/bases/BaseService";
 
@@ -68,16 +68,16 @@ export default class UploadProduct implements IWorker<IJob> {
         //     productId
         // });
 
-        await streamRouter.addEvent('product', {
-            type: 'product:create',
+        await streamRouter.addEvent('notification', {
+            type: 'notification:users',
             data: {
                 error: returnvalue.json.error,
                 message: returnvalue.json.message,
-                data: {
+                userDetails: {
                     userType,
-                    clientId,
-                    ...returnvalue.json.data
-                }
+                    userId: clientId,
+                },
+                data: returnvalue.json.data
             },
         });
     }

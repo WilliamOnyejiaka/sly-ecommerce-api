@@ -15,7 +15,6 @@ import AdBanner from "./AdBanner";
 import UserManagement from "./UserManagement";
 import Comment from "./Comment";
 import StoreFollower from "./StoreFollower";
-import SSEController from "./SSEController";
 import NewProductInbox from "./NewProductInbox";
 import SavedProduct from "./SavedProduct";
 import FavoriteStore from "./FavoriteStore";
@@ -42,7 +41,6 @@ export {
     AdBanner,
     Comment,
     StoreFollower,
-    SSEController,
     NewProductInbox,
     SavedProduct,
     FavoriteStore,

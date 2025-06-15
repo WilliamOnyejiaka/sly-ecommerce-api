@@ -2,7 +2,6 @@ import BaseService from "./bases/BaseService";
 import { StoreFollower as StoreFollowerRepo, StoreDetails } from "../repos";
 import { redisClient, streamRouter } from "../config";
 import { StreamGroups, StreamEvents, UserType } from "../types/enums";
-import SSE from "./SSE";
 import cluster from "cluster";
 import { newFollowerQueue } from "../jobs/queues";
 

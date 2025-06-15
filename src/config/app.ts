@@ -28,7 +28,7 @@ import { vendorProductManagement } from "../routes/vendor";
 import { fypProduct } from "./../routes/fyp";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
 import asyncHandler from "express-async-handler";
-import { Admin, SSEController } from "../controllers";
+import { Admin } from "../controllers";
 import { CustomerCache, VendorCache } from "../cache";
 import { Vendor as VendorRepo, Customer as CustomerRepo } from "../repos";
 import cors from "cors";
@@ -36,7 +36,6 @@ import axios from 'axios';
 import { http } from "../constants";
 import { Admin as AdminService } from "../services";
 import { myQueue, uploadQueue } from "../jobs/queues";
-import { SSE } from "./../services";
 import initializeWorkers from "../jobs/workers";
 
 function createApp() {
@@ -56,9 +55,6 @@ function createApp() {
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
     app.use("/api/v1/fyp/product", validateJWT(["customer"]), fypProduct);
     app.use("/api/v1/vendor/product", validateJWT(["vendor"]), vendorProductManagement);
-
-    app.get('/events', validateJWT(["admin", "vendor", "customer"]), SSEController.SSE);
-    app.get('/notifications', validateJWT(["admin", "vendor", "customer"]), SSEController.notification);
 
     app.use("/api/v1/auth", auth);
     app.use(
@@ -100,13 +96,7 @@ function createApp() {
         // Add job to BullMQ queue
         const job = await myQueue.add('processTask', { task: 'example', clientId, userType });
 
-        const wasAdded = await SSE.addJob(job.id, userType, clientId);
-        if (wasAdded) {
-            res.status(200).json({ message: `Job ${job.id} added to queue for client ${clientId}`, error: false });
-            return;
-        }
-
-        res.status(500).json({ message: "Something went wrong", error: true });
+        res.status(200).json({ message: `Job ${job.id} added to queue for client ${clientId}`, error: false });
     });
 
 

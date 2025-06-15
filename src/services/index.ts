@@ -21,7 +21,6 @@ import AdBanner from "./AdBanner";
 import Cloudinary from "./Cloudinary";
 import ProductComment from "./ProductComment";
 import StoreFollower from "./StoreFollower";
-import SSE from "./SSE";
 import NewProductInbox from "./NewProductInbox";
 import Product from "./Product/Product";
 import NewFollower from "./NewFollower";
@@ -54,7 +53,6 @@ export {
     Cloudinary,
     ProductComment,
     StoreFollower,
-    SSE,
     Product,
     NewProductInbox,
     NewFollower,

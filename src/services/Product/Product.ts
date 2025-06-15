@@ -1,6 +1,6 @@
 import { ProductLike, Product as ProductRepo } from "../../repos";
 import BaseService from "../bases/BaseService";
-import { Store, SubCategory, Category, SSE } from "..";
+import { Store, SubCategory, Category } from "..";
 import { InventoryDto, ProductDto } from "../../types/dtos";
 import { uploadProductQueue } from "../../jobs/queues";
 import { logger } from "../../config";
@@ -42,13 +42,9 @@ export default class Product extends BaseService<ProductRepo> {
             clientId
         });
 
-        const wasAdded = await SSE.addJob(job.id, userType, clientId);
-        if (wasAdded) {
-            logger.info(`Job ${job.id} added to queue for ${userType} - ${clientId}`);
-            return super.responseData(200, false, "Product upload is processing")
-        }
+        logger.info(`Job ${job.id} added to queue for ${userType} - ${clientId}`);
+        return super.responseData(200, false, "Product upload is processing")
 
-        return super.responseData(500, true, "Something went wrong");
     }
 
     public async getProduct(productId: number, vendorId: number) {

@@ -3,7 +3,6 @@ import { WorkerConfig, IWorker, CompletedJob } from "../../../types";
 import { Queues, SSEEvents, UserType } from "../../../types/enums";
 import { redisBull, redisClient } from "../../../config";
 import { notifyCustomersQueue } from "../../queues";
-import { SSE } from "../../../services";
 import prisma from "../../../repos";
 import BaseService from "../../../services/bases/BaseService";
 import cluster from "cluster";

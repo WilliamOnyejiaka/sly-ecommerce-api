@@ -7,7 +7,6 @@ import ImageService from "./Image";
 import { CdnFolders, StreamEvents, StreamGroups, UserType } from "../types/enums";
 import { streamRouter } from "../config";
 import { createStoreQueue } from "../jobs/queues";
-import SSE from "./SSE";
 
 export default class Store extends BaseService<StoreDetails> {
 
@@ -36,13 +35,7 @@ export default class Store extends BaseService<StoreDetails> {
             userType: userType,
             clientId: storeDetailsDto.vendorId!
         });
-
-        const wasAdded = await SSE.addJob(job.id, userType, storeDetailsDto.vendorId!);
-        if (wasAdded) {
-            return super.responseData(200, false, `Job ${job.id} added to queue for client ${userType} - ${storeDetailsDto.vendorId!}`)
-        }
-
-        return super.responseData(500, true, "Something went wrong");
+        return super.responseData(200, false, `Job ${job.id} added to queue for client ${userType} - ${storeDetailsDto.vendorId!}`)
     }
 
     public async createStore(storeDetailsDto: StoreDetailsDto) {
