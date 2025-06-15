@@ -1,14 +1,13 @@
 
 import { Job, Queue } from "bullmq";
-import { WorkerConfig, IWorker, ImageMeta, CompletedJob } from "../../../types";
+import { WorkerConfig, IWorker, ImageMeta, CompletedJob, FailedJob } from "../../../types";
 import { CdnFolders, Queues, SSEEvents, ResourceType } from "../../../types/enums";
-import { redisBull } from "../../../config";
+import { logger, redisBull, streamRouter } from "../../../config";
 import { notifyCustomersQueue, uploadProductQueue } from "../../queues";
 import { InventoryDto, ProductDto } from "../../../types/dtos";
 import { Cloudinary, SSE } from "../../../services";
 import { Product } from "../../../repos";
 import BaseService from "../../../services/bases/BaseService";
-
 
 interface IJob {
     images: ImageMeta[],
@@ -50,6 +49,8 @@ export default class UploadProduct implements IWorker<IJob> {
         const result = await repo!.insertProductAll(data.productDto, data.inventoryDto, uploaded as any); // TODO: create a type for uploaded
         const repoResultError = service.handleRepoError(result);
         if (repoResultError) return repoResultError;
+
+        logger.info("Product upload has ended");
         return service.responseData(201, false, "Product has been uploaded successfully", result.data);
     }
 
@@ -58,17 +59,31 @@ export default class UploadProduct implements IWorker<IJob> {
         const clientId = job?.data.clientId;
         const userType = job?.data.userType;
 
-        if (clientId && (await SSE.clientExists(userType, clientId))) {
-            await SSE.publishSSEEvent(userType, clientId, { id: jobId, event: this.eventName, data: returnvalue, error: false })
-            await SSE.removeJob(jobId, userType, clientId);
 
-            const storeId = returnvalue.json.data.storeId;
-            const productId = returnvalue.json.data.id;
+        const storeId = returnvalue.json.data.storeId;
+        const productId = returnvalue.json.data.id;
 
-            await notifyCustomersQueue.add('notifyCustomersQueue', {
-                storeId,
-                productId
-            });
-        }
+        // await notifyCustomersQueue.add('notifyCustomersQueue', { // TODO: handle later
+        //     storeId,
+        //     productId
+        // });
+
+        await streamRouter.addEvent('product', {
+            type: 'product:create',
+            data: {
+                error: returnvalue.json.error,
+                message: returnvalue.json.message,
+                data: {
+                    userType,
+                    clientId,
+                    ...returnvalue.json.data
+                }
+            },
+        });
+    }
+
+    public async failed({ jobId, failedReason }: FailedJob) {
+        // const job = await IWorker.queue.getJob(jobId);
+        // await SSE.failedJob(job, IWorker.eventName, jobId, failedReason);
     }
 }

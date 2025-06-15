@@ -1,6 +1,6 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
-import { cloudinary, corsConfig, env, logger, redisBull, redisPub, redisSub, cronJobs } from ".";
+import { cloudinary, corsConfig, env, logger, redisBull, redisPub, redisSub, streamRouter } from ".";
 import {
     auth,
     vendor,
@@ -35,7 +35,6 @@ import cors from "cors";
 import axios from 'axios';
 import { http } from "../constants";
 import { Admin as AdminService } from "../services";
-import streamRouter from "./redisStream";
 import { myQueue, uploadQueue } from "../jobs/queues";
 import { SSE } from "./../services";
 import initializeWorkers from "../jobs/workers";
@@ -110,21 +109,6 @@ function createApp() {
         res.status(500).json({ message: "Something went wrong", error: true });
     });
 
-    app.get('/upload-image', validateJWT(["admin", "vendor", "customer"]), async (req: Request, res: Response) => {
-        const clientId = res.locals.data.id;
-        const userType = res.locals.userType;
-
-        // Add job to BullMQ queue
-        const job = await uploadQueue.add('uploadImage', { imageUrl: 'cloudinary.com', clientId, userType });
-
-        const wasAdded = await SSE.addJob(job.id, userType, clientId);
-        if (wasAdded) {
-            res.status(200).json({ message: `Job ${job.id} added to queue for client ${clientId}`, error: false });
-            return;
-        }
-
-        res.status(500).json({ message: "Something went wrong", error: true });
-    });
 
     app.get("/test2", async (req: Request, res: Response) => {
         try {
@@ -152,11 +136,11 @@ function createApp() {
             createdAt: new Date().toISOString(),
         };
 
-        await streamRouter.addEvent('user', {
-            type: 'Jest',
+        await streamRouter.addEvent('product', {
+            type: 'product:create',
             data: { greet: "Hello" },
         });
-        res.status(200).json(event)
+        res.status(200).json(event);
     });
 
     async function check(data: any, requiredPermissions: string[]): Promise<{

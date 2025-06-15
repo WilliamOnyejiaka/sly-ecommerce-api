@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import streamRouter from './redisStream';
 
 const task1 = cron.schedule('*/1 * * * *', async () => {
-    console.log('Starting dlq reprocessing');
+    console.log('Starting dlq reprocessing cron job');
     await streamRouter.startDlqReprocessing();
 }, {
     scheduled: true,

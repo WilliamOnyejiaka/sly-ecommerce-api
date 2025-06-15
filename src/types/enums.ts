@@ -85,7 +85,8 @@ export enum CdnFolders {
 
 export enum StreamGroups {
     USER = "user",
-    STORE = "store"
+    STORE = "store",
+    PRODUCT = "product"
 };
 
 export enum StreamEvents {

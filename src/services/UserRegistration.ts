@@ -30,6 +30,7 @@ export default class UserRegistration extends Authentication {
                 (result as VendorDto).id!,
                 result as VendorDto
             );
+
             await streamRouter.addEvent(StreamGroups.USER, {
                 type: 'vendor:create',
                 data: result,
