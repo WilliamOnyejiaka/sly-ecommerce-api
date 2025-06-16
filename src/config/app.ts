@@ -1,6 +1,6 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
-import { cloudinary, corsConfig, env, logger, redisBull, redisPub, redisSub, streamRouter } from ".";
+import { cloudinary, corsConfig, env, logger, redisBull, redisPub, redisSub, streamRouter, cronJobs } from ".";
 import {
     auth,
     vendor,
@@ -36,6 +36,7 @@ import { http } from "../constants";
 import { Admin as AdminService } from "../services";
 import { myQueue, uploadQueue } from "../jobs/queues";
 import initializeWorkers from "../jobs/workers";
+import cluster from "cluster";
 
 function createApp() {
     const app: Application = express();
@@ -85,6 +86,9 @@ function createApp() {
     app.use("/api/v1/rating/product", validateJWT(["customer"]), productRating);
     app.use("/api/v1/rating/store", validateJWT(["customer"]), storeRating);
 
+    app.get('/greet', async (req: Request, res: Response) => {
+        res.status(200).json({ message: "Hello World", error: false });
+    });
 
     // Endpoint to add a job to the queue
     app.get('/add-job', validateJWT(["admin", "vendor", "customer"]), async (req: Request, res: Response) => {
@@ -199,9 +203,7 @@ function createApp() {
     });
 
 
-    // if (cluster.isPrimary) {
-    //     cronJobs.start();
-    // }
+    if (cluster.isPrimary) cronJobs.start();;
 
     initializeWorkers();
     app.use(handleMulterErrors);

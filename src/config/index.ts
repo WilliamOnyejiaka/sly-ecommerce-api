@@ -8,4 +8,4 @@ import twilioClient from "./twilio";
 import streamRouter from "./redisStream";
 import cronJobs from "./cronJobs";
 
-export { env, corsConfig, redisClient, logger, cloudinary, twilioClient, streamRouter, redisBull, redisSub, redisPub, redlock };
+export { env, corsConfig, redisClient, logger, cloudinary, twilioClient, streamRouter, redisBull, redisSub, redisPub, redlock, cronJobs };
