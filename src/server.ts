@@ -9,7 +9,7 @@ let environmentType = env('envType');
 const PORT = env('port');
 
 function startServer() {
-    const numCpu = os.cpus().length - 1;
+    const numCpu = os.cpus().length - 2; //! Be adjusting this
 
     if (cluster.isPrimary) {
         for (let i = 0; i < numCpu; i++) cluster.fork();
