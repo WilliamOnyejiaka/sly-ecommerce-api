@@ -58,12 +58,11 @@ export default class UploadProduct implements IWorker<IJob> {
         const clientId = job?.data.clientId;
         const userType = job?.data.userType;
 
-        const storeId = returnvalue.data.storeId;
-        const product = returnvalue.data;
-
         console.log(returnvalue.data);
         console.log(returnvalue.data.storeId);
 
+        const storeId = returnvalue.data.storeId;
+        const product = returnvalue.data;
 
         delete product.draft
         delete product.inventory
