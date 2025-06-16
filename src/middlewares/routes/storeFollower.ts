@@ -1,6 +1,7 @@
 import validateBody from "../validateBody";
 import {
-    paramNumberIsValid
+    paramNumberIsValid,
+    queryIsValidNumber
 } from "../validators";
 import { validateJWT } from "./../";
 import { UserType } from "../../types/enums";
@@ -17,4 +18,27 @@ export const storeId = [
 export const follow = [
     generalJWT,
     ...storeId
-]
+];
+
+export const countFollowers = [
+    generalJWT,
+    ...storeId
+];
+
+export const countFollowing = [
+    generalJWT,
+    paramNumberIsValid('customerId')
+];
+
+export const following = [
+    customerJWT,
+    queryIsValidNumber('page'),
+    queryIsValidNumber('limit')
+];
+
+export const followers = [
+    // generalJWT,
+    paramNumberIsValid('storeId'),
+    queryIsValidNumber('page'),
+    queryIsValidNumber('limit')
+];

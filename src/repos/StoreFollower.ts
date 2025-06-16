@@ -44,7 +44,7 @@ export default class StoreFollower extends Repo {
                 return { action, totalFollowers };
             });
             // console.log(data);
-            
+
             return this.repoResponse<{ action: "follow" | "unfollow", totalFollowers: number }>(false, 200, null, data);
         } catch (error: any) {
             return this.handleDatabaseError(error);
@@ -55,7 +55,105 @@ export default class StoreFollower extends Repo {
         return await this.countTblRecords({ where: { storeId } });
     }
 
-    public async getFollowers(storeId: number){
-        
+    public async countFollowing(customerId: number) {
+        return await this.countTblRecords({ where: { customerId } });
+    }
+
+    public async getFollowers(skip: number, take: number, storeId: number) {
+        try {
+            const data = await this.prisma.$transaction(async (tx): Promise<{ items: any, totalItems: number }> => {
+                const where = { storeId };
+                const items = await tx.storeFollower.findMany({
+                    where,
+                    skip,
+                    take,
+                    include: {
+                        customer: {
+                            select: {
+                                id: true,
+                                firstName: true,
+                                lastName: true,
+                                email: true,
+                                phoneNumber: true,
+                                active: true,
+                                createdAt: true,
+                                updatedAt: true,
+                                CustomerProfilePic: {
+                                    select: {
+                                        imageUrl: true
+                                    }
+                                }
+                            },
+                        }
+                    }
+                });
+
+                console.log(items);
+
+                const totalItems = await tx.storeFollower.count({ where });
+                return { items, totalItems }
+            });
+
+            return this.repoResponse(false, 200, "Drafts were retrieved successfully", data);
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
+    }
+
+    public async following(skip: number, take: number, customerId: number) {
+        try {
+            const data = await this.prisma.$transaction(async (tx): Promise<{ items: any, totalItems: number }> => {
+                const where = { customerId };
+                const items = await tx.storeFollower.findMany({
+                    where,
+                    skip,
+                    take,
+                    include: {
+                        store: {
+                            select: {
+                                storeLogo: {
+                                    select: {
+                                        imageUrl: true
+                                    }
+                                },
+                                firstStoreBanner: {
+                                    select: {
+                                        imageUrl: true
+                                    }
+                                },
+                                secondStoreBanner: {
+                                    select: {
+                                        imageUrl: true
+                                    }
+                                },
+                                vendor: {
+                                    select: {
+                                        id: true,
+                                        firstName: true,
+                                        lastName: true,
+                                        email: true,
+                                        phoneNumber: true,
+                                        active: true,
+                                        createdAt: true,
+                                        updatedAt: true,
+                                        profilePicture: {
+                                            select: {
+                                                imageUrl: true
+                                            }
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                    }
+                });
+                const totalItems = await tx.storeFollower.count({ where });
+                return { items, totalItems }
+            });
+
+            return this.repoResponse(false, 200, "Drafts were retrieved successfully", data);
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
     }
 }

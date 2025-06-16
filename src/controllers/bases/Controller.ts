@@ -43,6 +43,16 @@ export default class Controller {
         res.status(error.statusCode).json({ error: true, message: error.message });
     }
 
+    public static handleValidationError(req: Request, res: Response): void {
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            const error = JSON.parse(validationErrors.array()[0].msg);
+            res.status(error.statusCode).json({ error: true, message: error.message });
+            return;
+        }
+    }
+
     public static response(res: Response, responseData: {
         statusCode: number, json: {
             error: boolean;

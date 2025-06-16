@@ -14,7 +14,6 @@ import adBanner from "./adBanner";
 import user from "./dashboard/user";
 import storeFollower from "./storeFollower";
 import comment from "./comment";
-import newProductInbox from "./newProductInbox";
 import savedProduct from "./savedProduct";
 import favoriteStore from "./favoriteStore";
 import productRating from "./productRating";
@@ -37,7 +36,6 @@ export {
     user,
     storeFollower,
     comment,
-    newProductInbox,
     savedProduct,
     favoriteStore,
     productRating,

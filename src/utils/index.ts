@@ -11,6 +11,7 @@ import CipherUtility from "./CipherUtility";
 import parseJson from "./parseJson";
 import Streamer from "./Streamer";
 import StreamRouter from "./StreamRouter";
+import WorkerUtil from "./WorkerUtil";
 
 export {
     Password,
@@ -25,5 +26,6 @@ export {
     CipherUtility,
     parseJson,
     StreamRouter,
-    Streamer
+    Streamer,
+    WorkerUtil
 };

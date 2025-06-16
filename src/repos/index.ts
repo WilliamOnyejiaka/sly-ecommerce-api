@@ -23,8 +23,6 @@ import CommentLike from "./CommentLike";
 import ProductComment from "./ProductComment";
 import StoreFollower from "./StoreFollower";
 import Product from "./Product";
-import NewProductInbox from "./NewProductInbox";
-import NewFollower from "./NewFollower";
 import SavedProduct from "./SavedProduct";
 import FavoriteStore from "./FavoriteStore";
 import ProductRating from "./ProductRating";
@@ -60,8 +58,6 @@ export {
     AdBannerImage,
     StoreFollower,
     Product,
-    NewProductInbox,
-    NewFollower,
     SavedProduct,
     FavoriteStore,
     ProductRating,

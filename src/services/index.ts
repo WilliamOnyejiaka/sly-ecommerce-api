@@ -21,9 +21,7 @@ import AdBanner from "./AdBanner";
 import Cloudinary from "./Cloudinary";
 import ProductComment from "./ProductComment";
 import StoreFollower from "./StoreFollower";
-import NewProductInbox from "./NewProductInbox";
 import Product from "./Product/Product";
-import NewFollower from "./NewFollower";
 import SavedProduct from "./SavedProduct";
 import FavoriteStore from "./FavoriteStore";
 import ProductRating from "./ProductRating";
@@ -54,8 +52,6 @@ export {
     ProductComment,
     StoreFollower,
     Product,
-    NewProductInbox,
-    NewFollower,
     SavedProduct,
     FavoriteStore,
     ProductRating,

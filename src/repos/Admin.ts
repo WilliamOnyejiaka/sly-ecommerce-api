@@ -78,4 +78,7 @@ export default class Admin extends UserRepo {
         return await super.delete({ id: adminId });
     }
 
+    public async updateAdmin(adminId: number, updateData: any) {
+        return await super.update({ id: adminId }, updateData);
+    }
 }

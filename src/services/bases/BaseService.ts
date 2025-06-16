@@ -46,7 +46,6 @@ export default class BaseService<T extends Repo = Repo> {
 
     }
 
-
     public responseData(statusCode: number, error: boolean, message: string | null, data: any = {}) {
         return {
             statusCode: statusCode,
@@ -188,5 +187,23 @@ export default class BaseService<T extends Repo = Repo> {
             data[index].buffer = Buffer.from(item.buffer, 'base64');
         }
         return data;
+    }
+
+    protected skipTake(page: number, limit: number) {
+        return { skip: (page - 1) * limit, take: limit }
+    }
+
+    protected getPagination(page: number, limit: number, totalRecords: any) {
+        return getPagination(page, limit, totalRecords);
+    }
+
+    protected getImage(item: any): string | null {
+        if (!item || !Array.isArray(item) || item.length === 0) {
+            console.warn('Invalid or empty item in getImage:', item);
+            return null;
+        }
+
+        const imageUrl = item[0]?.imageUrl;
+        return imageUrl;
     }
 }

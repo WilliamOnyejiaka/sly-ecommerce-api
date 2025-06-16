@@ -120,4 +120,20 @@ export default class Admin {
         const serviceResult = await Admin.service.assignRole(adminId, roleId);
         Controller.response(res, serviceResult);
     }
+
+    public static async updateAdmin(req: Request, res: Response) {
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            Controller.handleValidationErrors(res, validationErrors);
+            return;
+        }
+
+        const adminId = Number(req.params.adminId); // assuming /admins/:adminId
+        const updateData = req.body;
+
+        const serviceResult = await Admin.service.updateAdmin(adminId, updateData);
+        Controller.response(res, serviceResult);
+    }
+
 }

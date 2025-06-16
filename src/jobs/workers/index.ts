@@ -7,6 +7,8 @@ import UploadProduct from "./product/UploadProduct";
 import NotifyCustomers from "./notification/NotifyCustomers";
 import NewFollower from "./notification/NewFollower";
 import { logger, streamRouter } from "../../config";
+import { WorkerUtil } from "../../utils";
+import { StreamEvents, StreamGroups } from "../../types/enums";
 
 const IWorkers: IWorker<any>[] = [
     new MyWorker(),
@@ -58,19 +60,12 @@ export default function initializeWorkers() {
                 const userType = job?.data.userType;
                 const clientId = job?.data.clientId;
 
-                await streamRouter.addEvent('notification', {
-                    type: 'notification:users',
-                    data: {
-                        error: returnvalue.json.error,
-                        message: returnvalue.json.message,
-                        // type: returnvalue.json.notificationType,
-                        userDetails: {
-                            userType,
-                            userId: clientId,
-                        },
-                        data: returnvalue.json.data
-                    },
-                });
+                await streamRouter.addEvent(
+                    StreamGroups.NOTIFICATION,
+                    WorkerUtil.notificationData(StreamEvents.NOTIFY, returnvalue, {
+                        userType,
+                        userId: clientId,
+                    }));
 
                 logger.info(`Queue for ${userType}:${clientId} has been competed successfully`);
             });

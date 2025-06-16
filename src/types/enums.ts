@@ -86,7 +86,8 @@ export enum CdnFolders {
 export enum StreamGroups {
     USER = "user",
     STORE = "store",
-    PRODUCT = "product"
+    PRODUCT = "product",
+    NOTIFICATION = "notification"
 };
 
 export enum StreamEvents {
@@ -95,7 +96,8 @@ export enum StreamEvents {
     STORE_CREATE = "create",
     DELETE = "delete",
     UPLOAD = "upload",
-    FOLLOW = "follow"
+    FOLLOW = "follow",
+    NOTIFY = 'notification:users'
 };
 
 export type ImageUploadType = "banner" | "image" | "storeImages";
@@ -116,4 +118,13 @@ export enum SSEEvents {
     UPLOAD_PRODUCT = `${sseProductEvent}:upload`,
     NOTIFY_CUSTOMERS = `${sseProductEvent}:notify`,
     NEW_FOLLOWER = "notification:newFollower"
+}
+
+export enum NotificationType {
+    UPLOAD_PRODUCT = "product:upload",
+    NEW_PRODUCT = "product:new",
+    CREATE_STORE = "store:create",
+    FOLLOW = "follow",
+    DB_ERROR = "error:db",
+    ERROR = "error"
 }

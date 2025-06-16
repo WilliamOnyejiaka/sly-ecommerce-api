@@ -18,7 +18,6 @@ import {
     user,
     storeFollower,
     comment,
-    newProductInbox,
     savedProduct,
     favoriteStore,
     storeRating,
@@ -81,7 +80,6 @@ function createApp() {
         customer
     );
     app.use("/api/v1/comment/", validateJWT(["customer"]), comment);
-    app.use("/api/v1/inbox/", validateJWT(["customer"]), newProductInbox);
     app.use("/api/v1/saved-product/", validateJWT(["customer"]), savedProduct);
     app.use("/api/v1/favorite-store/", validateJWT(["customer"]), favoriteStore);
     app.use("/api/v1/rating/product", validateJWT(["customer"]), productRating);

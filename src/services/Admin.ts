@@ -190,4 +190,14 @@ export default class Admin extends UserService<AdminRepo, AdminCache, AdminProfi
     public async getRoleWithId(roleId: number) {
         return await this.roleService.getRoleWithId(roleId);
     }
+
+    public async updateAdmin(adminId: number, updateData: Partial<AdminDto>) {
+        const result = await this.repo!.updateAdmin(adminId, updateData);
+
+        if (result.error) {
+            return super.responseData(result.type, true, result.message!);
+        }
+
+        return super.responseData(result.type, false, "Admin updated successfully", result.data);
+    }
 }

@@ -34,16 +34,21 @@ export default class Product extends BaseService<ProductRepo> {
 
         const imageMetadata = super.convertFilesToMeta(images);
 
-        const job = await uploadProductQueue.add('uploadProductQueue', {
-            images: imageMetadata,
-            inventoryDto,
-            productDto,
-            userType,
-            clientId
-        });
+        try {
+            const job = await uploadProductQueue.add('uploadProductQueue', {
+                images: imageMetadata,
+                inventoryDto,
+                productDto,
+                userType,
+                clientId
+            });
 
-        logger.info(`Job ${job.id} added to queue for ${userType} - ${clientId}`);
-        return super.responseData(200, false, "Product upload is processing")
+            logger.info(`Job ${job.id} added to queue for ${userType} - ${clientId}`);
+            return super.responseData(200, false, "Product upload is processing")
+        } catch (error) {
+            console.error("Job failed: ", error);
+            return super.responseData(500, true, "Something went wrong");
+        }
 
     }
 

@@ -59,8 +59,6 @@ model StoreDetails {
   Product           Product[]
   Inventory         Inventory[]
   StoreFollower     StoreFollower[]
-  NewProductInbox   NewProductInbox[]
-  NewFollower       NewFollower[]
   FavoriteStore     FavoriteStore[]
   StoreRating       StoreRating[]
 
@@ -237,8 +235,6 @@ model Customer {
   CommentLike        CommentLike[]
   ProductLike        ProductLike[]
   SavedProduct       SavedProduct[]
-  NewProductInbox    NewProductInbox[]
-  NewFollower        NewFollower[]
   FavoriteStore      FavoriteStore[]
   StoreRating        StoreRating[]
 
@@ -437,34 +433,33 @@ model ProductImage {
 }
 
 model Product {
-  id              Int               @id @default(autoincrement())
-  name            String
-  description     String?           @db.Text
-  price           Decimal           @db.Decimal(10, 2)
-  discountPrice   Decimal?          @db.Decimal(10, 2)
-  isAvailable     Boolean           @default(true)
-  attributes      Json?
-  additionalInfo  Json?
-  metaData        Json?
-  averageRating   Float             @default(0)
-  isFeatured      Boolean           @default(false)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  storeId         Int
-  draft           Boolean           @default(true)
-  link            String?
-  store           StoreDetails      @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  categoryId      Int?
-  category        Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  subcategoryId   Int?
-  subcategory     SubCategory?      @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
-  productImage    ProductImage[]
-  inventory       Inventory[]
-  ProductLike     ProductLike[]
-  ProductComment  ProductComment[]
-  SavedProduct    SavedProduct[]
-  NewProductInbox NewProductInbox[]
-  ProductRating   ProductRating[]
+  id             Int              @id @default(autoincrement())
+  name           String
+  description    String?          @db.Text
+  price          Decimal          @db.Decimal(10, 2)
+  discountPrice  Decimal?         @db.Decimal(10, 2)
+  isAvailable    Boolean          @default(true)
+  attributes     Json?
+  additionalInfo Json?
+  metaData       Json?
+  averageRating  Float            @default(0)
+  isFeatured     Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  storeId        Int
+  draft          Boolean          @default(true)
+  link           String?
+  store          StoreDetails     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  categoryId     Int?
+  category       Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subcategoryId  Int?
+  subcategory    SubCategory?     @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  productImage   ProductImage[]
+  inventory      Inventory[]
+  ProductLike    ProductLike[]
+  ProductComment ProductComment[]
+  SavedProduct   SavedProduct[]
+  ProductRating  ProductRating[]
 
   @@index([name])
   @@index([categoryId])
@@ -508,6 +503,8 @@ model StoreFollower {
   customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@unique([storeId, customerId])
+  @@index([customerId])
+  @@index([storeId])
 }
 
 model ProductComment {
@@ -571,32 +568,6 @@ model FavoriteStore {
   updatedAt  DateTime     @updatedAt
 
   @@unique([storeId, customerId])
-}
-
-model NewProductInbox {
-  id         Int          @id @default(autoincrement())
-  customerId Int
-  customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  productId  Int
-  product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  storeId    Int
-  store      StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  viewed     Boolean      @default(false)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-
-  @@unique([productId, customerId, storeId])
-}
-
-model NewFollower {
-  id         Int          @id @default(autoincrement())
-  storeId    Int
-  store      StoreDetails @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  customerId Int
-  customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  viewed     Boolean      @default(false)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
 }
 
 model StoreRating {

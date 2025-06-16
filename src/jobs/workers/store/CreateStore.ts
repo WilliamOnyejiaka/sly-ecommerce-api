@@ -1,12 +1,13 @@
 
 import { Job, Queue } from "bullmq";
 import { WorkerConfig, IWorker } from "../../../types";
-import { CdnFolders, Queues, SSEEvents, StreamGroups, StreamEvents } from "../../../types/enums";
+import { CdnFolders, Queues, SSEEvents, StreamGroups, StreamEvents, NotificationType } from "../../../types/enums";
 import { redisBull, redisPub, streamRouter } from "../../../config";
 import { createStoreQueue } from "../../queues";
 import { ImageService } from "../../../services";
 import { StoreDetails } from "../../../repos";
 import { StoreDetailsDto } from "../../../types/dtos";
+import { WorkerUtil } from "../../../utils";
 
 
 interface IJob {
@@ -72,16 +73,16 @@ export default class CreateStore implements IWorker<IJob> {
                     data: result,
                 });
 
-                return imageService.responseData(
-                    201,
+                return WorkerUtil.processResponse(
+                    NotificationType.CREATE_STORE,
                     false,
                     "Store was created successfully",
                     result
                 );
             }
             const deleted = await imageService.deleteImages(uploadResults.publicIds!); // TODO: cache failed deletes
-            return imageService.responseData(repoResult.type, true, repoResult.message!);
+            return WorkerUtil.processResponse(NotificationType.ERROR, true, repoResult.message!);
         }
-        return imageService.responseData(500, true, "Error processing images");
+        return WorkerUtil.processResponse(NotificationType.ERROR, true, "Error processing images");
     }
 }

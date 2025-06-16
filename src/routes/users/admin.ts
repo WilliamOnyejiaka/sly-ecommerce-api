@@ -68,6 +68,28 @@ admin.patch(
     asyncHandler(Admin.assignRole)
 );
 
+admin.patch(
+    "/:adminId",
+    adminAuthorization(['manage_all']),
+    validateBody([
+        "firstName",
+        "lastName",
+        "email",
+        "phoneNumber",
+        "roleId",
+        "active"
+    ]), // I  added required fields to validate here, like ['firstName', 'lastName']
+    [
+        bodyNumberIsValid('roleId'),
+        paramNumberIsValid('adminId'),
+        emailIsValid,
+        // Optionally: phoneNumberIsValid,
+    ],
+
+    asyncHandler(Admin.updateAdmin)
+);
+
+
 admin.delete(
     "/:adminId",
     adminAuthorization(['manage_all']),
@@ -84,7 +106,6 @@ admin.delete(
     "/",
     asyncHandler(Admin.delete)
 );
-
 
 
 export default admin;

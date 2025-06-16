@@ -1,15 +1,14 @@
 import { Job, Queue } from "bullmq";
 import { WorkerConfig, IWorker, CompletedJob } from "../../../types";
-import { Queues, SSEEvents, UserType } from "../../../types/enums";
-import { redisBull, redisClient } from "../../../config";
+import { NotificationType, Queues, SSEEvents, StreamEvents, StreamGroups, UserType } from "../../../types/enums";
+import { logger, redisBull, streamRouter, env } from "../../../config";
 import { notifyCustomersQueue } from "../../queues";
 import prisma from "../../../repos";
-import BaseService from "../../../services/bases/BaseService";
-import cluster from "cluster";
+import { WorkerUtil } from "../../../utils";
 
 
 interface IJob {
-    productId: number,
+    product: any,
     storeId: number,
     clientId: number,
     userType: string
@@ -21,68 +20,62 @@ export default class NotifyCustomers implements IWorker<IJob> {
     public queueName = Queues.NOTIFY_CUSTOMERS;
     public eventName: string = SSEEvents.NOTIFY_CUSTOMERS;
     public queue: Queue = notifyCustomersQueue;
+    private batchSize: number;
 
     public constructor(config?: WorkerConfig) {
         this.config = { connection: redisBull, concurrency: 10, ...config };
+        this.batchSize = Number(env('batchSize'));
     }
 
     public async process(job: Job<IJob>) {
         const { id: jobId, data } = job;
-        const { productId, storeId } = job.data;
+        const { storeId, product } = job.data;
 
-        const service = new BaseService();
-
-        const followers = await prisma.storeFollower.findMany({
-            where: { storeId },
-        });
-
-        const followersData = followers.map(follower => ({
-            productId,
-            storeId,
-            customerId: follower.customerId,
-        }));
-
-        const chunkSize = 500;
-        for (let i = 0; i < followersData.length; i += chunkSize) {
-            const chunk = followersData.slice(i, i + chunkSize);
-            await prisma.newProductInbox.createMany({
-                data: chunk,
-                skipDuplicates: true,
+        // Use pagination to fetch followers
+        let cursor = undefined;
+        do {
+            const batch: any = await prisma.storeFollower.findMany({
+                where: { storeId },
+                take: this.batchSize,
+                skip: cursor ? 1 : 0,
+                cursor: cursor ? { id: cursor } : undefined,
+                select: { customerId: true }
             });
-        }
+            await this.processBatch(batch, product);
+            cursor = batch.length ? batch[batch.length - 1].id : undefined;
+        } while (cursor);
 
-        return service.responseData(201, false, "Product has been uploaded successfully", {
-            productId,
-            followers,
-        });
+        return true;
+    }
+
+    private async processBatch(batch: { customerId: number }[], product: any) {
+        await Promise.all(
+            batch.map(async (follower) => {
+                try {
+                    const returnvalue = {
+                        message: "New product notification",
+                        error: false,
+                        notificationType: NotificationType.NEW_PRODUCT,
+                        data: product
+                    };
+
+                    logger.info(`New product notification for customer:${follower.customerId}`);
+                    await streamRouter.addEvent(
+                        StreamGroups.NOTIFICATION,
+                        WorkerUtil.notificationData(StreamEvents.NOTIFY, returnvalue, {
+                            userType: UserType.CUSTOMER,
+                            userId: follower.customerId,
+                        })
+                    );
+
+                } catch (error) {
+                    logger.error(`Failed to notify customer ${follower.customerId}: ${error}`);
+                }
+            })
+        );
     }
 
     public async completed({ jobId, returnvalue }: CompletedJob) {
-
-        // const followers: { id: number, storeId: number, customerId: number }[] = returnvalue.json.data.followers;
-        // const batchSize = 500;
-
-        // for (let i = 0; i < followers.length; i += batchSize) {
-        //     const batch = followers.slice(i, i + batchSize);
-        //     const key = UserType.Customer + "s";
-
-
-        //     await Promise.all(
-        //         batch.map(async (follower) => {
-        //             const isMember = await redisClient.sismember(key, String(follower.customerId));
-        //             if (isMember === 1) {
-        //                 console.log("Yes");
-
-        //                 const data = {
-        //                     message: "A store has uploaded a product",
-        //                     productId: returnvalue.json.data.productId,
-        //                     storeId: follower.storeId
-        //                 }
-        //                 await SSE.publishSSEEvent(UserType.Customer, follower.customerId, { id: jobId, event: this.eventName, data, error: false }, "notification");/*  */
-        //             }
-        //         })
-        //     );
-
-        // }
+        logger.info("New product notification queue has finished processing successfully");
     }
 }
