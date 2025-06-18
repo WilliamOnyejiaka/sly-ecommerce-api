@@ -46,7 +46,6 @@ export default class UploadProduct implements IWorker<IJob> {
             uploaded.push(item)
         }
         const result = await repo!.insertProductAll(data.productDto, data.inventoryDto, uploaded as any); // TODO: create a type for uploaded
-        console.log("Repo Result - ", result);
         const repoResultError = WorkerUtil.handleRepoError(result);
         if (repoResultError) return repoResultError;
 
@@ -58,9 +57,6 @@ export default class UploadProduct implements IWorker<IJob> {
         const job = await uploadProductQueue.getJob(jobId);
         const clientId = job?.data.clientId;
         const userType = job?.data.userType;
-
-        console.log(returnvalue.data);
-        console.log(returnvalue.data.storeId);
 
         const storeId = returnvalue.data.storeId;
         const product = returnvalue.data;
