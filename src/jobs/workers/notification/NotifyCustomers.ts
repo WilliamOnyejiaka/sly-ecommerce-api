@@ -36,7 +36,7 @@ export default class NotifyCustomers implements IWorker<IJob> {
         do {
             const batch: any = await prisma.storeFollower.findMany({
                 where: { storeId },
-                take: 500,
+                take: this.batchSize,
                 skip: cursor ? 1 : 0,
                 cursor: cursor ? { id: cursor } : undefined,
                 select: { customerId: true }
