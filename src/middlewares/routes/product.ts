@@ -1,11 +1,11 @@
 import { adminAuthorization, uploads, validateBody, validateJWT } from "..";
 import { env } from "../../config";
 import { StoreDetails } from "../../repos";
-import { AdminPermission } from "../../types/enums";
+import { AdminPermission, UserType } from "../../types/enums";
 import { bodyBooleanIsValid, bodyNumberIsValid, itemNameExists, paramNumberIsValid, queryIsValidNumber } from "../validators";
 
 // export const allUsers = validateJWT(["vendor", "admin", "customer"], env("tokenSecret")!);
-// export const justVendor = validateJWT(["vendor"], env("tokenSecret")!);
+export const justCustomer = validateJWT([UserType.CUSTOMER]);
 
 export const productUpload = [
     uploads.array("images", 5),
@@ -44,5 +44,6 @@ export const pagination = [
 ];
 
 export const productId = [
+    justCustomer,
     paramNumberIsValid('productId')
 ];
