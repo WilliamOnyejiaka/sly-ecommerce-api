@@ -53,7 +53,7 @@ function createApp() {
 
     app.use("/api/v1/seed", seed);
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
-    app.use("/api/v1/fyp/product", validateJWT(["customer"]), fypProduct);
+    app.use("/api/v1/fyp/product", fypProduct);
     app.use("/api/v1/vendor/product", validateJWT(["vendor"]), vendorProductManagement);
 
     app.use("/api/v1/auth", auth);
