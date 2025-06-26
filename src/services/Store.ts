@@ -199,16 +199,48 @@ export default class Store extends BaseService<StoreDetails> {
         return super.responseData(statusCode, error, "This vendor does not have a store", repoResult.data);
     }
 
-    public async paginateStores(page: number, pageSize: number) {
-        const skip = (page - 1) * pageSize;
-        const take = pageSize;
+    public async getStoreAllWithId(id: number) {
+        const repoResult = await this.repo!.getStoreAndRelationsWithId(id);
+        const repoResultError = this.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+
+        const statusCode = repoResult.data ? 200 : 404;
+        const error: boolean = repoResult.data ? false : true;
+
+        if (repoResult.data) {
+            super.setImageUrls([repoResult.data], this.imageDatas);
+            return super.responseData(statusCode, error, "Store was retrieved successfully", repoResult.data);
+        }
+
+        return super.responseData(statusCode, error, "Store was not found", repoResult.data);
+    }
+
+    public async getStoreAllWithName(name: string) {
+        const repoResult = await this.repo!.getStoreAndRelationsWithName(name);
+        const repoResultError = this.handleRepoError(repoResult);
+        if (repoResultError) return repoResultError;
+
+        const statusCode = repoResult.data ? 200 : 404;
+        const error: boolean = repoResult.data ? false : true;
+
+        if (repoResult.data) {
+            super.setImageUrls([repoResult.data], this.imageDatas);
+            return super.responseData(statusCode, error, "Store was retrieved successfully", repoResult.data);
+        }
+
+        return super.responseData(statusCode, error, "Store was not found", repoResult.data);
+    }
+
+    public async paginateStores(page: number, limit: number) {
+        const skip = (page - 1) * limit;
+        const take = limit;
         const repoResult = await this.repo!.paginateStore(skip, take);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
 
         const data: { items: any, totalItems: any } = repoResult.data as any;
         const totalRecords = data.totalItems!;
-        const pagination = getPagination(page, pageSize, totalRecords);
+        const pagination = getPagination(page, limit, totalRecords);
         super.setImageUrls(data.items, this.imageDatas);
 
         return super.responseData(200, false, constants('200Stores')!, {

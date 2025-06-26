@@ -1,6 +1,5 @@
 import auth from "./auth";
 import vendor from "./users/vendor";
-import store from "./store";
 import admin from "./users/admin";
 import seed from "./seed";
 import role from "./role";
@@ -18,11 +17,11 @@ import savedProduct from "./savedProduct";
 import favoriteStore from "./favoriteStore";
 import productRating from "./productRating";
 import storeRating from "./storeRating";
+import store from "./store";
 
 export {
     auth,
     vendor,
-    store,
     admin,
     seed,
     role,
@@ -35,6 +34,7 @@ export {
     adBanner,
     user,
     storeFollower,
+    store,
     comment,
     savedProduct,
     favoriteStore,

@@ -77,6 +77,10 @@ export default class StoreDetails extends Repo {
         return await this.getStoreAndRelations({ vendorId: vendorId });
     }
 
+    public async getStoreAndRelationsWithName(name: string) {
+        return await this.getStoreAndRelations({ name: name });
+    }
+
     public override async delete(vendorId: number) {
         return await super.delete({ vendorId: vendorId });
     }

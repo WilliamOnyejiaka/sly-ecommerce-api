@@ -4,7 +4,6 @@ import { cloudinary, corsConfig, env, logger, redisBull, redisPub, redisSub, str
 import {
     auth,
     vendor,
-    store,
     seed,
     admin,
     role,
@@ -18,12 +17,13 @@ import {
     user,
     storeFollower,
     comment,
+    store,
     savedProduct,
     favoriteStore,
     storeRating,
     productRating
 } from "./../routes";
-import { vendorProductManagement } from "../routes/vendor";
+import { vendorProductManagement, store as vendorStore } from "../routes/vendor";
 import { fypProduct } from "./../routes/fyp";
 import { validateJWT, validateUser, handleMulterErrors, secureApi, vendorIsActive } from "./../middlewares";
 import asyncHandler from "express-async-handler";
@@ -52,9 +52,12 @@ function createApp() {
     // app.use(secureApi); TODO: uncomment this
 
     app.use("/api/v1/seed", seed);
+    app.use("/api/v1/store", store);
     app.get("/api/v1/admin/default-admin/:roleId", asyncHandler(Admin.defaultAdmin));
     app.use("/api/v1/fyp/product", fypProduct);
+    
     app.use("/api/v1/vendor/product", validateJWT(["vendor"]), vendorProductManagement);
+    app.use("/api/v1/vendor/store", validateJWT(["vendor"]), vendorIsActive, vendorStore);
 
     app.use("/api/v1/auth", auth);
     app.use(
@@ -64,7 +67,6 @@ function createApp() {
         vendor
     );
     app.use("/api/v1/store/follow", storeFollower);
-    app.use("/api/v1/store", validateJWT(["vendor"]), vendorIsActive, store);
     app.use("/api/v1/admin", validateJWT(["admin"]), admin);
     app.use("/api/v1/admin/role", validateJWT(["admin"]), role);
     app.use("/api/v1/admin/permission", validateJWT(["admin"]), permission);

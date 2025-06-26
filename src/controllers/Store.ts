@@ -84,6 +84,28 @@ export default abstract class Store {
         res.status(serviceResult.statusCode).json(serviceResult.json);
     }
 
+    public static async getStoreWithId(req: Request, res: Response) {
+        Controller.handleValidationError(req, res);
+        const storeId = Number(req.params.storeId);
+        const serviceResult = await Store.service.getStoreAllWithId(storeId);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
+    public static async getStoreWithName(req: Request, res: Response) {
+        Controller.handleValidationError(req, res);
+        const storeName = req.params.storeName;
+        const serviceResult = await Store.service.getStoreAllWithName(storeName);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
+    public static async stores(req: Request, res: Response) {
+        Controller.handleValidationError(req, res);
+        const page = Number(req.query.page);
+        const limit = Number(req.query.limit);
+        const serviceResult = await Store.service.paginateStores(page, limit);
+        res.status(serviceResult.statusCode).json(serviceResult.json);
+    }
+
     public static async deleteStore(req: Request, res: Response) {
         const vendorId = Number(res.locals.data.id);
         const serviceResult = await Store.service.delete(vendorId);

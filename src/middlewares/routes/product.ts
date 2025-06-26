@@ -4,7 +4,6 @@ import { StoreDetails } from "../../repos";
 import { AdminPermission, UserType } from "../../types/enums";
 import { bodyBooleanIsValid, bodyNumberIsValid, itemNameExists, paramNumberIsValid, queryIsValidNumber } from "../validators";
 
-// export const allUsers = validateJWT(["vendor", "admin", "customer"], env("tokenSecret")!);
 export const justCustomer = validateJWT([UserType.CUSTOMER]);
 
 export const productUpload = [
