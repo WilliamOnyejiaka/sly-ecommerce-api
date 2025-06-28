@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { ImageService, Store as StoreService } from "../services";
-import constants, { http, HttpStatus, urls } from "../constants";
 import { StoreDetailsDto } from "../types/dtos";
 import Controller from "./bases/Controller";
 import { validationResult } from "express-validator";
@@ -99,7 +98,13 @@ export default abstract class Store {
     }
 
     public static async stores(req: Request, res: Response) {
-        Controller.handleValidationError(req, res);
+        const validationErrors = validationResult(req);
+
+        if (!validationErrors.isEmpty()) {
+            const error = JSON.parse(validationErrors.array()[0].msg);
+            res.status(error.statusCode).json({ error: true, message: error.message });
+            return;
+        }
         const page = Number(req.query.page);
         const limit = Number(req.query.limit);
         const serviceResult = await Store.service.paginateStores(page, limit);
