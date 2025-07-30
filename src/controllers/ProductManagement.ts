@@ -72,7 +72,7 @@ export default class ProductManagement {
         const page = Number(req.query.page);
         const userId = Number(res.locals.data.id);
 
-        const result = await ProductManagement.service.getProducts(page, limit, userId);
+        const result = await ProductManagement.service.getAllProducts(page, limit, userId);
         Controller.response(res, result);
     }
 

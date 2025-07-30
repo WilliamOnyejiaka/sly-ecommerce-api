@@ -173,6 +173,33 @@ export default class Product extends AssetRepo {
         }
     }
 
+    public async getProductsWithStoreId(skip: number, take: number, storeId: number) {
+        try {
+            const data = await this.prisma.$transaction(async (tx): Promise<{ items: any, totalItems: number }> => {
+                const where = { where: { storeId } };
+                const items = await tx.product.findMany({
+                    ...where,
+                    skip,
+                    take,
+                    include: {
+                        productImage: {
+                            select: {
+                                imageUrl: true
+                            }
+                        }
+                    }
+                });
+                const totalItems = await tx.product.count({ ...where });
+                return { items, totalItems }
+            });
+
+            return this.repoResponse(false, 200, "Products were retrieved successfully", data);
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
+    }
+
+
     public async getProducts(skip: number, take: number, id: number) {
         try {
             const data = await this.prisma.$transaction(async (tx): Promise<{ items: any, totalItems: number }> => {

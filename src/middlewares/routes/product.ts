@@ -34,7 +34,7 @@ export const publishDraft = [
 ]
 
 export const idIsValid = [
-    paramNumberIsValid('id')
+    paramNumberIsValid('storeId')
 ];
 
 export const pagination = [

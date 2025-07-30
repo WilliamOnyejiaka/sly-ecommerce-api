@@ -5,8 +5,9 @@ import { idIsValid, productId, pagination } from "../../middlewares/routes/produ
 
 const fypProduct: Router = Router();
 
+fypProduct.get("/store/:storeId", idIsValid, asyncHandler(FYPProduct.getStoreProducts));
+fypProduct.get("/like/:productId", productId, FYPProduct.like);
 fypProduct.get("/:id", idIsValid, asyncHandler(FYPProduct.getProduct));
 fypProduct.get("/", pagination, asyncHandler(FYPProduct.getProducts));
-fypProduct.get("/like/:productId", productId, FYPProduct.like);
 
 export default fypProduct;
