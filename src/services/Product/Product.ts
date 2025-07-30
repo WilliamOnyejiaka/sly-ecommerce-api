@@ -65,10 +65,10 @@ export default class Product extends BaseService<ProductRepo> {
         return super.responseData(404, false, "Product was not found", data);
     }
 
-    public async getAllProducts(page: number, pageSize: number, vendorId: number) {
+    public async getVendorProducts(page: number, pageSize: number, vendorId: number) {
         const skip = (page - 1) * pageSize;
         const take = pageSize;
-        const repoResult = await this.repo!.getProducts(skip, take, vendorId);
+        const repoResult = await this.repo!.getProductsWithVendorId(skip, take, vendorId);
         const repoResultError = this.handleRepoError(repoResult);
         if (repoResultError) return repoResultError;
         const data = repoResult.data as any;
@@ -83,6 +83,25 @@ export default class Product extends BaseService<ProductRepo> {
         }
         return super.responseData(200, true, "Products were retrieved successfully", { items, pagination });
     }
+
+    // public async getAllProducts(page: number, pageSize: number, vendorId: number) {
+    //     const skip = (page - 1) * pageSize;
+    //     const take = pageSize;
+    //     const repoResult = await this.repo!.getProducts(skip, take, vendorId);
+    //     const repoResultError = this.handleRepoError(repoResult);
+    //     if (repoResultError) return repoResultError;
+    //     const data = repoResult.data as any;
+    //     const totalRecords = data.totalItems;
+    //     const pagination = getPagination(page, pageSize, totalRecords);
+    //     let items = data.items;
+    //     if (items) {
+    //         items = items.map((item: any) => ({
+    //             ...item,
+    //             productImage: item.productImage.map((img: any) => img.imageUrl)
+    //         }));
+    //     }
+    //     return super.responseData(200, true, "Products were retrieved successfully", { items, pagination });
+    // }
 
     public async getStoreProducts(page: number, pageSize: number, storeId: number) {
         const skip = (page - 1) * pageSize;

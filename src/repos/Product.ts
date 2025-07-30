@@ -176,7 +176,7 @@ export default class Product extends AssetRepo {
     public async getProductsWithStoreId(skip: number, take: number, storeId: number) {
         try {
             const data = await this.prisma.$transaction(async (tx): Promise<{ items: any, totalItems: number }> => {
-                const where = { where: { storeId } };
+                const where = { where: { storeId, draft: false } };
                 const items = await tx.product.findMany({
                     ...where,
                     skip,
@@ -190,6 +190,50 @@ export default class Product extends AssetRepo {
                     }
                 });
                 const totalItems = await tx.product.count({ ...where });
+                return { items, totalItems }
+            });
+
+            return this.repoResponse(false, 200, "Products were retrieved successfully", data);
+        } catch (error) {
+            return this.handleDatabaseError(error);
+        }
+    }
+
+    public async getProductsWithVendorId(skip: number, take: number, vendorId: number) {
+        try {
+            const data = await this.prisma.$transaction(async (tx): Promise<{ items: any, totalItems: number }> => {
+                const where = {
+                    where: {
+                        store: {
+                            vendorId: vendorId
+                        }
+                    },
+                };
+                const items = await tx.product.findMany({
+                    where: {
+                        store: {
+                            vendorId: vendorId
+                        },
+                        draft: false 
+                    },
+                    skip,
+                    take,
+                    include: {
+                        productImage: {
+                            select: {
+                                imageUrl: true
+                            }
+                        }
+                    }
+                });
+                const totalItems = await tx.product.count({
+                    where: {
+                        store: {
+                            vendorId: vendorId
+                        },
+                        draft: false 
+                    },
+                });
                 return { items, totalItems }
             });
 

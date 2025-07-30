@@ -71,8 +71,10 @@ export default class ProductManagement {
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
         const userId = Number(res.locals.data.id);
+        console.log(userId);
 
-        const result = await ProductManagement.service.getAllProducts(page, limit, userId);
+
+        const result = await ProductManagement.service.getVendorProducts(page, limit, userId);
         Controller.response(res, result);
     }
 
