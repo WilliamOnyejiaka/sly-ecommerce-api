@@ -28,6 +28,7 @@ import FavoriteStore from "./FavoriteStore";
 import ProductRating from "./ProductRating";
 import StoreRating from "./StoreRating";
 import ProductLike from "./ProductLike";
+import Inventory from "./Inventory";
 
 const prisma: PrismaClient = new PrismaClient();
 
@@ -62,5 +63,6 @@ export {
     FavoriteStore,
     ProductRating,
     StoreRating,
+    Inventory,
     ProductLike
 };

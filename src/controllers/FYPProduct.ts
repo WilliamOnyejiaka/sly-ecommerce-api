@@ -28,7 +28,7 @@ export default class FYPProduct {
             return;
         }
 
-        const id = Number(req.params.id)
+        const id = Number(req.params.id);        
         const result = await FYPProduct.service.fypProduct(id);
         return Controller.response(res, result)
     }

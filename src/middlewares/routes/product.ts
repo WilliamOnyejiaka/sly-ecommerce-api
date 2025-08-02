@@ -33,9 +33,14 @@ export const publishDraft = [
     bodyNumberIsValid('productId'),
 ]
 
-export const idIsValid = [
+export const soreIdIsValid = [
     paramNumberIsValid('storeId')
 ];
+
+export const idIsValid = [
+    paramNumberIsValid('id')
+];
+
 
 export const pagination = [
     queryIsValidNumber('page'),
